@@ -31,11 +31,8 @@ setup(
 	install_requires=[
 		"eggmonster >= 4.0",
 		"fab >= 2.3.3",
-		#"pear > 2.0",
 		"simplejson",
-		#"Pyro == 3.5",
 		"pmxtools >= 0.14",
-		#"faststore == 0.8",
 		"ottoman",
 	]
 )

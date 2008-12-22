@@ -5,14 +5,10 @@ import simplejson
 from airportlocker.control.base import Resource, post
 from ottoman.envelopes import success, failure
 
-api = [
-	('index', '', ListResources, 'GET'),
-	('create', '', CreateResource, 'POST'),
-]
-
 class ListResources(Resource):
-	template = fab.template('sample.tmpl')
+	template = fab.template('list.tmpl')
 	def GET(self, page):
+		page.mesage = 'listing...'
 		page.listing = [d for d in self.db]
 
 class CreateResource(Resource):

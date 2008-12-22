@@ -1,9 +1,9 @@
 from fab.cp_tools import FabDispatcher
 
-from airportlocker.control.main import api
+from airportlocker.control.main import ListResources, CreateResource
 
 def get_dispatcher():
 	r = FabDispatcher()
-	for name, route, cls, method in api:
-		r.add_rout(name, route, cls(), method=method)
+	r.add_route('index', '', ListResources(), method='GET')
+	r.add_route('create', '', CreateResource(), method='POST'),
 	return r

@@ -1,6 +1,6 @@
 # Makefile for fab
 run: 
-	PYTHONPATH=. python control/root.py
+	PYTHONPATH=. monster_run devel.yaml airportlocker.main
 
 docs:
 	fabDocBuilder.py doc/book/book.js doc/book/txt doc/book/html

@@ -1,1 +1,2 @@
+airportlocker_port : 8090
 airportlocker_db_url : 'http://ottoman.polimetrix.com/airport'
