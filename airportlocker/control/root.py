@@ -3,11 +3,9 @@ import airportlocker.etc.startup
 import cherrypy
 from fab.cp_tools import FabDispatcher
 
-from airportlocker.control.urls import get_dispatcher
+from airportlocker.control.urls import api, dev
 
 from eggmonster import env
-
-routes = get_dispatcher()
 
 
 app_conf = {
@@ -15,18 +13,20 @@ app_conf = {
 		'script_name': '/',
 	},
 	'/' : {
-        'request.dispatch': routes,
+        'request.dispatch': api,
         'request.process_request_body': False,
+	},
+	'/_dev' : {
+		'request.dispatch': dev,
 	}
 }
 
 def setupapp():
-	cherrypy.config.update({'server.socket_port': env.airportlocker_port,})
-# 	if env.production:
-# 		cherrypy.config.update({
-# 			'environment' : 'production',
-# 			'log.screen' : True,
-# 		})
+	cherrypy.config.update({
+		'server.socket_port': env.airportlocker_port,
+		'log.screen' : True,
+		'autoreload_on': True,		
+	})
 	cherrypy.tree.mount(None, config=app_conf)
 
 def run_airportlocker():

@@ -2,13 +2,20 @@ import fab
 import cherrypy
 import simplejson
 
-from airportlocker.control.base import Resource, post
+from airportlocker.control.base import Resource, HtmlResource, post
 from ottoman.envelopes import success, failure
+
+class BasicUpload(HtmlResource):
+	template = fab.template('base.tmpl')
+	body = fab.template('basicform.tmpl')
+	def GET(self, page, *args, **kw):
+		page.args = kw
 
 class ListResources(Resource):
 	template = fab.template('list.tmpl')
 	def GET(self, page):
-		page.mesage = 'listing...'
+		page.message = 'listing...'
+		page.db = self.db
 		page.listing = [d for d in self.db]
 
 class CreateResource(Resource):
@@ -24,10 +31,13 @@ class CreateResource(Resource):
 
 	@post
 	def POST(self, page, fields):
-		if '_new' in fields and '_rmfile' in fields:
-			meta = dict([(k, fields.getvalue(k)) for k in fields.keys() if not k.startswith('_')])
+		if '_new' in fields and '_lockerfile' in fields:
+			meta = dict([
+				(k, fields.getvalue(k)) for k in fields.keys()
+				if not k.startswith('_')
+			])
 			meta['_id'] = str(uuid.uuid4())
-			self.save_file(fields['_rmfile'])
+			self.save_file(fields['_lockerfile'])
 			if self.db.new(meta):
 				return success(meta)
 			return failure('Error saving to ottoman')

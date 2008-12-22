@@ -21,6 +21,9 @@ class Resource(fab.FabPage):
 		return getattr(self, m)(page, *args, **kw)
 
 
+class HtmlResource(Resource):
+	template = fab.template('base.tmpl')
+
 def get_fields():
 	heders = cherrypy.request.headers
 	if 'Content-Length' in headers:
