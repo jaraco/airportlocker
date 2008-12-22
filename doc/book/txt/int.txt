@@ -1,0 +1,7 @@
+This section discusses the internals of hello world.
+
+You might expect to see code snippets such as:
+
+	def hello():
+		return "Hello, World!"
+

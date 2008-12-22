@@ -1,0 +1,41 @@
+body { font-family: sans-serif; }
+#outer-container { padding: 8px; }
+#toc-header { padding: 4px; font-size: 20px; color: #999;}
+#nav-header{ margin-top: 2px; padding: 5px; background: #6cf; }
+#toc-link {
+	font-size: 12px;
+	margin-left: 15px;
+}
+#nav-link-back, #nav-link-up, #nav-link-next {
+	padding-right: 22px;
+	font-size: 12px;
+	float: left;
+}
+div>div#nav-link-back, div>div#nav-link-up, div>div#nav-link-next {
+	float: none;
+	display: table-cell;
+}
+
+h1.title {
+	text-align: center;
+	font-size: 22px;
+	background: #ccc;
+	padding: 5px;
+	color: white;
+	margin: 4px;
+}
+#nav-footer{ margin-top: 2px; padding: 5px; background: #6cf; }
+#nav-link-back-footer, #nav-link-up-footer, #nav-link-next-footer {
+	padding-right: 22px;
+	font-size: 12px;
+	float: left;
+}
+div>div#nav-link-back-footer, div>div#nav-link-up-footer, div>div#nav-link-next-footer {
+	float: none;
+	display: table-cell;
+}
+#meta {font-size: 10px; text-align: right;}
+pre { padding: 5px; margin: 30px; background: #eef; border: gray 1px solid; }
+#toc-title { font-size: 48px; text-align: center;}
+.toc-entry { margin-bottom: 3px; font-size: 14px;}
+#toc-entries { margin-left: 20px; margin-bottom: 25px;}
