@@ -29,7 +29,7 @@ setup(
 		],
 	},
 	install_requires=[
-		"eggmonster >= 4.0",
+		"eggmonster",
 		"fab >= 2.3.3",
 		"simplejson",
 		"pmxtools >= 0.14",
