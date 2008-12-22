@@ -9,7 +9,7 @@ api.add_route('index', '', ListResources(), method='GET')
 api.add_route('create', '', CreateResource(), method='POST')
 
 dev = FabDispatcher()
-dev.add_route('index', '', BasicUpload(), method='GET')
+dev.add_route('index', '_dev', BasicUpload(), method='GET')
 
 
 
