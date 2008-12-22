@@ -25,7 +25,7 @@ class HtmlResource(Resource):
 	template = fab.template('base.tmpl')
 
 def get_fields():
-	heders = cherrypy.request.headers
+	headers = cherrypy.request.headers
 	if 'Content-Length' in headers:
 		lchead = dict([(k.lower(), v) for k, v in headers.iteritems()])
 		data = cgi.FieldStorage(fp=cherrypy.request.rfile,
