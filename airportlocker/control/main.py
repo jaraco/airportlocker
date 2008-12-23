@@ -83,7 +83,7 @@ class CreateResource(Resource):
 			if self.db.new(meta):
 				return success(meta)
 			return failure('Error saving to ottoman')
-		return failure('A "_new" and "_locker_file" are required to create a new document.')
+		return failure('A "_new" and "_lockerfile" are required to create a new document.')
 
 class DeleteResource(Resource):
 	def DELETE(self, page, id):
