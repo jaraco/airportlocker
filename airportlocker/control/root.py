@@ -1,5 +1,6 @@
 import airportlocker.etc.startup
 
+import os
 import cherrypy
 from fab.cp_tools import FabDispatcher
 
@@ -22,6 +23,9 @@ app_conf = {
 }
 
 def setupapp():
+	if not os.path.exists(env.static_files) or not os.path.isdir(env.static_files):
+		os.mkdir(env.static_files)
+
 	cherrypy.config.update({
 		'server.socket_port': env.airportlocker_port,
 		'log.screen' : True,
