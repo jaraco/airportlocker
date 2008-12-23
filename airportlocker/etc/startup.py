@@ -1,4 +1,4 @@
-from conf import *
+from airportlocker.etc.conf import *
 import fab
 import eggmonster 
 from eggmonster import env
