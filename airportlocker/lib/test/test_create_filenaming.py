@@ -11,6 +11,11 @@ from airportlocker.lib.resource import ResourceMixin
 class MockResource(ResourceMixin):
 	pass
 
+JPEG = 'image/jpeg'
+DOC = 'application/msword'
+TXT = 'text/plain'
+ZIP = 'application/zip'
+
 class TestFileNaming(object):
 
 	def setup_class(self):
@@ -35,38 +40,44 @@ class TestFileNaming(object):
 
 	def test_add_extension(self):
 		filenames = [
-			('hello.world', '.zip', 'hello.world.zip'),
-			('foo.bar.zip', '.zip', 'foo.bar.zip'),
-			('hello world.doc', 'doc', 'hello world.doc'),
-			('picture.jpg', 'jpg', 'picture.jpg'),
-			('yeah', '.jpg', 'yeah.jpg'),
-			('yeah', 'jpg', 'yeah.jpg'),
-			('YEAH.JPG', 'jpg', 'YEAH.jpg'),
+			('hello.world', ZIP, 'hello.world.zip'),
+			('foo.bar.zip', ZIP, 'foo.bar.zip'),
+			('hello world.doc', 'application/msword', 'hello world.doc'),
+			('picture.jpg', JPEG, 'picture.jpg'),
+			('yeah', JPEG, 'yeah.jpeg'),
+			('YEAH.JPG', JPEG, 'YEAH.JPG'),
+			('mytext.txt', TXT, 'mytext.txt'),
 		]
-		for fn, ext, expected in filenames:
-			assert self.obj.add_extension(fn, ext) == expected
+		for fn, type, expected in filenames:
+			assert self.obj.add_extension(fn, type) == expected
 
 	def test_last_index(self):
-		assert self.obj.get_next_index(self.mfs, 'new', '.jpeg') == None
-		assert self.obj.get_next_index(self.mfs, 'foo', '.jpeg') == 1
-		assert self.obj.get_next_index(self.mfs, 'foo_bar', '.jpeg') == 2
+		assert self.obj.get_next_index(self.mfs, 'new', JPEG) == None
+		assert self.obj.get_next_index(self.mfs, 'foo', JPEG) == 1
+		assert self.obj.get_next_index(self.mfs, 'foo_bar', JPEG) == 2
+		
 		# the initial file was removed so we can fill it in here
-		assert self.obj.get_next_index(self.mfs, 'foo_bar_', '.jpeg') == None
-		open(os.path.join(self.mfs, 'foo_bar_.jpeg'), 'a').close()
+		assert self.obj.get_next_index(self.mfs, 'foo_bar_', JPEG) == None
+		new_file = os.path.join(self.mfs, 'foo_bar_.jpeg')
+		open(new_file, 'a').close()
+
 		# now it should hit two
-		assert self.obj.get_next_index(self.mfs, 'foo_bar_', '.jpeg') == 2
+		assert self.obj.get_next_index(self.mfs, 'foo_bar_', JPEG) == 2
+		os.remove(new_file)
 
 	def test_verified_filename(self):
+		# no files are written so the checks always return with the
+		# original file comparisons
 		new_names = [
-			('foo', 'image/jpeg', 'foo_1.jpeg'),
-			('foo bar', 'image/jpeg', 'foo_bar_2.jpeg'),
-			('foo bar ', 'image/jpeg', 'foo_bar__2.jpeg'),
-			('foo@bar', 'image/jpeg', 'foo_bar_3.jpeg'),
-			('foo!bar', 'image/jpeg', 'foo_bar_4.jpeg'),
-			('foo?bar', 'image/jpeg', 'foo_bar_5.jpeg'),
-			('foo+bar', 'image/jpeg', 'foo_bar_6.jpeg'),
-			('foo*bar', 'image/jpeg', 'foo_bar_7.jpeg'),
-			('foo#bar', 'image/jpeg', 'foo_bar_8.jpeg'),			
+			('foo', JPEG, 'foo_1.jpeg'),
+			('foo bar ', JPEG, 'foo_bar_.jpeg'),
+			('foo bar', JPEG, 'foo_bar_2.jpeg'),
+			('foo@bar', JPEG, 'foo_bar_2.jpeg'),
+			('foo!bar', JPEG, 'foo_bar_2.jpeg'),
+			('foo?bar', JPEG, 'foo_bar_2.jpeg'),
+			('foo+bar', JPEG, 'foo_bar_2.jpeg'),
+			('foo*bar', JPEG, 'foo_bar_2.jpeg'),
+			('foo#bar', JPEG, 'foo_bar_2.jpeg'),			
 		]
 
 		for fn, ext, expected in new_names:

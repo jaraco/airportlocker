@@ -59,9 +59,10 @@ class ReadResource(Resource):
 		return None
 
 	def return_file(self, path):
+		ct, enc = mimetypes.guess_type(path)		
 		cherrypy.response.headers.update({
 			'Content-Size': os.path.getsize(path),
-			'Content-Type': mimetypes.guess_type(path),
+			'Content-Type': ct or 'text/plain',
 		})
 		with open(path, 'r') as fh:
 			for line in fh:

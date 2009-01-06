@@ -7,8 +7,24 @@ class ResourceMixin(object):
 	clean_fn_regex = re.compile(r'[@\!\? \+\*\#]')
 	index_re = re.compile(r'(.*)_(\d+).(.*)')
 
-	def add_extension(self, fn, ext):
-		if not fn.endswith(ext):
+
+	def get_extension(self, type, fn=None):
+		exts = guess_all_extensions(type)
+		if exts:
+			if fn:
+				cur_ext = os.path.splitext(fn)[1]
+				if cur_ext.lower() in exts:
+					return cur_ext.lower()
+			# take the last one
+			return exts[-1]
+		return '.uknown'
+
+	def has_extension(self, fn, ext):
+		return os.path.splitext(fn)[1].lower() == ext
+
+	def add_extension(self, fn, type):
+		ext = self.get_extension(type, fn)
+		if not self.has_extension(fn, ext):
 			parts = [fn]
 			if not ext.startswith('.'):
 				parts.append('.')
@@ -16,13 +32,12 @@ class ResourceMixin(object):
 			fn = ''.join(parts)
 		return fn
 
-	def get_next_index(self, folder, fn, ext):
-		fullpath = self.add_extension(os.path.join(folder, fn), ext)
+	def get_next_index(self, folder, fn, type):
+		fullpath = self.add_extension(os.path.join(folder, fn), type)
 		if not os.path.exists(fullpath) or not os.path.isfile(fullpath):
 			return None
-		if ext.startswith('.'):
-			ext = ext[1:]
-		regex = '(.*)%s_(\d+).%s$' % (fn, ext)
+		ext = self.get_extension(type, fn) # this includes the '.'
+		regex = '(.*)%s_(\d+)%s$' % (fn, ext)
 		fexp = re.compile(regex)
 		indexes = []
 		for root, dirs, fnames in os.walk(folder):
@@ -34,20 +49,15 @@ class ResourceMixin(object):
 		if indexes:
 			return max(indexes) + 1
 		return 1
+
 	
 	def verified_filename(self, folder, fn, type):
 		'''Returns a unique human readable filename (ie not a uuid)'''
-		ext = guess_all_extensions(type)
-		if ext:
-			# take the last one
-			ext = ext.pop()
-		else:
-			ext = '.unknown'
 		fn = self.clean_fn_regex.sub('_', fn)
-		index = self.get_next_index(folder, fn, ext)
+		index = self.get_next_index(folder, fn, type)
 		if index:
 			fn = '%s_%s' % (fn, index)
-		return self.add_extension(fn, ext)
+		return self.add_extension(fn, type)
 		
 	def save_file(self, folder, fs, name=None):
 		fn = self.verified_filename(folder, name or fs.filename, fs.type)
