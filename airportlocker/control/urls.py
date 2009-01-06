@@ -12,6 +12,9 @@ from airportlocker.control.main import BasicUpload
 api = FabDispatcher()
 api.add_route('read', 'static/*', ReadResource(), method='GET')
 api.add_route('view', 'view/:id', ViewResource(), method='GET')
+# overloaded POST for browsers
+# TODO: make _method tool
+api.add_route('post_delete', 'edit/:id', DeleteResource(), method='POST')
 api.add_route('delete', 'edit/:id', DeleteResource(), method='DELETE')
 api.add_route('index', '', ListResources(), method='GET')
 api.add_route('create', '', CreateResource(), method='POST')
