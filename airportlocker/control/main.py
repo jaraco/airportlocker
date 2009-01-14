@@ -9,7 +9,7 @@ import cherrypy
 
 from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.resource import ResourceMixin
-from ottoman.envelopes import success, failure
+from ottoman.lib.envelopes import success, failure
 
 from eggmonster import env
 
@@ -23,14 +23,16 @@ class BasicUpload(HtmlResource):
 class ListResources(Resource):
 	def GET(self, page):
 		all = []
-		for row in self.db.all:
+		for id in list(self.db):
+			row = self.db.get_by_id(id, json=False)
+			row = simplejson.loads(row)
 			row['url'] = '/static/%s' % row['_id']
 			all.append(row)
-		return simplejson.dumps(all)
+		return simplejson.dumps(all, indent=2)
 
 class ViewResource(Resource):
 	def GET(self, page, id):
-		results = self.db.view('by_id', id)
+		results = self.db.get_by_id(id) 
 		if results:
 			return simplejson.dumps(results)
 		raise cherrypy.HTTPError(404)
@@ -40,38 +42,37 @@ class ReadResource(Resource):
 		if not args:
 			raise cherrypy.HTTPError(404)
 		path = '/'.join(args)
-		file_path = self.find_file(path)
-		if file_path:
-			return self.return_file(file_path)
-		raise cherrypy.HTTPError(404)
+		return self.return_file(path)
 
-	def find_file(self, path):
-		filepath = os.path.join(env.storedir, path)
-		if os.path.exists(filepath):
-			return filepath
-		for doc in self.db:
-			doc = doc[1] # latest revision
-			if '_id' in doc and path == doc['_id']:
-				if '_filename' in doc:
-					# there is weird escaping going on here so this is a fix
-					filename = doc['_filename'].replace('\/', '/')
-					return os.path.join(env.storedir, filename) 
-		return None
+	def get_resource(self, key):
+		resource = None
+		ct = 'application/octet-stream'
+		try:
+			resource = self.fs.get_by_id(key)
+			ct, enc = mimetypes.guess_type(key)
+		except KeyError:
+			pass
+		if not resource:
+			try:
+				doc = self.db.get_by_id(key)
+				resource = self.fs.get_by_id(doc['name'])
+				ct = doc['_mime']
+			except KeyError:
+				pass
+		return resource, ct
 
 	def return_file(self, path):
-		ct, enc = mimetypes.guess_type(path)		
+		resource, ct = self.get_resource(path)
+		if not resource:
+			raise cherrypy.HTTPError(404)
 		cherrypy.response.headers.update({
-			'Content-Size': os.path.getsize(path),
 			'Content-Type': ct or 'text/plain',
 		})
-		with open(path, 'r') as fh:
-			for line in fh:
-				yield line
+		return resource
 
 class CreateResource(Resource, ResourceMixin):
 	'''This saves the file and makes sure the filename is as close as
 	possible to the original while stilling being unique.'''
-
 	@post
 	def POST(self, page, fields):
 		if '_new' in fields and '_lockerfile' in fields:
@@ -83,21 +84,24 @@ class CreateResource(Resource, ResourceMixin):
 			if 'name' in fields:
 				fn = fields['name'].value
 			else:
-				fn = None
-			meta['_filename'] = self.save_file(
-				env.storedir, fields['_lockerfile'], fn
-			)
+				fn = fields['_lockerfile'].filename
+			meta['_filename'] = self.fs.create_doc(fn, fields['_lockerfile'])
 			meta['name'] = meta['_filename']
 			meta['_mime'] = fields['_lockerfile'].type
-			if self.db.new(meta):
-				return success(meta)
-			return failure('Error saving to ottoman')
+			print meta
+			result = self.db.create_doc(meta['_id'], simplejson.dumps(meta))
+			return success(result)
 		return failure('A "_new" and "_lockerfile" are required to create a new document.')
 
 class DeleteResource(Resource):
 	def DELETE(self, page, id):
-		meta = self.db[id]
-		self.db.delete(id)
+		meta = {}
+		try:
+			meta = self.db.get_by_id(id)
+			self.fs.delete_by_id(meta['name'])
+			self.db.delete_by_id(id)
+		except KeyError, e:
+			print e
 		return success({'deleted': meta})
 		
 

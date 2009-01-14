@@ -1,10 +1,102 @@
+import os
+import re
 import uuid
-from string import Template
-from ottoman.client import OttomanServer, OttomanDocset
+import mimetypes
+import fab
 
-class LockerServer(OttomanServer):
-	def docset(self, name):
-		return Locker(self, name)
+from string import Template
+from ottoman.lib.client import OttomanDocset # not used
+from ottoman.model import DataStore, Database
+
+class LockerStore(DataStore):
+
+	def __iter__(self):
+		return iter(fab.pool('storage').get().list())
+
+	def get(self, name):
+		return self.dbs.setdefault(name, LockerDatabase(name))
+
+class LockerDatabase(Database):
+	def create_doc(self, key, value):
+		fs = self.conn()
+		fs.save(self.name, key, value)
+		return key
+	
+class LockerFileStore(DataStore):
+	def __iter__(self):
+		return iter(fab.pool('storage').get().list())
+
+	def get(self, name):
+		return self.dbs.setdefault(name, LockerFolder(name))
+
+class LockerFolder(Database):
+	clean_fn_regex = re.compile(r'[@\!\? \+\*\#]')
+	index_re = re.compile(r'(.*)_(\d+).(.*)')
+
+	def _has_extension(self, fn, ext):
+		return os.path.splitext(fn)[1].lower() == ext
+
+	def _get_extension(self, type, fn=None):
+		exts = mimetypes.guess_all_extensions(type)
+		if exts:
+			if fn:
+				cur_ext = os.path.splitext(fn)[1]
+				if cur_ext.lower() in exts:
+					return cur_ext.lower()
+			# take the last one
+			return exts[-1]
+		return '.uknown'
+
+	def _add_extension(self, fn, type, index=None):
+		ext = self._get_extension(type, fn)
+		if not self._has_extension(fn, ext):
+			parts = [fn, '_%s' % index if index else '']
+			if not ext.startswith('.'):
+				parts.append('.')
+			parts.append(ext)
+			fn = ''.join(parts)
+		else:
+			if index:
+				fn = '%s_%s%s' % (fn[:-len(ext)], index, ext)
+		return fn
+
+	def _valid_key(self, fn, type):
+		fullkey = self._add_extension(fn, type)
+		try:
+			doc = self.get_by_id(fullkey)
+		except KeyError:
+			return fullkey
+		ext = self._get_extension(type, fn) # this includes the '.'		
+		exists = True
+		cur_index = 1
+		while exists:
+			cur_key = self._add_extension(fn, type, cur_index)
+			try:
+				doc = self.get_by_id(cur_key)
+			except KeyError:
+				# the key is cool
+				exists = False
+				break
+			else:
+				cur_index += 1
+		return cur_key
+
+	def conn(self):
+		return fab.pool('storage').get()
+
+	def get_by_id(self, key):
+		return Database.get_by_id(self, key, json=False)
+
+	def create_doc(self, key, value):
+		fs = self.conn()
+		valid_key = self._valid_key(key, value.type)
+		fs.save(self.name, valid_key, value.file.read())
+		return valid_key
+
+	def read(self, key):
+		return self.get_by_id(key, json=False)
+			
+
 
 class LockerView(object):
 	def __init__(self, field):
@@ -17,7 +109,6 @@ def filter(i, val):
 
 	def code(self):
 		return self.code.safe_substitute({'key': self.field})
-
 
 class Locker(OttomanDocset):
 

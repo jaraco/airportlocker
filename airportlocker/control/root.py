@@ -2,7 +2,6 @@ import airportlocker.etc.startup
 
 import os
 import cherrypy
-from fab.cp_tools import FabDispatcher
 
 from airportlocker.control.urls import api, dev
 
@@ -28,8 +27,9 @@ def setupapp():
 
 	cherrypy.config.update({
 		'server.socket_port': env.airportlocker_port,
+		'server.thread_pool' : env.threads,
 		'log.screen' : True,
-		'autoreload_on': True,		
+		'autoreload_on': True,
 	})
 	cherrypy.tree.mount(None, config=app_conf)
 

@@ -4,19 +4,12 @@ import cherrypy
 
 from eggmonster import env
 
-class Resource(fab.FabPage):
+from airportlocker.model import LockerStore, LockerFileStore
 
-	@property
-	def db(self):
-		pool = fab.pool('db')
-		db = pool.get()
-		# replace with env call
-		docs = db.docset(env.docset)
-		return docs
+class Resource(fab.FabPage):
 
 	def is_json(self):
 		json_types = ['application/json', 'text/json', 'text/plain']
-		print cherrypy.response.headers
 		return cherrypy.response.headers['Content-Type'] in json_types
 	
 	def control(self, page, *args, **kw):
@@ -37,6 +30,9 @@ class Resource(fab.FabPage):
 		redirect_url = kw.get('_redirect', None)
 		if redirect_url:
 			del kw['_redirect']
+
+		self.fs = LockerFileStore().get(env.filesystem)
+		self.db = LockerStore().get(env.docset)
 
 		# get the actual result
 		source = getattr(self, m)(page, *args, **kw)

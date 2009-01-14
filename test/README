@@ -1,0 +1,3 @@
+These are a set of perfomance/tests to verify the basic API. The
+excerciser.py includes an airportlocker client that can be used to do
+perfomance testing and API compatability.
