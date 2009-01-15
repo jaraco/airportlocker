@@ -137,6 +137,3 @@ if __name__=='__main__':
 	test_read(exerciser, id)
 	test_update(exerciser, id)
 	test_delete(exerciser, id)
-	
-	
-	
