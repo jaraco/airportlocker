@@ -11,12 +11,23 @@ from pprint import pprint
 
 from airportlocker.lib.utils import MultiPart
 
-def create_sample_file():
-	sample_file = os.path.join(os.path.abspath(os.getcwd()), 'sample.txt')
+
+sample_fn = 'sample.txt'
+
+def create_sample_file(name):
+	sample_file = os.path.join(os.path.abspath(os.getcwd()), name)
 	fh = open(sample_file, 'w+')
 	for i in range(0, 10):
 		fh.write('%s) hello world\n' % i)
 	fh.close()
+
+def update_sample_file(name):
+	sample_file = os.path.join(os.path.abspath(os.getcwd()), name)
+	fh = open(sample_file, 'w+')
+	for i in range(10, 20):
+		fh.write('%s) goodbye world\n' % i)
+	fh.close()
+
 
 class AirportLockerClient(object):
 	
@@ -43,6 +54,23 @@ class AirportLockerClient(object):
 			raise
 		return response
 
+	def update(self, id, fn, fields=None):
+		fields = fields or {}
+		fields.update({'my_extra_data': 'foo'})
+		data = MultiPart(fn, fields)
+		res, c = self.h.request(self.api('/edit/%s' % id),
+								method='PUT',
+								body=data.body,
+								headers=data.headers)
+		try:
+			response = simplejson.loads(c)
+		except ValueError:
+			pprint(res)
+			print c
+			raise
+		return response
+	
+
 	def view(self, id):
 		res, c = self.h.request(self.api('/view/%s' % id))
 		return simplejson.loads(c)
@@ -56,6 +84,45 @@ class AirportLockerClient(object):
 		response = simplejson.loads(c)
 		return response
 
+def test_create(exc):
+	print 'Create'
+	create_sample_file(sample_fn)
+	sample = exc.create(sample_fn, {'yeah' : 'this field'})
+	pprint(sample)
+	print 'Done'
+	print
+	return sample['value']
+
+def test_update(exc, id):
+	print 'Update'
+	update_sample_file(sample_fn)
+	sample = exerciser.update(id, sample_fn, {'whoa': 'new field', 'yeah': 'updated'})
+	pprint(sample)
+	print 'Done'
+	print
+
+def test_read(exc, id):
+	print 'Read'
+	doc = exc.read(id)
+	pprint(doc)
+	print 'Done'
+	print
+
+
+def test_view(exc, id):
+	print 'View'
+	doc = exc.view(id)
+	pprint(doc)
+	print 'Done'
+	print
+
+def test_delete(exc, id):
+	print 'Delete'
+	result = exc.delete(id)
+	pprint(result)
+	print 'Done'
+	print 
+
 
 if __name__=='__main__':
 	usage = 'usage: %prog [options] url'
@@ -64,14 +131,12 @@ if __name__=='__main__':
 	if len(args) < 1:
 		parser.error('Need an airportlocker url')
 	url = args[0]
-	excerciser = AirportLockerClient(url)
-	create_sample_file()
-	sample_fn = 'sample.txt'
-	sample = excerciser.create(sample_fn, {'yeah' : 'this field'})
-# 	doc = excerciser.view(sample['value'])
-# 	print excerciser.read(doc['name'])
-# 	print 'Deleted:'
- 	deleted = excerciser.delete(sample['value'])
-# 	pprint(deleted)
+	exerciser = AirportLockerClient(url)
+	id = test_create(exerciser)
+	test_view(exerciser, id)
+	test_read(exerciser, id)
+	test_update(exerciser, id)
+	test_delete(exerciser, id)
+	
 	
 	

@@ -88,10 +88,42 @@ class CreateResource(Resource, ResourceMixin):
 			meta['_filename'] = self.fs.create_doc(fn, fields['_lockerfile'])
 			meta['name'] = meta['_filename']
 			meta['_mime'] = fields['_lockerfile'].type
-			print meta
 			result = self.db.create_doc(meta['_id'], simplejson.dumps(meta))
 			return success(result)
 		return failure('A "_new" and "_lockerfile" are required to create a new document.')
+
+class UpdateResource(Resource):
+
+	def get_doc(self, key):
+		try:
+			return self.db.get_by_id(key)
+		except KeyError:
+			return None
+	
+	@post
+	def PUT(self, page, fields, id):
+		cur_doc = self.get_doc(id)
+		if not cur_doc:
+			raise cherrypy.HTTPNotFound()
+		have_file = bool('_lockerfile' in fields)
+		meta = dict([
+			(k, fields.getvalue(k)) for k in fields.keys()
+			if not k.startswith('_')
+		])
+		meta['_id'] = cur_doc['_id']
+		meta['_filename'] = cur_doc['_filename']
+		meta['name'] = cur_doc['name']
+		if have_file:
+			meta['_mime'] = fields['_lockerfile'].type or cur_doc['_mime']
+			
+		self.db.update_by_id(id, simplejson.dumps(meta))
+		new_doc = self.get_doc(id)
+		print new_doc
+
+		if have_file:
+			new_file = self.fs.update_by_id(new_doc['name'],
+											fields['_lockerfile'].file.read())
+		return success({'updated': simplejson.dumps(new_doc)})
 
 class DeleteResource(Resource):
 	def DELETE(self, page, id):
@@ -101,7 +133,8 @@ class DeleteResource(Resource):
 			self.fs.delete_by_id(meta['name'])
 			self.db.delete_by_id(id)
 		except KeyError, e:
-			print e
+			# if it's missing it's deleted
+			pass
 		return success({'deleted': meta})
 		
 
