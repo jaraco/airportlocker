@@ -37,38 +37,12 @@ class ViewResource(Resource):
 			return simplejson.dumps(results)
 		raise cherrypy.HTTPError(404)
 
-class ReadResource(Resource):
+class ReadResource(Resource, ResourceMixin):
 	def GET(self, page, *args, **kw):
 		if not args:
 			raise cherrypy.HTTPError(404)
 		path = '/'.join(args)
 		return self.return_file(path)
-
-	def get_resource(self, key):
-		resource = None
-		ct = 'application/octet-stream'
-		try:
-			resource = self.fs.get_by_id(key)
-			ct, enc = mimetypes.guess_type(key)
-		except KeyError:
-			pass
-		if not resource:
-			try:
-				doc = self.db.get_by_id(key)
-				resource = self.fs.get_by_id(doc['name'])
-				ct = doc['_mime']
-			except KeyError:
-				pass
-		return resource, ct
-
-	def return_file(self, path):
-		resource, ct = self.get_resource(path)
-		if not resource:
-			raise cherrypy.HTTPError(404)
-		cherrypy.response.headers.update({
-			'Content-Type': ct or 'text/plain',
-		})
-		return resource
 
 class CreateResource(Resource, ResourceMixin):
 	'''This saves the file and makes sure the filename is as close as
@@ -115,14 +89,10 @@ class UpdateResource(Resource):
 		meta['name'] = cur_doc['name']
 		if have_file:
 			meta['_mime'] = fields['_lockerfile'].type or cur_doc['_mime']
-			
 		self.db.update_by_id(id, simplejson.dumps(meta))
 		new_doc = self.get_doc(id)
-		print new_doc
-
 		if have_file:
-			new_file = self.fs.update_by_id(new_doc['name'],
-											fields['_lockerfile'].file.read())
+			self.update_file(new_doc['name'], fields['_lockerfile'].file)
 		return success({'updated': simplejson.dumps(new_doc)})
 
 class DeleteResource(Resource):
@@ -130,7 +100,7 @@ class DeleteResource(Resource):
 		meta = {}
 		try:
 			meta = self.db.get_by_id(id)
-			self.fs.delete_by_id(meta['name'])
+			self.remove_file(meta['name'])
 			self.db.delete_by_id(id)
 		except KeyError, e:
 			# if it's missing it's deleted

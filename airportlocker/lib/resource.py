@@ -3,10 +3,8 @@ import os
 from mimetypes import guess_type, guess_all_extensions
 
 class ResourceMixin(object):
-
 	clean_fn_regex = re.compile(r'[@\!\? \+\*\#]')
 	index_re = re.compile(r'(.*)_(\d+).(.*)')
-
 
 	def get_extension(self, type, fn=None):
 		exts = guess_all_extensions(type)
@@ -50,7 +48,6 @@ class ResourceMixin(object):
 			return max(indexes) + 1
 		return 1
 
-	
 	def verified_filename(self, folder, fn, type):
 		'''Returns a unique human readable filename (ie not a uuid)'''
 		fn = self.clean_fn_regex.sub('_', fn)
@@ -62,11 +59,54 @@ class ResourceMixin(object):
 	def save_file(self, folder, fs, name=None):
 		fn = self.verified_filename(folder, name or fs.filename, fs.type)
 		path = os.path.join(folder, fn)
+		self._write_file(path, fs.file)
+		return fn
+
+	def _write_file(self, path, fh):
 		dirname = os.path.dirname(path)
 		if not os.path.exists(dirname) or not os.path.isdir(dirname):
 			os.makedirs(dirname)
 		newfile = open(path, 'w+')
-		for chunk in fs.file:
+		for chunk in fh:
 			newfile.write(chunk)
 		newfile.close()
-		return fn
+
+	def update_file(self, fn, fh):
+		path = os.path.join(env.filestore, fn)
+		self._write_file(path, fh)
+
+	def get_resource(self, key):
+		resource = None
+		ct = 'application/octet-stream'
+		fullpath = os.path.join(env.filestore, key)
+		if os.path.exists(fullpath) and os.path.isfile(fullpath):
+			resource = open(fullpath, 'r')
+			ct, enc = mimetypes.guess_type(key)
+		else:
+			try:
+				doc = self.db.get_by_id(key)
+			except KeyError:
+				raise cherrypy.HTTPError(404)
+			fullpath = os.path.join(env.filestore, doc['name'])
+			if os.path.exists(fullpath) and os.path.isfile(fullpath):
+				resource = open(fullpath)
+				ct = doc['_mime']
+			else:
+				raise cherrypy.HTTPError(404)
+		return resource, ct
+
+	def remove_file(self, fn):
+		'''We do not actually remove the file. We just add a "deleted"
+		extension. Clean up can be done via cron if necessary.'''
+		path = os.path.join(env.filestore, fn)
+		if os.path.exists(path) and os.path.isfile(path):
+			os.rename(path, '%s.deleted' % path)
+
+	def return_file(self, path):
+		resource, ct = self.get_resource(path)
+		if not resource:
+			raise cherrypy.HTTPError(404)
+		cherrypy.response.headers.update({
+			'Content-Type': ct or 'text/plain',
+		})
+		return resource

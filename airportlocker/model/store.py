@@ -8,6 +8,8 @@ from string import Template
 from ottoman.lib.client import OttomanDocset # not used
 from ottoman.model import DataStore, Database
 
+from eggmonster import env
+
 class LockerStore(DataStore):
 
 	def __iter__(self):
@@ -16,20 +18,15 @@ class LockerStore(DataStore):
 	def get(self, name):
 		return self.dbs.setdefault(name, LockerDatabase(name))
 
+
 class LockerDatabase(Database):
 	def create_doc(self, key, value):
 		fs = self.conn()
 		fs.save(self.name, key, value)
 		return key
 	
-class LockerFileStore(DataStore):
-	def __iter__(self):
-		return iter(fab.pool('storage').get().list())
 
-	def get(self, name):
-		return self.dbs.setdefault(name, LockerFolder(name))
-
-class LockerFolder(Database):
+class LockerFolder(object):
 	clean_fn_regex = re.compile(r'[@\!\? \+\*\#]')
 	index_re = re.compile(r'(.*)_(\d+).(.*)')
 
@@ -62,33 +59,31 @@ class LockerFolder(Database):
 
 	def _valid_key(self, fn, type):
 		fullkey = self._add_extension(fn, type)
-		try:
-			doc = self.get_by_id(fullkey)
-		except KeyError:
+		fullpath = os.path.join(env.filestore)
+		if not os.path.exists(fullpath):
 			return fullkey
 		ext = self._get_extension(type, fn) # this includes the '.'		
 		exists = True
 		cur_index = 1
-		while exists:
-			cur_key = self._add_extension(fn, type, cur_index)
-			try:
-				doc = self.get_by_id(cur_key)
-			except KeyError:
-				# the key is cool
-				exists = False
-				break
-			else:
-				cur_index += 1
+		regex = '(.*)%s_(\d+).%s$' % (fn, ext)
+		fexp = re.compile(regex)
+		for root, dirs, fnames in os.walk(env.filestore):
+			for fname in fnames:
+				cur_fn = os.path.join(root, fname)
+				match = fexp.match(cur_fn)
+				if match:
+					indexes.append(int(match.groups()[1]))
+		if indexes:
+			return max(indexes) + 1
 		return cur_key
 
 	def conn(self):
-		return fab.pool('storage').get()
+		pass # not necessary... 
 
 	def get_by_id(self, key):
 		return Database.get_by_id(self, key, json=False)
 
 	def create_doc(self, key, value):
-		fs = self.conn()
 		valid_key = self._valid_key(key, value.type)
 		fs.save(self.name, valid_key, value.file.read())
 		return valid_key

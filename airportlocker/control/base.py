@@ -31,7 +31,6 @@ class Resource(fab.FabPage):
 		if redirect_url:
 			del kw['_redirect']
 
-		self.fs = LockerFileStore().get(env.filesystem)
 		self.db = LockerStore().get(env.docset)
 
 		# get the actual result
