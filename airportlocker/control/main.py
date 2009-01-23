@@ -59,7 +59,7 @@ class CreateResource(Resource, ResourceMixin):
 				fn = fields['name'].value
 			else:
 				fn = fields['_lockerfile'].filename
-			meta['_filename'] = self.fs.create_doc(fn, fields['_lockerfile'])
+			meta['_filename'] = self.save_file(fn, fields['_lockerfile'])
 			meta['name'] = meta['_filename']
 			meta['_mime'] = fields['_lockerfile'].type
 			result = self.db.create_doc(meta['_id'], simplejson.dumps(meta))

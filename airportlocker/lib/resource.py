@@ -2,7 +2,12 @@ import re
 import os
 from mimetypes import guess_type, guess_all_extensions
 
+from eggmonster import env
+
 class ResourceMixin(object):
+	'''This mixin provides the filesystem interface for working with
+	resource files.'''
+
 	clean_fn_regex = re.compile(r'[@\!\? \+\*\#]')
 	index_re = re.compile(r'(.*)_(\d+).(.*)')
 
@@ -56,7 +61,8 @@ class ResourceMixin(object):
 			fn = '%s_%s' % (fn, index)
 		return self.add_extension(fn, type)
 		
-	def save_file(self, folder, fs, name=None):
+	def save_file(self, fs, name=None):
+		folder = env.filestore
 		fn = self.verified_filename(folder, name or fs.filename, fs.type)
 		path = os.path.join(folder, fn)
 		self._write_file(path, fs.file)
