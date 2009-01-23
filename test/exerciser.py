@@ -104,7 +104,7 @@ def test_update(exc, id):
 def test_read(exc, id):
 	print 'Read'
 	doc = exc.read(id)
-	pprint(doc)
+	print doc
 	print 'Done'
 	print
 

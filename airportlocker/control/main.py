@@ -59,14 +59,14 @@ class CreateResource(Resource, ResourceMixin):
 				fn = fields['name'].value
 			else:
 				fn = fields['_lockerfile'].filename
-			meta['_filename'] = self.save_file(fn, fields['_lockerfile'])
+			meta['_filename'] = self.save_file(fields['_lockerfile'], fn)
 			meta['name'] = meta['_filename']
 			meta['_mime'] = fields['_lockerfile'].type
 			result = self.db.create_doc(meta['_id'], simplejson.dumps(meta))
 			return success(result)
 		return failure('A "_new" and "_lockerfile" are required to create a new document.')
 
-class UpdateResource(Resource):
+class UpdateResource(Resource, ResourceMixin):
 
 	def get_doc(self, key):
 		try:
@@ -95,7 +95,7 @@ class UpdateResource(Resource):
 			self.update_file(new_doc['name'], fields['_lockerfile'].file)
 		return success({'updated': simplejson.dumps(new_doc)})
 
-class DeleteResource(Resource):
+class DeleteResource(Resource, ResourceMixin):
 	def DELETE(self, page, id):
 		meta = {}
 		try:

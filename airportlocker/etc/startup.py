@@ -9,6 +9,9 @@ eggmonster.load_default_yaml(file=os.path.join(BASE, 'etc', 'baseconf.yaml'))
 if not eggmonster.managed_env():
 	eggmonster.load_local_yaml(file=os.path.normpath(os.path.join(BASE, 'devel.yaml')))
 
+if not os.path.exists(env.filestore) or not os.path.isdir(env.filestore):
+	os.makedirs(env.filestore)
+
 from faststore.client import FastStoreClient
 fab.register_pool('storage', FastStoreClient, (env.fs_host, env.fs_port),
 				  close=lambda c: c.close())

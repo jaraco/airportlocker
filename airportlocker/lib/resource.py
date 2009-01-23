@@ -1,7 +1,8 @@
 import re
 import os
-from mimetypes import guess_type, guess_all_extensions
+import cherrypy
 
+from mimetypes import guess_type, guess_all_extensions
 from eggmonster import env
 
 class ResourceMixin(object):
