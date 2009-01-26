@@ -20,10 +20,12 @@ class AirportLockerClient(object):
 			'delete': '/edit',
 		}
 
-	def api(self, action, tail=None):
+	def api(self, action, tail=None, use_host=True):
 		tail = tail or ''
-		result = urlparse.urljoin(self.base, pjoin(self._api[action], tail))
-		print result
+		base = self.base
+		if not use_host:
+			base = ''
+		result = urlparse.urljoin(base, pjoin(self._api[action], tail))
 		return result
 
 	def create(self, fn, fields=None):
