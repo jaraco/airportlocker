@@ -1,6 +1,10 @@
 from __future__ import with_statement
 import cherrypy
 import mimetypes
+import tempfile
+
+from cStringIO import StringIO
+
 
 def get_fields():
 	if 'Content-Length' in cherrypy.request.headers:
@@ -13,7 +17,25 @@ def get_fields():
 	return None
 	
 
-# this is primarily used in testing but might be helpful generally
+class MultiPartBody(object):
+	def __init__(self, gen):
+		self.tempfile = tempfile.TemporaryFile()
+		for l in gen():
+			self.tempfile.write(l)
+			
+
+	def write(self, txt):
+		self.tempfile.write(txt)
+
+	def get(self):
+		self.tempfile.seek(0)
+		return self.tempfile.read()
+
+	def size(self):
+		self.tempfile.seek(0)
+		return sum([len(l) for l in self.tempfile])
+
+
 
 class MultiPart(object):
 	boundary = '----------12308129817491874--'
@@ -27,8 +49,13 @@ class MultiPart(object):
 		self.fn = fn
 		self.fields = fields or {}
 		self.filename_key = '_lockerfile'
-		self.body = self._get_body()
+		self._body = MultiPartBody(self._get_body)
+		self.content_length = self._body.size()
 		self.headers = self._get_headers()
+
+	@property
+	def body(self):
+		return self._body.get()
 
 	def _start(self):
 		return '--%s' % self.boundary
@@ -43,22 +70,23 @@ class MultiPart(object):
 	def _get_headers(self):
 		return {
 			'Content-Type': 'multipart/form-data; boundary=%s' % self.boundary,
-			'Content-Length': str(len(self.body)),
+			'Content-Length': str(self.content_length),
 		}
 
+	def _line(self, line):
+		return line + self.le
+
 	def _get_body(self):
-		body = []
 		for k, v in self.fields.items():
-			body.append(self._start())
-			body.append(self.field_header % k)
-			body.append(self.lbreak)
-			body.append(v)
+			yield self._line(self._start())
+			yield self._line(self.field_header % k)
+			yield self._line(self.lbreak)
+			yield self._line(v)
 		with open(self.fn, 'r') as fh:
-			body.append(self._start())
-			body.append(self.file_header % (self.filename_key, self.fn))
-			body.append(self._content_type())
-			body.append(self.lbreak)
-			body.append(fh.read())
-		body.append(self._end())
-		body.append(self.lbreak)
-		return self.le.join(body)
+			yield self._line(self._start())
+			yield self._line(self.file_header % (self.filename_key, self.fn))
+			yield self._line(self._content_type())
+			yield self._line(self.lbreak)
+			yield self._line(fh.read())
+		yield self._line(self._end())
+		yield self._line(self.lbreak)

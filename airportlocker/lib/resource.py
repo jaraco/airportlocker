@@ -1,8 +1,8 @@
 import re
 import os
+import mimetypes
 import cherrypy
 
-from mimetypes import guess_type, guess_all_extensions
 from eggmonster import env
 
 class ResourceMixin(object):
@@ -13,7 +13,7 @@ class ResourceMixin(object):
 	index_re = re.compile(r'(.*)_(\d+).(.*)')
 
 	def get_extension(self, type, fn=None):
-		exts = guess_all_extensions(type)
+		exts = mimetypes.guess_all_extensions(type)
 		if exts:
 			if fn:
 				cur_ext = os.path.splitext(fn)[1]

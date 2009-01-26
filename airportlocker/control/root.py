@@ -22,9 +22,6 @@ app_conf = {
 }
 
 def setupapp():
-	if not os.path.exists(env.storedir) or not os.path.isdir(env.storedir):
-		os.mkdir(env.storedir)
-
 	cherrypy.config.update({
 		'server.socket_port': env.airportlocker_port,
 		'server.thread_pool' : env.threads,

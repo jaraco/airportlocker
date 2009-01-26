@@ -1,12 +1,10 @@
 airportlocker_port : 8090
-airportlocker_db_url : 'http://ottoman.polimetrix.com/airport'
 docset : 'luggage'
-filesystem : 'thefiles'
-storedir : 'airportfiles'
+filestore : 'file_storage'
 
 # faststore
 fs_host : faststore
 fs_port : 10110
 
 # performance tweaks (necessary for static file serving)
-threads : 60
+threads : 30

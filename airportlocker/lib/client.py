@@ -2,7 +2,9 @@ import os
 import posixpath
 import httplib2
 import urlparse
+import simplejson
 
+from airportlocker.lib.utils import MultiPart
 pjoin = posixpath.join
 
 class AirportLockerClient(object):
@@ -19,7 +21,9 @@ class AirportLockerClient(object):
 		}
 
 	def api(self, action, tail=None):
+		tail = tail or ''
 		result = urlparse.urljoin(self.base, pjoin(self._api[action], tail))
+		print result
 		return result
 
 	def create(self, fn, fields=None):
