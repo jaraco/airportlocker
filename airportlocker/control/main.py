@@ -39,10 +39,15 @@ class ViewResource(Resource):
 
 class ReadResource(Resource, ResourceMixin):
 	def GET(self, page, *args, **kw):
+		print fab.request.headers
 		if not args:
 			raise cherrypy.HTTPError(404)
 		path = '/'.join(args)
 		return self.return_file(path)
+
+	def HEAD(self, page, *args, **kw):
+		path = '/'.join(args)
+		return self.head_file(path)
 
 class CreateResource(Resource, ResourceMixin):
 	'''This saves the file and makes sure the filename is as close as

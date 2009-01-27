@@ -117,3 +117,15 @@ class ResourceMixin(object):
 			'Content-Type': ct or 'text/plain',
 		})
 		return resource
+
+	def head_file(self, path):
+		resource, ct = self.get_resource(path)
+		if not resource:
+			raise cherrypy.HTTPError(404)
+		size = sum([len(l) for l in resource])
+		cherrypy.response.headers.update({
+			'Content-Type': ct or 'text/plain',
+			'Content-Length': size,
+		})
+		return 
+		
