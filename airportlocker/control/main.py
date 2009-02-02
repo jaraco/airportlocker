@@ -13,6 +13,7 @@ from ottoman.lib.envelopes import success, failure
 
 from eggmonster import env
 
+from pprint import pprint
 
 class BasicUpload(HtmlResource):
 	template = fab.template('base.tmpl')
@@ -39,14 +40,16 @@ class ViewResource(Resource):
 
 class ReadResource(Resource, ResourceMixin):
 	def GET(self, page, *args, **kw):
-		print fab.request.headers
+		pprint(cherrypy.request.headers)
 		if not args:
 			raise cherrypy.HTTPError(404)
 		path = '/'.join(args)
+		cherrypy.response.headers['Connection'] = 'close'
 		return self.return_file(path)
 
 	def HEAD(self, page, *args, **kw):
 		path = '/'.join(args)
+		cherrypy.response.headers['Connection'] = 'close'		
 		return self.head_file(path)
 
 class CreateResource(Resource, ResourceMixin):

@@ -3,10 +3,12 @@ import airportlocker.etc.startup
 import os
 import cherrypy
 
+
 from airportlocker.control.urls import api, dev
 
 from eggmonster import env
 
+base = os.getcwd()
 
 app_conf = {
 	'global': {
@@ -15,6 +17,11 @@ app_conf = {
 	'/' : {
         'request.dispatch': api,
         'request.process_request_body': False,
+	},
+	'/_test' : {
+		'tools.staticdir.on': True,
+		'tools.staticdir.root': base,
+		'tools.staticdir.dir': 'test/static',
 	},
 	'/_dev' : {
 		'request.dispatch': dev,
