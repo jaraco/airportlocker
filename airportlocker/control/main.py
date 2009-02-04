@@ -7,6 +7,8 @@ import simplejson
 import fab
 import cherrypy
 
+from string import Template
+
 from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.resource import ResourceMixin
 from ottoman.lib.envelopes import success, failure
@@ -22,7 +24,20 @@ class BasicUpload(HtmlResource):
 		page.args = kw
 
 class ListResources(Resource):
-	def GET(self, page):
+	code_template = Template('''
+def filter(i, val):
+	if '$key' in i and i['$key'] == val:
+		return i
+''')
+	
+	def GET(self, page, q=None):
+		if q:
+			res = self._query(q)
+		else:
+			res = self.list()
+		return simplejson.dumps(res, indent=2)	
+
+	def _list(self):
 		all = []
 		for id in list(self.db):
 			row = self.db.get_by_id(id, json=False)
@@ -30,6 +45,26 @@ class ListResources(Resource):
 			row['url'] = '/static/%s' % row['_id']
 			all.append(row)
 		return simplejson.dumps(all, indent=2)
+
+	def _query(self, qs):
+		def fetcher(invalid):
+			keys = set(self.db) if invalid is None else invalid.copy()
+			for k in keys:
+				try:
+					yield k, self.db.get_by_id(k)
+				except KeyError:
+					yield k, None # skip missing keys
+
+		results = {}
+		for val in qs.split(','):
+			view, args = val.split(':', 1)
+			try:
+				self.db.get_view(view)
+			except KeyError:
+				self.db.save_view(view, self.code_template.substitute({'key': view}))
+			results.update(self.db.apply_view(view, tuple(args.split(':')), fetcher))
+		return results
+		
 
 class ViewResource(Resource):
 	def GET(self, page, id):
@@ -115,4 +150,3 @@ class DeleteResource(Resource, ResourceMixin):
 			pass
 		return success({'deleted': meta})
 		
-
