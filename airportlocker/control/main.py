@@ -34,8 +34,8 @@ def filter(i, val):
 		if q:
 			res = self._query(q)
 		else:
-			res = self.list()
-		return simplejson.dumps(res, indent=2)	
+			res = self._list()
+		return simplejson.dumps(res)
 
 	def _list(self):
 		all = []
@@ -44,7 +44,7 @@ def filter(i, val):
 			row = simplejson.loads(row)
 			row['url'] = '/static/%s' % row['_id']
 			all.append(row)
-		return simplejson.dumps(all, indent=2)
+		return all
 
 	def _query(self, qs):
 		def fetcher(invalid):
