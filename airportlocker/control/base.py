@@ -4,7 +4,7 @@ import cherrypy
 
 from eggmonster import env
 
-from airportlocker.model import LockerStore, LockerFileStore
+from airportlocker.model.store import LockerStore
 
 class Resource(fab.FabPage):
 
