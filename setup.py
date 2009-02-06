@@ -33,6 +33,6 @@ setup(
 		"fab >= 2.3.3",
 		"simplejson",
 		"pmxtools >= 0.14",
-		"ottoman",
+		"ottoman >= 0.3",
 	]
 )
