@@ -75,7 +75,6 @@ class ViewResource(Resource):
 
 class ReadResource(Resource, ResourceMixin):
 	def GET(self, page, *args, **kw):
-		pprint(cherrypy.request.headers)
 		if not args:
 			raise cherrypy.HTTPError(404)
 		path = '/'.join(args)
