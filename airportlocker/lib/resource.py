@@ -1,9 +1,13 @@
 import re
 import os
+
 import mimetypes
+mimetypes.add_type('audio/m4a', '.m4a')
+
 import cherrypy
 
 from eggmonster import env
+
 
 class ResourceMixin(object):
 	'''This mixin provides the filesystem interface for working with
@@ -13,7 +17,9 @@ class ResourceMixin(object):
 	index_re = re.compile(r'(.*)_(\d+).(.*)')
 
 	def get_extension(self, type, fn=None):
+		print type
 		exts = mimetypes.guess_all_extensions(type)
+		print exts
 		if exts:
 			if fn:
 				cur_ext = os.path.splitext(fn)[1]

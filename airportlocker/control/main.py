@@ -1,7 +1,6 @@
 from __future__ import with_statement
 import os
 import glob
-import mimetypes
 import uuid
 import simplejson
 import fab
@@ -16,6 +15,7 @@ from ottoman.lib.envelopes import success, failure
 from eggmonster import env
 
 from pprint import pprint
+
 
 class BasicUpload(HtmlResource):
 	template = fab.template('base.tmpl')
