@@ -11,7 +11,7 @@ def strip_first_dir(pths):
 
 setup(
 	name='airportlocker',
-	version='0.6',
+	version='0.6.1',
 	author="Eric Larson",
 	packages=find_packages('.'),	  
 	package_dir={'airportlocker': 'airportlocker'},
@@ -33,6 +33,6 @@ setup(
 		"fab >= 2.3.3",
 		"simplejson",
 		"pmxtools >= 0.14",
-		"ottoman >= 0.3",
+		"ottoman >= 0.3.1",
 	]
 )
