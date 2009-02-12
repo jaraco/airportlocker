@@ -17,9 +17,7 @@ class ResourceMixin(object):
 	index_re = re.compile(r'(.*)_(\d+).(.*)')
 
 	def get_extension(self, type, fn=None):
-		print type
 		exts = mimetypes.guess_all_extensions(type)
-		print exts
 		if exts:
 			if fn:
 				cur_ext = os.path.splitext(fn)[1]
