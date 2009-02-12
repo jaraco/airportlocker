@@ -3,6 +3,7 @@ import os
 
 import mimetypes
 mimetypes.add_type('audio/m4a', '.m4a')
+mimetypes.add_type('video/m4v', '.m4v')
 
 import cherrypy
 

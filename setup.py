@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from pmxtools import hgtools
 
-version = hgtools.get_tag_version() or 'devel'
+# version = hgtools.get_tag_version() or 'devel'
 
 def strip_first_dir(pths):
 	def gen():
@@ -11,7 +11,7 @@ def strip_first_dir(pths):
 
 setup(
 	name='airportlocker',
-	version=version,
+	version='0.6.1',
 	author="Eric Larson",
 	packages=find_packages('.'),	  
 	package_dir={'airportlocker': 'airportlocker'},
@@ -33,6 +33,6 @@ setup(
 		"fab >= 2.3.3",
 		"simplejson",
 		"pmxtools >= 0.14",
-		"ottoman >= 0.3",
+		"ottoman >= 0.3.1",
 	]
 )
