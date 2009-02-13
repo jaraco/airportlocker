@@ -23,9 +23,6 @@ app_conf = {
 		'tools.staticdir.root': base,
 		'tools.staticdir.dir': 'test/static',
 	},
-	'/_dev' : {
-		'request.dispatch': dev,
-	}
 }
 
 def setupapp():
@@ -35,6 +32,13 @@ def setupapp():
 		'log.screen' : True,
 		'autoreload_on': True,
 	})
+	if env.production:
+		cherrypy.config.update({'environment' : 'production'})
+	else:
+		app_conf['/_dev'] = {
+			'request.dispatch': dev,
+		}
+
 	cherrypy.tree.mount(None, config=app_conf)
 
 def run_airportlocker():
