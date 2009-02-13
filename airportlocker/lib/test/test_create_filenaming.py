@@ -1,6 +1,5 @@
 import os
 import shutil
-import mimetypes
 
 from StringIO import StringIO
 
@@ -34,6 +33,7 @@ JPEG = 'image/jpeg'
 DOC = 'application/msword'
 TXT = 'text/plain'
 ZIP = 'application/zip'
+M4V = 'video/m4v'
 
 class TestFileNaming(object):
 
@@ -44,11 +44,12 @@ class TestFileNaming(object):
 		if not os.path.exists(self.mfs) or not os.path.isdir(self.mfs):
 			os.mkdir(self.mfs)
 		self.sample_filenames = [
-			'foo.jpeg',
-			'foo_bar.jpeg',
-			'foo_bar_1.jpeg',
-			'foo_bar__1.jpeg',
-			'a/b/bar.jpeg',
+			'foo.jpg',
+			'foo_bar.jpg',
+			'foo_bar_1.jpg',
+			'foo_bar__1.jpg',
+			'a/b/bar.jpg',
+			'x/y/z.m4v',
 		]
 		for fn in self.sample_filenames:
 			if os.path.dirname(fn):
@@ -62,11 +63,12 @@ class TestFileNaming(object):
 		filenames = [
 			('hello.world', ZIP, 'hello.world.zip'),
 			('foo.bar.zip', ZIP, 'foo.bar.zip'),
-			('hello world.doc', 'application/msword', 'hello world.doc'),
+			('hello world.doc', DOC, 'hello world.doc'),
 			('picture.jpg', JPEG, 'picture.jpg'),
-			('yeah', JPEG, 'yeah.jpeg'),
-			('YEAH.JPG', JPEG, 'YEAH.JPG'),
+			('yeah', JPEG, 'yeah.jpg'),
+			('YEAH.JPG', JPEG, 'YEAH.jpg'),
 			('mytext.txt', TXT, 'mytext.txt'),
+			('my video', M4V, 'my video.m4v'),			
 		]
 		for fn, type, expected in filenames:
 			assert self.obj.add_extension(fn, type) == expected
@@ -78,7 +80,7 @@ class TestFileNaming(object):
 		
 		# the initial file was removed so we can fill it in here
 		assert self.obj.get_next_index(self.mfs, 'foo_bar_', JPEG) == None
-		new_file = os.path.join(self.mfs, 'foo_bar_.jpeg')
+		new_file = os.path.join(self.mfs, 'foo_bar_.jpg')
 		open(new_file, 'a').close()
 
 		# now it should hit two
@@ -89,15 +91,15 @@ class TestFileNaming(object):
 		# no files are written so the checks always return with the
 		# original file comparisons
 		new_names = [
-			('foo', JPEG, 'foo_1.jpeg'),
-			('foo bar ', JPEG, 'foo_bar_.jpeg'),
-			('foo bar', JPEG, 'foo_bar_2.jpeg'),
-			('foo@bar', JPEG, 'foo_bar_2.jpeg'),
-			('foo!bar', JPEG, 'foo_bar_2.jpeg'),
-			('foo?bar', JPEG, 'foo_bar_2.jpeg'),
-			('foo+bar', JPEG, 'foo_bar_2.jpeg'),
-			('foo*bar', JPEG, 'foo_bar_2.jpeg'),
-			('foo#bar', JPEG, 'foo_bar_2.jpeg'),			
+			('foo', JPEG, 'foo_1.jpg'),
+			('foo bar ', JPEG, 'foo_bar_.jpg'),
+			('foo bar', JPEG, 'foo_bar_2.jpg'),
+			('foo@bar', JPEG, 'foo_bar_2.jpg'),
+			('foo!bar', JPEG, 'foo_bar_2.jpg'),
+			('foo?bar', JPEG, 'foo_bar_2.jpg'),
+			('foo+bar', JPEG, 'foo_bar_2.jpg'),
+			('foo*bar', JPEG, 'foo_bar_2.jpg'),
+			('foo#bar', JPEG, 'foo_bar_2.jpg'),			
 		]
 
 		for fn, ext, expected in new_names:

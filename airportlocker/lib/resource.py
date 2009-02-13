@@ -1,10 +1,10 @@
+import mimetypes
+mimetypes.init()
+mimetypes.add_type('video/m4v', '.m4v')
+mimetypes.add_type('audio/m4a', '.m4a')
+
 import re
 import os
-
-import mimetypes
-mimetypes.add_type('audio/m4a', '.m4a')
-mimetypes.add_type('video/m4v', '.m4v')
-
 import cherrypy
 
 from eggmonster import env
@@ -17,8 +17,10 @@ class ResourceMixin(object):
 	clean_fn_regex = re.compile(r'[@\!\? \+\*\#]')
 	index_re = re.compile(r'(.*)_(\d+).(.*)')
 
-	def get_extension(self, type, fn=None):
-		exts = mimetypes.guess_all_extensions(type)
+	def get_extension(self, mtype, fn=None):
+ 		if mtype == 'none' and fn:
+ 			mtype, e = mimetypes.guess_type(fn)
+		exts = mimetypes.guess_all_extensions(mtype)
 		if exts:
 			if fn:
 				cur_ext = os.path.splitext(fn)[1]
@@ -31,22 +33,43 @@ class ResourceMixin(object):
 	def has_extension(self, fn, ext):
 		return os.path.splitext(fn)[1].lower() == ext
 
-	def add_extension(self, fn, type):
+	def rm_ext(self, fn, ext):
+		'''Removes the extension for use in other algorithms'''
+		if not ext.startswith('.'):
+			ext = '.' + ext
+		m = re.match(r'(.*)(\%s|\%s)' % (ext, ext.upper()), fn)
+		if m:
+			return m.groups()[0]
+		return fn
+
+	def add_extension(self, fn, type, index=None):
+		'''Unwraps the file name so we can append the next number in
+		the sequence.'''
 		ext = self.get_extension(type, fn)
-		if not self.has_extension(fn, ext):
-			parts = [fn]
-			if not ext.startswith('.'):
-				parts.append('.')
-			parts.append(ext)
-			fn = ''.join(parts)
+		if self.has_extension(fn, ext):
+			fn = self.rm_ext(fn, ext)
+		parts = [fn]
+		if index:
+			parts.append('_%s' % index)
+		if not ext.startswith('.'):
+			parts.append('.')
+		parts.append(ext)
+		fn = ''.join(parts)
 		return fn
 
 	def get_next_index(self, folder, fn, type):
+		'''Gets the next number to uniquify a filename:
+		1. Check if the file exists if not return
+		2. Loop through files looking for matches on the filename pattern
+		3. Any matches, add the integer to a list
+		4. If there are any listed numbers, get the max and add 1
+		5. Return 1 since it is the first duplicate'''
+		
 		fullpath = self.add_extension(os.path.join(folder, fn), type)
 		if not os.path.exists(fullpath) or not os.path.isfile(fullpath):
 			return None
 		ext = self.get_extension(type, fn) # this includes the '.'
-		regex = '(.*)%s_(\d+)%s$' % (fn, ext)
+		regex = '(.*)%s_(\d+)%s$' % (self.rm_ext(fn, ext), ext)
 		fexp = re.compile(regex)
 		indexes = []
 		for root, dirs, fnames in os.walk(folder):
@@ -63,13 +86,12 @@ class ResourceMixin(object):
 		'''Returns a unique human readable filename (ie not a uuid)'''
 		fn = self.clean_fn_regex.sub('_', fn)
 		index = self.get_next_index(folder, fn, type)
-		if index:
-			fn = '%s_%s' % (fn, index)
-		return self.add_extension(fn, type)
+		return self.add_extension(fn, type, index)
 		
 	def save_file(self, fs, name=None):
 		folder = env.filestore
-		fn = self.verified_filename(folder, name or fs.filename, fs.type)
+		mtype, e = mimetypes.guess_type(fs.filename)
+		fn = self.verified_filename(folder, name or fs.filename, mtype)
 		path = os.path.join(folder, fn)
 		self._write_file(path, fs.file)
 		return fn

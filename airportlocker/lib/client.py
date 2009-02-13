@@ -16,7 +16,7 @@ class AirportLockerClient(object):
 			'create': '',
 			'update': '/edit',
 			'read': '/static',
-			'view': '/edit',
+			'view': '/view',
 			'delete': '/edit',
 		}
 
@@ -62,5 +62,8 @@ class AirportLockerClient(object):
 		res, c = self.h.request(self.api('delete', id), method='DELETE')
 		response = simplejson.loads(c)
 		return response
-			
+
+	def exists(self, id):
+		res, c = self.h.request(self.api('view', id), method='HEAD')
+		return res['status'].startswith('20')
 	
