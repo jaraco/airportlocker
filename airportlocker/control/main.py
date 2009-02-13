@@ -32,10 +32,13 @@ def filter(i, val):
 	
 	def GET(self, page, q=None):
 		if q:
-			res = self._query(q)
-		else:
-			res = self._list()
-		return simplejson.dumps(res)
+			if q == '__all':
+				res = self._list()
+			else:
+				res = self._query(q)
+			return simplejson.dumps(res)
+		# need a query
+		raise cherrypy.HTTPError(404)
 
 	def _list(self):
 		all = []
