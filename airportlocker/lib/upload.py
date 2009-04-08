@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
 	(options, args) = parser.parse_args()
 	if len(args) < 2:
-		paser.error('''You must provide the path of a file to upload 
+		parser.error('''You must provide the path of a file to upload 
 		               and the URL of the airportlocker service.''')
 	fields = {}
 	if options.name:
@@ -38,7 +38,7 @@ if __name__ == '__main__':
 				parser.error('Failure loading the JSON string.')
 				raise
 	fn, url = args[0], args[1]
-	print fn, url
 	client = AirportLockerClient(url)
 	result = client.create(fn, fields)
 	pprint(result)
+	pprint(client.view(result['value']))

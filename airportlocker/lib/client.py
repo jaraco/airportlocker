@@ -13,10 +13,11 @@ class AirportLockerClient(object):
 		self.base = url
 		self.h = h or httplib2.Http('.ap_cache')
 		self._api = {
+			'query': '',
 			'create': '',
 			'update': '/edit',
 			'read': '/static',
-			'view': '/edit',
+			'view': '/view',
 			'delete': '/edit',
 		}
 
@@ -62,5 +63,13 @@ class AirportLockerClient(object):
 		res, c = self.h.request(self.api('delete', id), method='DELETE')
 		response = simplejson.loads(c)
 		return response
-			
+
+	def exists(self, id):
+		res, c = self.h.request(self.api('read', id), method='HEAD')
+		return res['status'].startswith('20')
+
+	def query(self, qs):
+		qs = '?q=%s' % qs
+		res, c = self.h.request(self.api('query', qs))
+		return simplejson.loads(c)
 	
