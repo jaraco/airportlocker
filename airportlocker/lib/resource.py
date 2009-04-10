@@ -57,19 +57,19 @@ class ResourceMixin(object):
 		fn = ''.join(parts)
 		return fn
 
-	def get_next_index(self, folder, fn, type):
+	def get_next_index(self, folder, fn, type, prefix):
 		'''Gets the next number to uniquify a filename:
 		1. Check if the file exists if not return
 		2. Loop through files looking for matches on the filename pattern
 		3. Any matches, add the integer to a list
 		4. If there are any listed numbers, get the max and add 1
 		5. Return 1 since it is the first duplicate'''
-		
-		fullpath = self.add_extension(os.path.join(folder, fn), type)
+
+		fullpath = self.add_extension(os.path.join(folder, prefix, fn), type)
 		if not os.path.exists(fullpath) or not os.path.isfile(fullpath):
 			return None
 		ext = self.get_extension(type, fn) # this includes the '.'
-		regex = '(.*)%s_(\d+)%s$' % (self.rm_ext(fn, ext), ext)
+		regex = '(.*)%s/%s_(\d+)%s$' % (prefix, self.rm_ext(fn, ext), ext)
 		fexp = re.compile(regex)
 		indexes = []
 		for root, dirs, fnames in os.walk(folder):
@@ -82,17 +82,21 @@ class ResourceMixin(object):
 			return max(indexes) + 1
 		return 1
 
-	def verified_filename(self, folder, fn, type):
+	def verified_filename(self, folder, fn, type, prefix):
 		'''Returns a unique human readable filename (ie not a uuid)'''
 		fn = self.clean_fn_regex.sub('_', fn)
-		index = self.get_next_index(folder, fn, type)
+		prefix = self.clean_fn_regex.sub('_', prefix)
+		index = self.get_next_index(folder, fn, type, prefix)
 		return self.add_extension(fn, type, index)
 		
-	def save_file(self, fs, name=None):
+	def save_file(self, fs, name=None, prefix=None):
 		folder = env.filestore
 		mtype, e = mimetypes.guess_type(fs.filename)
-		fn = self.verified_filename(folder, name or fs.filename, mtype)
-		path = os.path.join(folder, fn)
+		prefix = prefix or ''
+		if prefix.endswith('/'):
+			prefix = prefix[:-1]
+		fn = self.verified_filename(folder, name or fs.filename, mtype, prefix)
+		path = os.path.join(folder, prefix, fn)
 		self._write_file(path, fs.file)
 		return fn
 
@@ -121,7 +125,7 @@ class ResourceMixin(object):
 				doc = self.db.get_by_id(key)
 			except KeyError:
 				raise cherrypy.HTTPError(404)
-			fullpath = os.path.join(env.filestore, doc['name'])
+			fullpath = os.path.join(env.filestore, doc.get('_prefix', ''), doc['name'])
 			if os.path.exists(fullpath) and os.path.isfile(fullpath):
 				resource = open(fullpath)
 				ct = doc['_mime']

@@ -38,7 +38,6 @@ if __name__ == '__main__':
 				parser.error('Failure loading the JSON string.')
 				raise
 	fn, url = args[0], args[1]
-	print fn, url
 	client = AirportLockerClient(url)
 	result = client.create(fn, fields)
 	pprint(result)
