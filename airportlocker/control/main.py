@@ -23,6 +23,7 @@ class BasicUpload(HtmlResource):
 	def GET(self, page, *args, **kw):
 		page.args = kw
 
+
 class ListResources(Resource):
 	code_template = Template('''
 def filter(i, val):
@@ -30,12 +31,16 @@ def filter(i, val):
 		return i
 ''')
 	
-	def GET(self, page, q=None):
-		if q:
-			res = self._query(q)
-		else:
-			res = self._list()
-		return simplejson.dumps(res)
+	def GET(self, page, q=None, **kw):
+		if q or kw:
+			cherrypy.response.headers['Cache-Control'] = 'no-cache'
+			if q == '__all':
+				res = self._list()
+			else:
+				res = self._query(**kw)
+			return simplejson.dumps(res)
+		# need a query
+		raise cherrypy.HTTPError(404)
 
 	def _list(self):
 		all = []
@@ -46,7 +51,7 @@ def filter(i, val):
 			all.append(row)
 		return all
 
-	def _query(self, qs):
+	def _query(self, **kw):
 		def fetcher(invalid):
 			keys = set(self.db) if invalid is None else invalid.copy()
 			for k in keys:
@@ -56,13 +61,12 @@ def filter(i, val):
 					yield k, None # skip missing keys
 
 		results = {}
-		for val in qs.split(','):
-			view, args = val.split(':', 1)
+		for view, arg in kw.iteritems():
 			try:
 				self.db.get_view(view)
 			except KeyError:
 				self.db.save_view(view, self.code_template.substitute({'key': view}))
-			results.update(self.db.apply_view(view, tuple(args.split(':')), fetcher))
+			results.update(self.db.apply_view(view, (arg,), fetcher))
 		return results
 		
 
@@ -89,19 +93,24 @@ class ReadResource(Resource, ResourceMixin):
 class CreateResource(Resource, ResourceMixin):
 	'''This saves the file and makes sure the filename is as close as
 	possible to the original while stilling being unique.'''
+	cases = [
+		'_prefix',
+	]
+
 	@post
 	def POST(self, page, fields):
+		'''Uses the ResourceMixin to save the file'''
 		if '_new' in fields and '_lockerfile' in fields:
 			meta = dict([
 				(k, fields.getvalue(k)) for k in fields.keys()
-				if not k.startswith('_')
+				if not k.startswith('_') or k in self.cases
 			])
 			meta['_id'] = str(uuid.uuid4())
 			if 'name' in fields:
 				fn = fields['name'].value
 			else:
 				fn = fields['_lockerfile'].filename
-			meta['_filename'] = self.save_file(fields['_lockerfile'], fn)
+			meta['_filename'] = self.save_file(fields['_lockerfile'], fn, prefix=meta.get('_prefix'))
 			meta['name'] = meta['_filename']
 			meta['_mime'] = fields['_lockerfile'].type
 			result = self.db.create_doc(meta['_id'], simplejson.dumps(meta))
