@@ -29,10 +29,10 @@ setup(
 		],
 	},
 	install_requires=[
-		"eggmonster",
-		"fab >= 2.3.3",
+		"eggmonster>=4.1,<4.2",
+		"fab>=2.3.3,<2.4",
+		"pmxtools>=0.15,<0.16",
+		"ottoman>=0.3.3,<0.4",
 		"simplejson",
-		"pmxtools >= 0.14",
-		"ottoman >= 0.3.1",
 	]
 )
