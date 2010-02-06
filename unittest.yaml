@@ -1,0 +1,9 @@
+airportlocker:
+    Environment:
+        production : False
+        fs_host : localhost
+        fs_port : 10110
+        filestore : 'filestore'
+
+    Applications:
+        - Name: main

@@ -101,15 +101,21 @@ class CreateResource(Resource, ResourceMixin):
 	def POST(self, page, fields):
 		'''Uses the ResourceMixin to save the file'''
 		if '_new' in fields and '_lockerfile' in fields:
+			# clean up the meta data
 			meta = dict([
 				(k, fields.getvalue(k)) for k in fields.keys()
 				if not k.startswith('_') or k in self.cases
 			])
+			# gen an id
 			meta['_id'] = str(uuid.uuid4())
+
+			# give it a name
 			if 'name' in fields:
 				fn = fields['name'].value
 			else:
 				fn = fields['_lockerfile'].filename
+
+			# save the file and grab its name
 			meta['_filename'] = self.save_file(fields['_lockerfile'], fn, prefix=meta.get('_prefix'))
 			meta['name'] = meta['_filename']
 			meta['_mime'] = fields['_lockerfile'].type

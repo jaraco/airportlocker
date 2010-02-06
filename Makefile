@@ -7,6 +7,9 @@ docs:
 	epydoc --html -o doc/api/model model
 	epydoc --html -o doc/api/control control
 
+start-backend:
+	faststored 10110 file_metadata &
+
 tt:
 	ttserver -port 10120 -ext 'storage/tt_lua/faststore.lua' filestore_metadata.tch#bcnum=500000
 
