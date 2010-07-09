@@ -19,7 +19,7 @@ api.add_route('view', 'view/:id', ViewResource(), method='GET')
 # overloaded POST for browsers
 # TODO: make _method tool
 api.add_route('post_delete', 'edit/:id', DeleteResource(), method='POST')
-api.add_route('post_udpate', 'edit/:id', UpdateResource(), method='PUT')
+api.add_route('post_update', 'edit/:id', UpdateResource(), method='PUT')
 api.add_route('delete', 'edit/:id', DeleteResource(), method='DELETE')
 api.add_route('index', '', ListResources(), method='GET')
 api.add_route('create', '', CreateResource(), method='POST')
