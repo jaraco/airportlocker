@@ -23,6 +23,9 @@ setup(
 			['etc/baseconf.yaml']
 		),
 	},
+	data_files=[
+		('', ['unittest.yaml']),
+	],
 	entry_points={
 		'eggmonster.applications' : [
 			'main = airportlocker.control.root:run_airportlocker',
