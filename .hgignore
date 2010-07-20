@@ -1,2 +1,7 @@
+syntax:glob
 devel.yaml
+*.egg-info
+*.pyc
+build
+dist
 
