@@ -2,6 +2,7 @@ import mimetypes
 mimetypes.init()
 mimetypes.add_type('video/m4v', '.m4v')
 mimetypes.add_type('audio/m4a', '.m4a')
+mimetypes.add_type('text/csv', '.csv')
 
 import re
 import os
