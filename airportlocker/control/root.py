@@ -1,12 +1,15 @@
 import airportlocker.etc.startup
 
 import os
+
 import cherrypy
 
+from pmxtools.erroremail import email_error, email_pdl_errors
+from eggmonster import env
 
 from airportlocker.control.urls import api, dev
+from airportlocker.lib.errors import handle_500
 
-from eggmonster import env
 
 base = os.getcwd()
 
@@ -16,6 +19,7 @@ app_conf = {
 	},
 	'/' : {
         'request.dispatch': api,
+        'request.error_response': handle_500,
         'request.process_request_body': False,
 	},
 	'/_test' : {

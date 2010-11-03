@@ -8,3 +8,6 @@ fs_port : 10110
 
 # performance tweaks (necessary for static file serving)
 threads : 30
+
+# error emails
+email_server: 'vemail1'

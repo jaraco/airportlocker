@@ -32,6 +32,7 @@ def filter(i, val):
 ''')
 	
 	def GET(self, page, q=None, **kw):
+		raise Exception('Crap!')
 		if q or kw:
 			cherrypy.response.headers['Cache-Control'] = 'no-cache'
 			if q == '__all':
