@@ -4,4 +4,6 @@ devel.yaml
 *.pyc
 build
 dist
-
+temp
+filestore
+file_metadata

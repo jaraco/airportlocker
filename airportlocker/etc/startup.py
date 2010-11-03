@@ -1,17 +1,39 @@
 from airportlocker.etc.conf import *
+
 import fab
+fab.config['base'] = BASE
+
 import eggmonster 
 from eggmonster import env
-
-fab.config['base'] = BASE
 
 eggmonster.load_default_yaml(file=os.path.join(BASE, 'etc', 'baseconf.yaml'))
 if not eggmonster.managed_env():
 	eggmonster.load_local_yaml(file=os.path.normpath(os.path.join(BASE, 'devel.yaml')))
 
+from cherrypy._cplogging import logfmt
+from eggmonster import EggmonsterLogHandler
+import logging
+
+def attach_eggmonster_handler(log_id):
+	log = logging.getLogger(log_id)
+	handler = EggmonsterLogHandler(env.log_host, env.log_port, env.log_facility)
+	handler.setLevel(logging.DEBUG)
+	handler.setFormatter(logfmt)
+	log.addHandler(handler)
+
+if env.eggmonster_error:
+	attach_eggmonster_handler('cherrypy.error')
+
+if env.eggmonster_access:
+	attach_eggmonster_handler('cherrypy.access')
+	
+
 if not os.path.exists(env.filestore) or not os.path.isdir(env.filestore):
 	os.makedirs(env.filestore)
+
+
 
 from faststore.client import FastStoreClient
 fab.register_pool('storage', FastStoreClient, (env.fs_host, env.fs_port),
 				  close=lambda c: c.close())
+
