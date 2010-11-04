@@ -18,8 +18,8 @@ class ResourceMixin(object):
 	index_re = re.compile(r'(.*)_(\d+).(.*)')
 
 	def get_extension(self, mtype, fn=None):
- 		if mtype == 'none' and fn:
- 			mtype, e = mimetypes.guess_type(fn)
+		if mtype == 'none' and fn:
+			mtype, e = mimetypes.guess_type(fn)
 		exts = mimetypes.guess_all_extensions(mtype)
 		if exts:
 			if fn:
