@@ -8,8 +8,8 @@ from pprint import pprint
 
 import fab
 import cherrypy
-import simplejson
 
+from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.resource import ResourceMixin
 from ottoman.lib.envelopes import success, failure
@@ -34,7 +34,7 @@ class ListResources(Resource):
 				res = self._list()
 			else:
 				res = self._query(**kw)
-			return simplejson.dumps(res)
+			return json.dumps(res)
 		# need a query
 		raise cherrypy.HTTPError(404)
 
@@ -55,7 +55,7 @@ class ViewResource(Resource):
 		results = self.db.find(_id=id) 
 		if not results:
 			raise cherrypy.HTTPError(404)
-		return simplejson.dumps(results)
+		return json.dumps(results)
 
 class ReadResource(Resource, ResourceMixin):
 	def GET(self, page, *args, **kw):
@@ -133,7 +133,7 @@ class UpdateResource(Resource, ResourceMixin):
 		new_doc = self.get_doc(id)
 		if have_file:
 			self.update_file(new_doc['name'], fields['_lockerfile'].file)
-		return success({'updated': simplejson.dumps(new_doc)})
+		return success({'updated': json.dumps(new_doc)})
 
 class DeleteResource(Resource, ResourceMixin):
 	def DELETE(self, page, id):

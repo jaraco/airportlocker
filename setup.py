@@ -1,4 +1,7 @@
+import sys
 from setuptools import setup, find_packages
+
+json_req = ['simplejson'] if sys.version < (2,6) else []
 
 setup_params = dict(
 	name='airportlocker',
@@ -18,7 +21,7 @@ setup_params = dict(
 		"eggmonster>=4.1,<4.2",
 		"fab>=2.3.3,<2.4",
 		"pmxtools>=0.15,<0.17dev",
-	],
+	] + json_req,
 	setup_requires = [
 		'hgtools',
 	],

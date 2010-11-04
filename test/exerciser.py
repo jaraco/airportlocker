@@ -3,14 +3,13 @@ import shutil
 import urlparse
 
 import httplib2
-import simplejson
 import py.test
 
 from optparse import OptionParser
 from pprint import pprint
 
 from airportlocker.lib.utils import MultiPart
-
+from airportlocker import json
 
 sample_fn = 'sample.txt'
 
@@ -47,7 +46,7 @@ class AirportLockerClient(object):
 								body=data.body,
 								headers=data.headers)
 		try:
-			response = simplejson.loads(c)
+			response = json.loads(c)
 		except ValueError:
 			pprint(res)
 			print c
@@ -63,7 +62,7 @@ class AirportLockerClient(object):
 								body=data.body,
 								headers=data.headers)
 		try:
-			response = simplejson.loads(c)
+			response = json.loads(c)
 		except ValueError:
 			pprint(res)
 			print c
@@ -73,7 +72,7 @@ class AirportLockerClient(object):
 
 	def view(self, id):
 		res, c = self.h.request(self.api('/view/%s' % id))
-		return simplejson.loads(c)
+		return json.loads(c)
 
 	def read(self, path):
 		res, c = self.h.request(self.api('/static/%s' % path))
@@ -81,7 +80,7 @@ class AirportLockerClient(object):
 
 	def delete(self, id):
 		res, c = self.h.request(self.api('/edit/%s' % id), method='DELETE')
-		response = simplejson.loads(c)
+		response = json.loads(c)
 		return response
 
 def test_create(exc):

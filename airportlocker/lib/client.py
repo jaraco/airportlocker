@@ -2,9 +2,9 @@ import os
 import posixpath
 import httplib2
 import urlparse
-import simplejson
 
 from airportlocker.lib.utils import MultiPart
+from airportlocker import json
 pjoin = posixpath.join
 
 class AirportLockerClient(object):
@@ -39,7 +39,7 @@ class AirportLockerClient(object):
 								body=data.body,
 								headers=data.headers)
 		if res.status < 300:
-			response = simplejson.loads(c)
+			response = json.loads(c)
 		else:
 			res['content'] = c
 			return res
@@ -52,12 +52,12 @@ class AirportLockerClient(object):
 								method='PUT',
 								body=data.body,
 								headers=data.headers)
-		response = simplejson.loads(c)
+		response = json.loads(c)
 		return response
 	
 	def view(self, id):
 		res, c = self.h.request(self.api('view', id))
-		return simplejson.loads(c)
+		return json.loads(c)
 
 	def read(self, path, prefix=''):
 		res, c = self.h.request(self.api('read', path))
@@ -65,7 +65,7 @@ class AirportLockerClient(object):
 
 	def delete(self, id):
 		res, c = self.h.request(self.api('delete', id), method='DELETE')
-		response = simplejson.loads(c)
+		response = json.loads(c)
 		return response
 
 	def exists(self, id, prefix=None):
@@ -76,5 +76,5 @@ class AirportLockerClient(object):
 	def query(self, qs):
 		qs = '?q=%s' % qs
 		res, c = self.h.request(self.api('query', qs))
-		return simplejson.loads(c)
+		return json.loads(c)
 	

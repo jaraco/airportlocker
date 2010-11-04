@@ -1,10 +1,8 @@
-import simplejson
-
 from pprint import pprint
 from optparse import OptionParser
 
 from airportlocker.lib.client import AirportLockerClient
-
+from airportlocker import json
 
 if __name__ == '__main__':
 	usage = 'usage: %prog [OPTIONS] FILENAME LOCKER_URL'
@@ -27,13 +25,13 @@ if __name__ == '__main__':
 	if options.jsonfile or options.jsonstr:
 		if options.jsonfile:
 			try:
-				fields.update(simplejson.load(options.jsonfile))
+				fields.update(json.load(options.jsonfile))
 			except:
 				parser.error('Failure loading the JSON file.')
 				raise
 		if options.jsonstr:
 			try:
-				fields.update(simplejson.loads(options.jsonstr))
+				fields.update(json.loads(options.jsonstr))
 			except:
 				parser.error('Failure loading the JSON string.')
 				raise
