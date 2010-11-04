@@ -3,9 +3,8 @@ from setuptools import setup, find_packages
 setup_params = dict(
 	name='airportlocker',
 	use_hg_version=True,
-	author="Eric Larson",
+	author="Eric Larson/Jason R. Coombs",
 	packages=find_packages(),	  
-	package_dir={'airportlocker': 'airportlocker'},
 	use_package_data=True,
 	data_files=[
 		('', ['unittest.yaml']),
@@ -19,8 +18,6 @@ setup_params = dict(
 		"eggmonster>=4.1,<4.2",
 		"fab>=2.3.3,<2.4",
 		"pmxtools>=0.15,<0.17dev",
-		"ottoman>=0.3.3,<0.4",
-		"simplejson",
 	],
 	setup_requires = [
 		'hgtools',

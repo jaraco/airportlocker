@@ -1,3 +1,5 @@
+import pymongo
+import airportlocker
 from airportlocker.etc.conf import *
 
 import fab
@@ -26,14 +28,9 @@ if env.eggmonster_error:
 
 if env.eggmonster_access:
 	attach_eggmonster_handler('cherrypy.access')
-	
 
-if not os.path.exists(env.filestore) or not os.path.isdir(env.filestore):
+if not os.path.isdir(env.filestore):
 	os.makedirs(env.filestore)
 
-
-
-from faststore.client import FastStoreClient
-fab.register_pool('storage', FastStoreClient, (env.fs_host, env.fs_port),
-				  close=lambda c: c.close())
-
+airportlocker.store = pymongo.Connection(env.mongo_host,
+	env.mongo_port)[env.mongo_db_name]

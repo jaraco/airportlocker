@@ -2,11 +2,13 @@ from __future__ import with_statement
 import os
 import glob
 import uuid
-import simplejson
+import itertools
+from string import Template
+from pprint import pprint
+
 import fab
 import cherrypy
-
-from string import Template
+import simplejson
 
 from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.resource import ResourceMixin
@@ -14,7 +16,6 @@ from ottoman.lib.envelopes import success, failure
 
 from eggmonster import env
 
-from pprint import pprint
 
 
 class BasicUpload(HtmlResource):
@@ -25,12 +26,6 @@ class BasicUpload(HtmlResource):
 
 
 class ListResources(Resource):
-	code_template = Template('''
-def filter(i, val):
-	if '$key' in i and i['$key'] == val:
-		return i
-''')
-	
 	def GET(self, page, q=None, **kw):
 		raise Exception('Crap!')
 		if q or kw:
@@ -44,39 +39,23 @@ def filter(i, val):
 		raise cherrypy.HTTPError(404)
 
 	def _list(self):
-		all = []
-		for id in list(self.db):
-			row = self.db.get_by_id(id, json=False)
-			row = simplejson.loads(row)
-			row['url'] = '/static/%s' % row['_id']
-			all.append(row)
-		return all
+		def add_url(row):
+			row['url'] = '/static/%(_id)s' % row
+			return row
+		return itertools.imap(add_url, self.db.find())
 
 	def _query(self, **kw):
-		def fetcher(invalid):
-			keys = set(self.db) if invalid is None else invalid.copy()
-			for k in keys:
-				try:
-					yield k, self.db.get_by_id(k)
-				except KeyError:
-					yield k, None # skip missing keys
-
-		results = {}
-		for view, arg in kw.iteritems():
-			try:
-				self.db.get_view(view)
-			except KeyError:
-				self.db.save_view(view, self.code_template.substitute({'key': view}))
-			results.update(self.db.apply_view(view, (arg,), fetcher))
-		return results
-		
+		"""
+		Return all records that match the query.
+		"""
+		return self.db.find(kw)
 
 class ViewResource(Resource):
 	def GET(self, page, id):
-		results = self.db.get_by_id(id) 
-		if results:
-			return simplejson.dumps(results)
-		raise cherrypy.HTTPError(404)
+		results = self.db.find(_id=id) 
+		if not results:
+			raise cherrypy.HTTPError(404)
+		return simplejson.dumps(results)
 
 class ReadResource(Resource, ResourceMixin):
 	def GET(self, page, *args, **kw):
@@ -92,8 +71,10 @@ class ReadResource(Resource, ResourceMixin):
 		return self.head_file(path)
 
 class CreateResource(Resource, ResourceMixin):
-	'''This saves the file and makes sure the filename is as close as
-	possible to the original while stilling being unique.'''
+	'''
+	Save the file and make sure the filename is as close as possible to the
+	original while still being unique.
+	'''
 	cases = [
 		'_prefix',
 	]
@@ -101,36 +82,36 @@ class CreateResource(Resource, ResourceMixin):
 	@post
 	def POST(self, page, fields):
 		'''Uses the ResourceMixin to save the file'''
-		if '_new' in fields and '_lockerfile' in fields:
-			# clean up the meta data
-			meta = dict([
-				(k, fields.getvalue(k)) for k in fields.keys()
-				if not k.startswith('_') or k in self.cases
-			])
-			# gen an id
-			meta['_id'] = str(uuid.uuid4())
+		fields_valid = '_new' in fields and '_lockerfile' in fields
+		if not fields_valid:
+			return failure('A "_new" and "_lockerfile" are required to create '
+						   'a new document.')
 
-			# give it a name
-			if 'name' in fields:
-				fn = fields['name'].value
-			else:
-				fn = fields['_lockerfile'].filename
+		# clean up the meta data
+		meta = dict([
+			(k, fields.getvalue(k)) for k in fields.keys()
+			if not k.startswith('_') or k in self.cases
+		])
+		# gen an id
+		meta['_id'] = str(uuid.uuid4())
 
-			# save the file and grab its name
-			meta['_filename'] = self.save_file(fields['_lockerfile'], fn, prefix=meta.get('_prefix'))
-			meta['name'] = meta['_filename']
-			meta['_mime'] = fields['_lockerfile'].type
-			result = self.db.create_doc(meta['_id'], simplejson.dumps(meta))
-			return success(result)
-		return failure('A "_new" and "_lockerfile" are required to create a new document.')
+		# give it a name
+		if 'name' in fields:
+			fn = fields['name'].value
+		else:
+			fn = fields['_lockerfile'].filename
+
+		# save the file and grab its name
+		meta['_filename'] = self.save_file(fields['_lockerfile'], fn, prefix=meta.get('_prefix'))
+		meta['name'] = meta['_filename']
+		meta['_mime'] = fields['_lockerfile'].type
+		inserted_id = self.db.insert(meta)
+		return success(inserted_id)
 
 class UpdateResource(Resource, ResourceMixin):
 
 	def get_doc(self, key):
-		try:
-			return self.db.get_by_id(key)
-		except KeyError:
-			return None
+		return self.db.find_one(_id=key)
 	
 	@post
 	def PUT(self, page, fields, id):
@@ -147,7 +128,8 @@ class UpdateResource(Resource, ResourceMixin):
 		meta['name'] = cur_doc['name']
 		if have_file:
 			meta['_mime'] = fields['_lockerfile'].type or cur_doc['_mime']
-		self.db.update_by_id(id, simplejson.dumps(meta))
+		spec = dict(_id=id)
+		self.db.update(spec, meta)
 		new_doc = self.get_doc(id)
 		if have_file:
 			self.update_file(new_doc['name'], fields['_lockerfile'].file)
@@ -155,13 +137,9 @@ class UpdateResource(Resource, ResourceMixin):
 
 class DeleteResource(Resource, ResourceMixin):
 	def DELETE(self, page, id):
-		meta = {}
-		try:
-			meta = self.db.get_by_id(id)
+		meta = self.db.find_one(_id=id) or {}
+		if meta:
 			self.remove_file(meta['name'])
-			self.db.delete_by_id(id)
-		except KeyError, e:
-			# if it's missing it's deleted
-			pass
+			self.db.remove(id)
 		return success({'deleted': meta})
 		

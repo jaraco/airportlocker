@@ -2,9 +2,10 @@ airportlocker_port : 8090
 docset : 'luggage'
 filestore : 'file_storage'
 
-# faststore
-fs_host : faststore
-fs_port : 10110
+# mongodb store
+mongo_host : localhost
+mongo_port : 27017
+mongo_db_name : airportlocker
 
 # performance tweaks (necessary for static file serving)
 threads : 30

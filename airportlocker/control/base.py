@@ -4,8 +4,6 @@ import cherrypy
 
 from eggmonster import env
 
-from airportlocker.model.store import LockerStore
-
 class Resource(fab.FabPage):
 
 	def is_json(self):
@@ -31,7 +29,7 @@ class Resource(fab.FabPage):
 		if redirect_url:
 			del kw['_redirect']
 
-		self.db = LockerStore().get(env.docset)
+		self.db = airportlocker.store[env.docset]
 
 		# get the actual result
 		source = getattr(self, m)(page, *args, **kw)
