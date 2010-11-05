@@ -12,11 +12,14 @@ import cherrypy
 from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.resource import ResourceMixin
-from ottoman.lib.envelopes import success, failure
 
 from eggmonster import env
 
+def success(value):
+	return json.dumps({'status' : 'success', 'value' : value})
 
+def failure(message):
+	return json.dumps({'status' : 'failure', 'reason' : message})
 
 class BasicUpload(HtmlResource):
 	template = fab.template('base.tmpl')
