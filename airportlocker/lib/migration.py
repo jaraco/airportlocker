@@ -2,6 +2,8 @@
 Routines to migrate from previous versions of airportlocker.
 """
 
+from pmxtools.timing import Stopwatch
+
 import airportlocker
 json = airportlocker.json
 
@@ -26,23 +28,26 @@ def from_faststore():
 	log.info('FastStore configuration found - migrating records')
 	source = FastStoreClient(env.fs_host, env.fs_port)
 	dest = airportlocker.store[env.docset]
-	source_keys = set(source.keys(env.docset))
+	source_keys = set(
+		key for key in source.keys(env.docset)
+		if not key.startswith('__view__')
+		)
 	dest_keys = set(rec['_id'] for rec in dest.find())
 	missing = source_keys - dest_keys
 	if not missing:
 		log.info('No records in source not in dest - nothing to migrate.')
+		log.info('Consider removing fs_host and fs_port config')
 		return
 	log.info('Migrating %d records', len(missing))
+	elapsed = Stopwatch()
 	for key in missing:
-		if key.startswith('__view__'):
-			log.info('Skipping key %s', key)
-			continue
 		log.debug('Migrating %s', key)
 		try:
 			dest.insert(json.loads(source.retr(env.docset, key)))
 		except Exception:
 			log.error("Unhandled exception migrating %s", key)
-	log.info('Migration of %d records complete.', len(missing))
+	log.info('Migration of %d records completed in %s.', len(missing),
+		elapsed.split())
 
 def test_faststore_migration():
 	from eggmonster import env
