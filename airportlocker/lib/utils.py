@@ -22,7 +22,6 @@ class MultiPartBody(object):
 		self.tempfile = tempfile.TemporaryFile()
 		for l in gen():
 			self.tempfile.write(l)
-			
 
 	def write(self, txt):
 		self.tempfile.write(txt)

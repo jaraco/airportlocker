@@ -38,12 +38,15 @@ class AirportLockerClient(object):
 								method='POST',
 								body=data.body,
 								headers=data.headers)
-		response = simplejson.loads(c)
+		if res.status < 300:
+			response = simplejson.loads(c)
+		else:
+			res['content'] = c
+			return res
 		return response
 
 	def update(self, id, fn, fields=None):
 		fields = fields or {}
-		fields.update({'my_extra_data': 'foo'})
 		data = MultiPart(fn, fields)
 		res, c = self.h.request(self.api('update', id),
 								method='PUT',
