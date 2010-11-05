@@ -4,6 +4,8 @@ import cherrypy
 
 from eggmonster import env
 
+import airportlocker
+
 class Resource(fab.FabPage):
 
 	def is_json(self):

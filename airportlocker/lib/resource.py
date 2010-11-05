@@ -121,16 +121,14 @@ class ResourceMixin(object):
 			resource = open(fullpath, 'r')
 			ct, enc = mimetypes.guess_type(key)
 		else:
-			try:
-				doc = self.db.get_by_id(key)
-			except KeyError:
+			doc = self.db.find_one(key)
+			if doc is None:
 				raise cherrypy.HTTPError(404)
 			fullpath = os.path.join(env.filestore, doc.get('_prefix', ''), doc['name'])
-			if os.path.exists(fullpath) and os.path.isfile(fullpath):
-				resource = open(fullpath)
-				ct = doc['_mime']
-			else:
+			if not os.path.isfile(fullpath):
 				raise cherrypy.HTTPError(404)
+			resource = open(fullpath)
+			ct = doc['_mime']
 		return resource, ct
 
 	def remove_file(self, fn):
