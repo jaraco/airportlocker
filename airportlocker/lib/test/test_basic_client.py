@@ -56,6 +56,5 @@ class TestBasicClient(object):
 		remote_file = client.read(result['value'])
 		assert remote_file
 		assert remote_file == open(test_file, 'r').read()
-		assert False
 
 		
