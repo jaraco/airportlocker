@@ -15,9 +15,12 @@ def from_faststore():
 	Migrate data from an airportlocker 0.7.x faststore
 	Requires that the fs_host, fs_port are still defined and that env.docset
 	is the same in the new mongodb as in the old faststore.
+	
+	Assumes faststore 0.8 was installed by a previous install of
+	airportlocker in this Python environment (or manually).
 	"""
 	import pkg_resources
-	pkg_resources.require('faststore')
+	pkg_resources.require('faststore==0.8')
 	from eggmonster import env
 	from faststore.client import FastStoreClient
 	has_faststore_config = 'fs_host' in dir(env) and 'fs_port' in dir(env)
