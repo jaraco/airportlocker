@@ -8,7 +8,7 @@ setup_params = dict(
 	use_hg_version=True,
 	author="Eric Larson/Jason R. Coombs",
 	packages=find_packages(),	  
-	use_package_data=True,
+	include_package_data=True,
 	data_files=[
 		('', ['unittest.yaml']),
 	],
