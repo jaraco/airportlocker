@@ -1,0 +1,9 @@
+syntax:glob
+devel.yaml
+*.egg-info
+*.pyc
+build
+dist
+temp
+filestore
+file_metadata
