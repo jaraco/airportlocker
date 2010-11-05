@@ -26,11 +26,14 @@ def wait_for_http(url):
 		if resp.status == 200:
 			break
 		time.sleep(.5)
+	else:
+		raise RuntimeError("Unable to connect: %s" % resp)
 
 class TestBasicClient(object):
 
 	def setup_class(self):
 		self.proc = APLTestThread()
+		self.proc.setDaemon(True)
 		self.proc.start()
 		# cherrypy started
 		wait_for_occupied_port('localhost', 8090)
