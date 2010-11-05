@@ -34,3 +34,6 @@ if not os.path.isdir(env.filestore):
 
 airportlocker.store = pymongo.Connection(env.mongo_host,
 	env.mongo_port)[env.mongo_db_name]
+from airportlocker import migration
+attach_eggmonster_handler(migration.log.name)
+migration.from_faststore()
