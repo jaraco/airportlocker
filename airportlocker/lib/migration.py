@@ -49,7 +49,7 @@ def from_faststore():
 	log.info('Migration of %d records completed in %s.', len(missing),
 		elapsed.split())
 
-def test_faststore_migration():
+def do_local_faststore_migration():
 	from eggmonster import env
 	env.fs_host = 'mongodb01.g.yougov.local'
 	env.fs_port = 10104
