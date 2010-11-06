@@ -44,17 +44,17 @@ class ListResources(Resource):
 		def add_url(row):
 			row['url'] = '/static/%(_id)s' % row
 			return row
-		return itertools.imap(add_url, self.db.find())
+		return map(add_url, self.db.find())
 
 	def _query(self, **kw):
 		"""
 		Return all records that match the query.
 		"""
-		return self.db.find(kw)
+		return list(self.db.find(kw))
 
 class ViewResource(Resource):
 	def GET(self, page, id):
-		results = self.db.find(_id=id) 
+		results = self.db.find_one(_id=id) 
 		if not results:
 			raise cherrypy.HTTPError(404)
 		return json.dumps(results)
