@@ -54,7 +54,7 @@ class ListResources(Resource):
 
 class ViewResource(Resource):
 	def GET(self, page, id):
-		results = self.db.find_one(_id=id) 
+		results = self.db.find_one(dict(_id=id)) 
 		if not results:
 			raise cherrypy.HTTPError(404)
 		return json.dumps(results)
@@ -113,7 +113,7 @@ class CreateResource(Resource, ResourceMixin):
 class UpdateResource(Resource, ResourceMixin):
 
 	def get_doc(self, key):
-		return self.db.find_one(_id=key)
+		return self.db.find_one(dict(_id=key))
 	
 	@post
 	def PUT(self, page, fields, id):
@@ -139,7 +139,7 @@ class UpdateResource(Resource, ResourceMixin):
 
 class DeleteResource(Resource, ResourceMixin):
 	def DELETE(self, page, id):
-		meta = self.db.find_one(_id=id) or {}
+		meta = self.db.find_one(dict(_id=id)) or {}
 		if meta:
 			self.remove_file(meta['name'])
 			self.db.remove(id)
