@@ -19,15 +19,15 @@ def from_faststore():
 	Assumes faststore 0.8 was installed by a previous install of
 	airportlocker in this Python environment (or manually).
 	"""
-	import pkg_resources
-	pkg_resources.require('faststore==0.8')
 	from eggmonster import env
-	from faststore.client import FastStoreClient
 	has_faststore_config = hasattr(env, 'fs_host') and hasattr(env, 'fs_port')
 	if not has_faststore_config:
-		# if the faststore config has been removed, assume no migration is
-		#  necessary
+		# if the faststore config has been removed, assume no migration
+		#  is necessary
 		return
+	import pkg_resources
+	pkg_resources.require('faststore==0.8')
+	from faststore.client import FastStoreClient
 	log.info('FastStore configuration found - migrating records')
 	source = FastStoreClient(env.fs_host, env.fs_port)
 	dest = airportlocker.store[env.docset]
