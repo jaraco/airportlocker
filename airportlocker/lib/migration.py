@@ -23,7 +23,7 @@ def from_faststore():
 	pkg_resources.require('faststore==0.8')
 	from eggmonster import env
 	from faststore.client import FastStoreClient
-	has_faststore_config = 'fs_host' in dir(env) and 'fs_port' in dir(env)
+	has_faststore_config = hasattr(env, 'fs_host') and hasattr(env, 'fs_port')
 	if not has_faststore_config:
 		# if the faststore config has been removed, assume no migration is
 		#  necessary
