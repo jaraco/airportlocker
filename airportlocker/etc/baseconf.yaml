@@ -12,5 +12,13 @@ threads : 30
 
 # error emails
 email_server: 'vemail1'
-eggmonster_error: false
-eggmonster_access: false
+
+# Logging to eggmonster
+eggmonster_error : false
+eggmonster_access : false
+
+log_host : "vesyslogd"
+log_port : 13000
+log_facility : "airportlocker"
+
+

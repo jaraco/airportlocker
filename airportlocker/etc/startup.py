@@ -16,6 +16,10 @@ from cherrypy._cplogging import logfmt
 from eggmonster import EggmonsterLogHandler
 import logging
 
+# set the level for the root logger so DEBUG and INFO messages for all loggers
+#  are allowed to the various handlers.
+logging.root.level = logging.DEBUG
+
 def attach_eggmonster_handler(log_id):
 	log = logging.getLogger(log_id)
 	handler = EggmonsterLogHandler(env.log_host, env.log_port, env.log_facility)
@@ -34,6 +38,6 @@ if not os.path.isdir(env.filestore):
 
 airportlocker.store = pymongo.Connection(env.mongo_host,
 	env.mongo_port)[env.mongo_db_name]
-from airportlocker import migration
+from airportlocker.lib import migration
 attach_eggmonster_handler(migration.log.name)
 migration.from_faststore()

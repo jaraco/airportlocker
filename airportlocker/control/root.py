@@ -30,18 +30,18 @@ app_conf = {
 }
 
 def setupapp():
-	cherrypy.config.update({
-		'server.socket_port': env.airportlocker_port,
-		'server.thread_pool' : env.threads,
-		'log.screen' : True,
-		'autoreload_on': True,
-	})
 	if env.production:
 		cherrypy.config.update({'environment' : 'production'})
 	else:
 		app_conf['/_dev'] = {
 			'request.dispatch': dev,
 		}
+	cherrypy.config.update({
+		'server.socket_port': env.airportlocker_port,
+		'server.thread_pool' : env.threads,
+		'log.screen' : True,
+		'autoreload_on': True,
+	})
 
 	cherrypy.tree.mount(None, config=app_conf)
 
