@@ -20,7 +20,7 @@ setup_params = dict(
 	install_requires=[
 		"eggmonster>=4.1,<4.2",
 		"fab>=2.3.3,<2.4",
-		"pmxtools>=0.15.36,<0.17dev",
+		"pmxtools>=0.15.36,<1.0dev",
 		"pymongo",
 	] + json_req,
 	setup_requires = [
