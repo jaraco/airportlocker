@@ -1,21 +1,9 @@
 from __future__ import with_statement
-import cherrypy
 import mimetypes
 import tempfile
 
 from cStringIO import StringIO
 
-
-def get_fields():
-	if 'Content-Length' in cherrypy.request.headers:
-		lchead = dict([(k.lower(), v) for k, v in cherrypy.request.headers.iteritems()])
-		data = cgi.FieldStorage(fp=cherrypy.request.rfile,
-								headers=lchead,
-								environ={'REQUEST_METHOD': 'POST'},
-								keep_blank_values=True)
-		return data
-	return None
-	
 
 class MultiPartBody(object):
 	def __init__(self, gen):
