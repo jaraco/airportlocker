@@ -5,7 +5,7 @@ json_req = ['simplejson'] if sys.version < (2,6) else []
 
 setup_params = dict(
 	name='airportlocker',
-	use_hg_version=True,
+	use_hg_version=dict(increment='0.1'),
 	author="Eric Larson/Jason R. Coombs",
 	packages=find_packages(),	  
 	include_package_data=True,
@@ -19,10 +19,17 @@ setup_params = dict(
 	},
 	install_requires=[
 		"eggmonster>=4.1,<4.2dev",
-		"fab>=2.3.3,<2.4dev",
 		"pmxtools>=0.15.36,<1.0dev",
-		"pymongo",
 	] + json_req,
+	extras_require=dict(
+		server=[
+			"fab>=2.3.3,<2.4dev",
+			"pymongo",
+		],
+		client=[
+			"httplib2",
+		],
+	),
 	setup_requires = [
 		'hgtools',
 	],
