@@ -18,7 +18,7 @@ setup_params = dict(
 		],
 	},
 	install_requires=[
-		"eggmonster>=4.1,<4.2dev",
+		"eggmonster>=4.1,<4.3dev",
 		"pmxtools>=0.15.36,<1.0dev",
 	] + json_req,
 	extras_require=dict(
