@@ -7,12 +7,12 @@ import fab
 import cherrypy
 import py.test
 
-from airportlocker.lib.resource import ResourceMixin
-from eggmonster import env
+import airportlocker.lib.resource
 
-env.filestore = os.path.dirname(os.path.abspath(__file__))
+# is this still needed
+airportlocker.filestore = os.path.dirname(os.path.abspath(__file__))
 
-class MockResource(ResourceMixin):
+class MockResource(airportlocker.lib.resource.ResourceMixin):
 	pass
 
 
@@ -40,7 +40,7 @@ class TestFileNaming(object):
 	def setup_class(self):
 		self.obj = MockResource()
 		self.mfs = '.test_mockfilestore'
-		env.filestore = self.mfs
+		airportlocker.filestore = self.mfs
 		if not os.path.exists(self.mfs) or not os.path.isdir(self.mfs):
 			os.mkdir(self.mfs)
 		self.sample_filenames = [
@@ -68,7 +68,7 @@ class TestFileNaming(object):
 			('yeah', JPEG, 'yeah.jpg'),
 			('YEAH.JPG', JPEG, 'YEAH.jpg'),
 			('mytext.txt', TXT, 'mytext.txt'),
-			('my video', M4V, 'my video.m4v'),			
+			('my video', M4V, 'my video.m4v'),
 		]
 		for fn, type, expected in filenames:
 			assert self.obj.add_extension(fn, type) == expected
@@ -99,7 +99,7 @@ class TestFileNaming(object):
 			('foo?bar', JPEG, 'foo_bar_2.jpg'),
 			('foo+bar', JPEG, 'foo_bar_2.jpg'),
 			('foo*bar', JPEG, 'foo_bar_2.jpg'),
-			('foo#bar', JPEG, 'foo_bar_2.jpg'),			
+			('foo#bar', JPEG, 'foo_bar_2.jpg'),
 		]
 
 		for fn, ext, expected in new_names:
@@ -108,7 +108,7 @@ class TestFileNaming(object):
 
 	def test_file_io(self):
 		fn = 'a_test_file.txt'
-		fullpath = os.path.join(env.filestore, fn)
+		fullpath = os.path.join(airportlocker.filestore, fn)
 		contents = [str(x) for x in range(1, 20)]
 		fake_file = MockFileObj(fn, contents)
 		self.obj.save_file(fake_file)
@@ -124,8 +124,4 @@ class TestFileNaming(object):
 		self.obj.remove_file(fn)
 		assert not os.path.exists(fullpath)
 		assert os.path.exists(fullpath + '.deleted')
-		os.remove(os.path.join(env.filestore, fn + '.deleted'))
-
-		
-
-			
+		os.remove(os.path.join(airportlocker.filestore, fn + '.deleted'))

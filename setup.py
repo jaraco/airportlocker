@@ -7,7 +7,7 @@ setup_params = dict(
 	name='airportlocker',
 	use_hg_version=dict(increment='0.1'),
 	author="Eric Larson/Jason R. Coombs",
-	packages=find_packages(),	  
+	packages=find_packages(),
 	include_package_data=True,
 	data_files=[
 		('', ['unittest.yaml']),

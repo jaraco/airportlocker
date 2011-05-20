@@ -33,11 +33,18 @@ if env.eggmonster_error:
 if env.eggmonster_access:
 	attach_eggmonster_handler('cherrypy.access')
 
-if not os.path.isdir(env.filestore):
-	os.makedirs(env.filestore)
+def _get_filestore():
+	filestore = env.filestore
+	filestore = filestore.replace('{prefix}', sys.prefix)
+	filestore = filestore.replace('/usr/var', '/var')
+	if not os.path.isdir(filestore):
+		os.makedirs(filestore)
+	return filestore
 
+airportlocker.filestore = _get_filestore()
 airportlocker.store = pymongo.Connection(env.mongo_host,
 	env.mongo_port)[env.mongo_db_name]
+
 from airportlocker.lib import migration
 attach_eggmonster_handler(migration.log.name)
 migration.from_faststore()

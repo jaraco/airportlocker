@@ -8,8 +8,7 @@ import re
 import os
 import cherrypy
 
-from eggmonster import env
-
+import airportlocker
 
 class ResourceMixin(object):
 	'''This mixin provides the filesystem interface for working with
@@ -91,7 +90,7 @@ class ResourceMixin(object):
 		return self.add_extension(fn, type, index)
 		
 	def save_file(self, fs, name=None, prefix=None):
-		folder = env.filestore
+		folder = airportlocker.filestore
 		mtype, e = mimetypes.guess_type(fs.filename)
 		prefix = prefix or ''
 		if prefix.endswith('/'):
@@ -111,13 +110,13 @@ class ResourceMixin(object):
 		newfile.close()
 
 	def update_file(self, fn, fh):
-		path = os.path.join(env.filestore, fn)
+		path = os.path.join(airportlocker.filestore, fn)
 		self._write_file(path, fh)
 
 	def get_resource(self, key):
 		resource = None
 		ct = 'application/octet-stream'
-		fullpath = os.path.join(env.filestore, key)
+		fullpath = os.path.join(airportlocker.filestore, key)
 		if os.path.exists(fullpath) and os.path.isfile(fullpath):
 			resource = open(fullpath, 'r')
 			ct, enc = mimetypes.guess_type(key)
@@ -125,7 +124,8 @@ class ResourceMixin(object):
 			doc = self.db.find_one(key)
 			if doc is None:
 				raise cherrypy.HTTPError(404)
-			fullpath = os.path.join(env.filestore, doc.get('_prefix', ''), doc['name'])
+			fullpath = os.path.join(airportlocker.filestore,
+				doc.get('_prefix', ''), doc['name'])
 			if not os.path.isfile(fullpath):
 				raise cherrypy.HTTPError(404)
 			resource = open(fullpath)
@@ -135,7 +135,7 @@ class ResourceMixin(object):
 	def remove_file(self, fn):
 		'''We do not actually remove the file. We just add a "deleted"
 		extension. Clean up can be done via cron if necessary.'''
-		path = os.path.join(env.filestore, fn)
+		path = os.path.join(airportlocker.filestore, fn)
 		if os.path.exists(path) and os.path.isfile(path):
 			os.rename(path, '%s.deleted' % path)
 
