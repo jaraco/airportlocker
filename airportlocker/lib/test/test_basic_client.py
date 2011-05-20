@@ -15,7 +15,7 @@ class APLTestThread(Thread):
 	def run(self):
 		config = os.path.normpath(os.path.join(here,'..', '..', '..', 'unittest.yaml'))
 		try:
-			runner.main(config, 'airportlocker.main', False)
+			runner.main(config, 'airportlocker[server].main', False)
 		except: # let this fail cleanly when the tests finish
 			pass
 
