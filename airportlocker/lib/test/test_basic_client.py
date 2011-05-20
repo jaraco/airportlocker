@@ -1,8 +1,10 @@
 import os
 import time
 import httplib2
+import threading
+
+import pkg_resources
 from cherrypy._cpserver import wait_for_occupied_port
-from threading import Thread
 from eggmonster import runner
 
 from fab.testing import FabBrowser
@@ -11,11 +13,13 @@ from airportlocker.lib.client import AirportLockerClient
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-class APLTestThread(Thread):
+class APLTestThread(threading.Thread):
 	def run(self):
-		config = os.path.normpath(os.path.join(here,'..', '..', '..', 'unittest.yaml'))
+		req = pkg_resources.Requirement.parse('airportlocker')
+		config_file = pkg_resources.resource_filename(req, 'unittest.yaml')
+		config_file = os.path.normpath(config_file)
 		try:
-			runner.main(config, 'airportlocker[server].main', False)
+			runner.main(config_file, 'airportlocker[server].main', False)
 		except: # let this fail cleanly when the tests finish
 			pass
 
