@@ -18,9 +18,9 @@ app_conf = {
 		'script_name': '/',
 	},
 	'/' : {
-        'request.dispatch': api,
-        'request.error_response': handle_500,
-        'request.process_request_body': False,
+		'request.dispatch': api,
+		'request.error_response': handle_500,
+		'request.process_request_body': False,
 	},
 	'/_test' : {
 		'tools.staticdir.on': True,
@@ -38,17 +38,15 @@ def setupapp():
 		}
 	cherrypy.config.update({
 		'server.socket_port': env.airportlocker_port,
+		'server.socket_host': '0.0.0.0',
 		'server.thread_pool' : env.threads,
 		'log.screen' : True,
 		'autoreload_on': True,
 	})
 
-	cherrypy.tree.mount(None, config=app_conf)
-
 def run_airportlocker():
 	setupapp()
-	cherrypy.server.quickstart()
-	cherrypy.engine.start()
+	cherrypy.quickstart(None, config=app_conf)
 
 if __name__ == "__main__":
 	run_airportlocker()
