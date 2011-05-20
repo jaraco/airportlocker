@@ -1,4 +1,4 @@
-airportlocker:
+airportlocker[server]:
     Environment:
         production : False
         fs_host : localhost
