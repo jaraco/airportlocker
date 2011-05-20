@@ -45,8 +45,19 @@ def setupapp():
 	})
 
 def run_airportlocker():
+	start_airportlocker()
+	cherrypy.engine.block()
+
+def start_airportlocker():
 	setupapp()
-	cherrypy.quickstart(None, config=app_conf)
+	cherrypy.config.update(app_conf)
+	cherrypy.tree.mount(None, "", config=app_conf)
+	engine = cherrypy.engine
+	if hasattr(engine, "signal_handler"):
+		engine.signal_handler.subscribe()
+	if hasattr(engine, "console_control_handler"):
+		engine.console_control_handler.subscribe()
+	engine.start()
 
 if __name__ == "__main__":
 	run_airportlocker()
