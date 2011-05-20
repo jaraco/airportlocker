@@ -1,12 +1,15 @@
+import sys
+
 import pymongo
+import fab
+
 import airportlocker
 from airportlocker.etc.conf import *
 
-import fab
-fab.config['base'] = BASE
-
 import eggmonster 
 from eggmonster import env
+
+fab.config['base'] = BASE
 
 eggmonster.load_default_yaml(file=os.path.join(BASE, 'etc', 'baseconf.yaml'))
 if not eggmonster.managed_env():
