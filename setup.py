@@ -23,7 +23,7 @@ setup_params = dict(
 	] + json_req,
 	extras_require=dict(
 		server=[
-			"fab>=2.3.3,<2.4dev",
+			"fab>=2.4,<2.5dev",
 			"pymongo",
 		],
 		client=[
