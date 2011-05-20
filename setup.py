@@ -15,6 +15,7 @@ setup_params = dict(
 	entry_points={
 		'eggmonster.applications' : [
 			'main = airportlocker.control.root:run_airportlocker',
+			'embed = airportlocker.control.root:start_airportlocker',
 		],
 	},
 	install_requires=[

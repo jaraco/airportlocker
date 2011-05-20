@@ -1,10 +1,9 @@
 import os
 import time
 import httplib2
-import threading
 
 import pkg_resources
-from cherrypy._cpserver import wait_for_occupied_port
+import cherrypy._cpserver
 from eggmonster import runner
 
 from fab.testing import FabBrowser
@@ -13,15 +12,11 @@ from airportlocker.lib.client import AirportLockerClient
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-class APLTestThread(threading.Thread):
-	def run(self):
-		req = pkg_resources.Requirement.parse('airportlocker')
-		config_file = pkg_resources.resource_filename(req, 'unittest.yaml')
-		config_file = os.path.normpath(config_file)
-		try:
-			runner.main(config_file, 'airportlocker[server].main', False)
-		except: # let this fail cleanly when the tests finish
-			pass
+def embed_server():
+	req = pkg_resources.Requirement.parse('airportlocker')
+	config_file = pkg_resources.resource_filename(req, 'unittest.yaml')
+	config_file = os.path.normpath(config_file)
+	runner.main(config_file, 'airportlocker[server].embed', False)
 
 def wait_for_http(url):
 	h = httplib2.Http()
@@ -36,11 +31,9 @@ def wait_for_http(url):
 class TestBasicClient(object):
 
 	def setup_class(self):
-		self.proc = APLTestThread()
-		self.proc.setDaemon(True)
-		self.proc.start()
+		embed_server()
 		# cherrypy started
-		wait_for_occupied_port('localhost', 8090)
+		cherrypy._cpserver.wait_for_occupied_port('localhost', 8090)
 
 		# fab templates loaded and other stuff ready
 		wait_for_http('http://localhost:8090/_dev/')
@@ -49,7 +42,7 @@ class TestBasicClient(object):
 		self.browser = FabBrowser()
 
 	def teardown_class(self):
-		del self.proc
+		cherrypy.engine.exit()
 
 	def test_upload_file(self):
 		client = AirportLockerClient(self.base_url, httplib2.Http())
