@@ -31,6 +31,9 @@ class Resource(fab.FabPage):
 		if redirect_url:
 			del kw['_redirect']
 
+		# remove underscore, which is sometimes included to suppress caching
+		kw.pop('_', None)
+
 		self.db = airportlocker.store[env.docset]
 
 		# get the actual result
