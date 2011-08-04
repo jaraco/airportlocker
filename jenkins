@@ -8,7 +8,11 @@ allow_hosts=*.polimetrix.com,*.yougov.net
 find_links=http://cheeseshop.polimetrix.com
 index_url=http://cheese.yougov.net
 " > $DISTUTILS_DIR/distutils.cfg
+# remove the dist directory
+rm -R dist || echo -n
+# build an sdist of this version of airportlocker
 env/bin/python setup.py sdist
-env/bin/easy_install -f dist airportlocker[server]
+# install the sdist just created (with [server])
+env/bin/easy_install -f dist,http://cheeseshop.polimetrix.com airportlocker[server]
 env/bin/python runtest.py --ignore env --junitxml=test_results.xml
 sudo aptitude remove -y python2.7-dev
