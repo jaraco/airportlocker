@@ -1,4 +1,5 @@
 #!/bin/bash
+sudo aptitude install -y python2.7-dev
 ENV=$WORKSPACE/env
 virtualenv --no-site-packages $ENV
 # get requirements from YG cheeseshop
@@ -11,4 +12,4 @@ index_url=http://cheese.yougov.net
 $ENV/bin/python setup.py sdist
 $ENV/bin/easy_install -f dist airportlocker[server]
 $ENV/bin/python runtest.py --ignore env --junitxml=test_results.xml
-
+sudo aptitude remove -y python2.7-dev
