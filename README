@@ -1,0 +1,10 @@
+.. -*- restructuredtext -*-
+
+airportlocker
+=============
+
+Media resource storage for YouGov apps. Uses MongoDB for metadata storage
+and file system for media storage.
+
+Stores all media with versions where the resource URI is unchanging for
+a given resource.
