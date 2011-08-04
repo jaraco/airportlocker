@@ -1,7 +1,7 @@
 import sys
 from setuptools import setup, find_packages
 
-json_req = ['simplejson'] if sys.version < (2,6) else []
+json_req = ['simplejson'] if sys.version_info < (2,6) else []
 
 setup_params = dict(
 	name='airportlocker',
