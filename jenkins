@@ -1,15 +1,14 @@
 #!/bin/bash
 sudo aptitude install -y python2.7-dev
-ENV=$WORKSPACE/env
-virtualenv --no-site-packages $ENV
+virtualenv --no-site-packages env
 # get requirements from YG cheeseshop
-DISTUTILS_DIR=`$ENV/bin/python -c "import distutils, os; print(os.path.dirname(distutils.__file__))"`
+DISTUTILS_DIR=`env/bin/python -c "import distutils, os; print(os.path.dirname(distutils.__file__))"`
 echo "[easy_install]
 allow_hosts=*.polimetrix.com,*.yougov.net
 find_links=http://cheeseshop.polimetrix.com
 index_url=http://cheese.yougov.net
 " > $DISTUTILS_DIR/distutils.cfg
-$ENV/bin/python setup.py sdist
-$ENV/bin/easy_install -f dist airportlocker[server]
-$ENV/bin/python runtest.py --ignore env --junitxml=test_results.xml
+env/bin/python setup.py sdist
+env/bin/easy_install -f dist airportlocker[server]
+env/bin/python runtest.py --ignore env --junitxml=test_results.xml
 sudo aptitude remove -y python2.7-dev
