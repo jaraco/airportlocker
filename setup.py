@@ -5,7 +5,7 @@ json_req = ['simplejson'] if sys.version_info < (2,6) else []
 
 setup_params = dict(
 	name='airportlocker',
-	use_hg_version=dict(increment='0.1'),
+	use_hg_version=dict(increment='0.0.1'),
 	author="Eric Larson/Jason R. Coombs",
 	author_email="Eric.Larson@YouGov.com",
 	url="http://dev.yougov.com/",
