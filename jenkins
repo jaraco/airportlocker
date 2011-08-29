@@ -14,5 +14,5 @@ rm -R dist || echo -n
 env/bin/python setup.py sdist
 # install the sdist just created (with [server])
 env/bin/easy_install -f "dist http://cheeseshop.polimetrix.com" airportlocker[server]
-env/bin/python runtest.py --ignore env --junitxml=test_results.xml
+no_proxy=localhost env/bin/python runtest.py --ignore env --junitxml=test_results.xml
 sudo aptitude remove -y python2.7-dev
