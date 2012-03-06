@@ -1,4 +1,3 @@
-import os
 import posixpath
 import httplib2
 import urlparse
@@ -23,7 +22,7 @@ class AirportLockerClient(object):
 
 	def api(self, action, tail=None, prefix=None, use_host=True):
 		tail = tail or ''
-		prefix =  prefix or ''
+		prefix = prefix or ''
 		base = self.base
 		if not use_host:
 			base = ''
@@ -54,7 +53,7 @@ class AirportLockerClient(object):
 								headers=data.headers)
 		response = json.loads(c)
 		return response
-	
+
 	def view(self, id):
 		res, c = self.h.request(self.api('view', id))
 		return json.loads(c)
@@ -77,4 +76,3 @@ class AirportLockerClient(object):
 		qs = '?q=%s' % qs
 		res, c = self.h.request(self.api('query', qs))
 		return json.loads(c)
-	

@@ -2,8 +2,6 @@ from __future__ import with_statement
 import mimetypes
 import tempfile
 
-from cStringIO import StringIO
-
 
 class MultiPartBody(object):
 	def __init__(self, gen):
@@ -23,7 +21,6 @@ class MultiPartBody(object):
 		return sum([len(l) for l in self.tempfile])
 
 
-
 class MultiPart(object):
 	boundary = '----------12308129817491874--'
 	le = '\r\n'
@@ -31,7 +28,7 @@ class MultiPart(object):
 	field_header = ' '.join([cd, 'name="%s";'])
 	file_header = ' '.join([cd, 'name="%s"; filename="%s"'])
 	lbreak = ''
-	
+
 	def __init__(self, fn, fields=None):
 		self.fn = fn
 		self.fields = fields or {}
@@ -49,7 +46,6 @@ class MultiPart(object):
 
 	def _end(self):
 		return '--%s--' % self.boundary
-
 
 	def _content_type(self):
 		return 'Content-Type: %s' % (mimetypes.guess_type(self.fn)[0])

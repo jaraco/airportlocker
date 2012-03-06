@@ -1,7 +1,7 @@
 import sys
 from setuptools import setup, find_packages
 
-json_req = ['simplejson'] if sys.version_info < (2,6) else []
+json_req = ['simplejson'] if sys.version_info < (2, 6) else []
 
 setup_params = dict(
 	name='airportlocker',
@@ -15,17 +15,17 @@ setup_params = dict(
 		('', ['unittest.yaml']),
 	],
 	entry_points={
-		'eggmonster.applications' : [
+		'eggmonster.applications': [
 			'main = airportlocker.control.root:run_airportlocker',
 			'embed = airportlocker.control.root:start_airportlocker',
 		],
 	},
 	install_requires=[
-		"eggmonster>=4.1,<5.0dev",
 		"pmxtools>=0.15.36,<2.0dev",
 	] + json_req,
 	extras_require=dict(
 		server=[
+			"eggmonster>=4.1,<6.0dev",
 			"fab>=2.4,<3.0dev",
 			"pymongo",
 		],
