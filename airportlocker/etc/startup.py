@@ -16,7 +16,7 @@ if not eggmonster.managed_env():
 	eggmonster.load_local_yaml(file=os.path.normpath(os.path.join(BASE, 'devel.yaml')))
 
 from cherrypy._cplogging import logfmt
-from eggmonster import EggmonsterLogHandler
+from eggmonster.log_client import EggmonsterLogHandler
 import logging
 
 # set the level for the root logger so DEBUG and INFO messages for all loggers
