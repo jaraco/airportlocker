@@ -9,9 +9,6 @@ from airportlocker.control.main import DeleteResource
 from airportlocker.control.main import BasicUpload
 
 
-
-
-
 api = FabDispatcher()
 api.add_route('read', 'static/*', ReadResource(), method='GET')
 api.add_route('head', 'static/*', ReadResource(), method='HEAD')
@@ -26,7 +23,3 @@ api.add_route('create', '', CreateResource(), method='POST')
 
 dev = FabDispatcher()
 dev.add_route('index', '_dev', BasicUpload(), method='GET')
-
-
-
-

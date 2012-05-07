@@ -11,7 +11,7 @@ class Resource(fab.FabPage):
 	def is_json(self):
 		json_types = ['application/json', 'text/json', 'text/plain']
 		return cherrypy.response.headers['Content-Type'] in json_types
-	
+
 	def control(self, page, *args, **kw):
 		m = cherrypy.request.method.upper()
 		if kw.get('_method'):
@@ -41,7 +41,7 @@ class Resource(fab.FabPage):
 
 		if redirect_url:
 			raise cherrypy.HTTPRedirect(redirect_url)
-		
+
 		if jsonp_cb and self.is_json():
 			cherrypy.response.headers['Content-Type'] = 'text/javascript'
 			return '%s(%s);' % (jsonp_cb, source)
@@ -69,4 +69,3 @@ def post(fn):
 			return fn(cls, page, fields, *args, **kw)
 		return fn(cls, page, *args, **kw)
 	return process_post
-		
