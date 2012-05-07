@@ -24,6 +24,7 @@ setup_params = dict(
 	},
 	install_requires=[
 		"yg.performance>=1.1,<2.0dev",
+		"yg.process>=1.0,<2.0dev",
 	] + py25reqs + py26reqs,
 	extras_require=dict(
 		server=[

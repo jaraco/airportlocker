@@ -5,7 +5,7 @@ import cherrypy
 import fab
 
 from eggmonster import env
-from pmxtools.erroremail import email_error
+from yg.process.erroremail import email_error
 
 
 def handle_500(include_ex_message=False):
