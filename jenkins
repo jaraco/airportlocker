@@ -1,18 +1,11 @@
 #!/bin/bash
-sudo aptitude install -y python2.7-dev
 virtualenv --no-site-packages env
-# get requirements from YG cheeseshop
-DISTUTILS_DIR=`env/bin/python -c "import distutils, os; print(os.path.dirname(distutils.__file__))"`
-echo "[easy_install]
-allow_hosts=*.polimetrix.com,*.yougov.net
-find_links=http://cheeseshop.polimetrix.com
-index_url=http://cheese.yougov.net
-" > $DISTUTILS_DIR/distutils.cfg
+yg-force-cheeseshop env
 # remove the dist directory
 rm -R dist || echo -n
 # build an sdist of this version of airportlocker
 env/bin/python setup.py sdist
 # install the sdist just created (with [server])
-env/bin/easy_install -f "dist http://cheeseshop.polimetrix.com" airportlocker[server]
-no_proxy=localhost env/bin/python runtest.py --ignore env --junitxml=test_results.xml
-sudo aptitude remove -y python2.7-dev
+env/bin/easy_install -f "dist" airportlocker[server]
+export no_proxy=localhost
+yg-dependency-context "env/bin/python runtest.py --ignore env '--junitxml=test results.xml'"
