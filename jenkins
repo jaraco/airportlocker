@@ -1,2 +1,2 @@
 #!/bin/bash
-yg-dependency-context "env/bin/python setup.py ptr '--junitxml=test results.xml' --extras --index-url=http://cheese.yougov.net"
+yg-dependency-context "python2.7 setup.py ptr '--junitxml=test results.xml' --extras --index-url=http://cheese.yougov.net"
