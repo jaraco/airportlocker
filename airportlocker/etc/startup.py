@@ -1,13 +1,15 @@
+import os
 import sys
 
+import pkg_resources
 import pymongo
 import fab
+import eggmonster
+from eggmonster import env
 
 import airportlocker
-from airportlocker.etc.conf import *
 
-import eggmonster 
-from eggmonster import env
+BASE = pkg_resources.resource_filename('airportlocker', '')
 
 fab.config['base'] = BASE
 

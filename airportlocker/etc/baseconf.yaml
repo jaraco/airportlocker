@@ -20,5 +20,3 @@ eggmonster_access : false
 log_host : "vesyslogd"
 log_port : 13000
 log_facility : "airportlocker"
-
-
