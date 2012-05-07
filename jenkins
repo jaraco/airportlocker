@@ -8,4 +8,4 @@ env/bin/python setup.py sdist
 # install the sdist just created (with [server])
 env/bin/easy_install -f "dist" airportlocker[server]
 export no_proxy=localhost
-yg-dependency-context "env/bin/python runtest.py --ignore env '--junitxml=test results.xml'"
+yg-dependency-context "env/bin/python setup.py ptr '--junitxml=test results.xml'"
