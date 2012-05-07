@@ -1,13 +1,13 @@
 """
 Routines to migrate from previous versions of airportlocker.
 """
+import logging
 
-from pmxtools.timing import Stopwatch
+from yg.performance.timing import Stopwatch
 
 import airportlocker
 json = airportlocker.json
 
-import logging
 log = logging.getLogger(__name__)
 
 def from_faststore():
@@ -15,7 +15,7 @@ def from_faststore():
 	Migrate data from an airportlocker 0.7.x faststore
 	Requires that the fs_host, fs_port are still defined and that env.docset
 	is the same in the new mongodb as in the old faststore.
-	
+
 	Assumes faststore 0.8 was installed by a previous install of
 	airportlocker in this Python environment (or manually).
 	"""
@@ -61,4 +61,3 @@ def do_local_faststore_migration():
 	import pymongo
 	airportlocker.store = pymongo.Connection()['airportlocker']
 	from_faststore()
-	

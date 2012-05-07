@@ -23,7 +23,7 @@ setup_params = dict(
 		],
 	},
 	install_requires=[
-		"pmxtools>=0.15.36,<2.0dev",
+		"yg.performance>=1.1,<2.0dev",
 	] + py25reqs + py26reqs,
 	extras_require=dict(
 		server=[
