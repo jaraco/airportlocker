@@ -1,5 +1,2 @@
 #!/bin/bash
-virtualenv --no-site-packages env
-yg-force-cheeseshop env
-export no_proxy=localhost
-yg-dependency-context "env/bin/python setup.py ptr '--junitxml=test results.xml' --extras"
+yg-dependency-context "env/bin/python setup.py ptr '--junitxml=test results.xml' --extras --index-url=http://cheese.yougov.net"
