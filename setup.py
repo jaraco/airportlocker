@@ -1,5 +1,6 @@
 import sys
-from setuptools import setup, find_packages
+
+import setuptools
 
 json_req = ['simplejson'] if sys.version_info < (2, 6) else []
 
@@ -9,7 +10,7 @@ setup_params = dict(
 	author="Eric Larson/Jason R. Coombs",
 	author_email="Eric.Larson@YouGov.com",
 	url="http://dev.yougov.com/",
-	packages=find_packages(),
+	packages=setuptools.find_packages(),
 	include_package_data=True,
 	data_files=[
 		('', ['unittest.yaml']),
@@ -39,4 +40,4 @@ setup_params = dict(
 )
 
 if __name__ == '__main__':
-	setup(**setup_params)
+	setuptools.setup(**setup_params)
