@@ -5,6 +5,8 @@ import cherrypy
 
 from eggmonster import env
 
+# need to startup the app before importing control.urls
+importlib.import_module('airportlocker.etc.startup')
 from airportlocker.control.urls import api, dev
 from airportlocker.lib.errors import handle_500
 
@@ -47,7 +49,6 @@ def run_airportlocker():
 	cherrypy.engine.block()
 
 def start_airportlocker():
-	importlib.importmodule('airportlocker.etc.startup')
 	setupapp()
 	cherrypy.config.update(app_conf)
 	cherrypy.tree.mount(None, "", config=app_conf)
