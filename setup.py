@@ -2,7 +2,8 @@ import sys
 
 import setuptools
 
-json_req = ['simplejson'] if sys.version_info < (2, 6) else []
+py25reqs = ['simplejson'] if sys.version_info < (2, 6) else []
+py26reqs = ['importlib'] if sys.version_info < (2, 7) else []
 
 setup_params = dict(
 	name='airportlocker',
@@ -23,7 +24,7 @@ setup_params = dict(
 	},
 	install_requires=[
 		"pmxtools>=0.15.36,<2.0dev",
-	] + json_req,
+	] + py25reqs + py26reqs,
 	extras_require=dict(
 		server=[
 			"eggmonster>=4.1,<6.0dev",
