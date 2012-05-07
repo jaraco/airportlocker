@@ -1,11 +1,5 @@
 #!/bin/bash
 virtualenv --no-site-packages env
 yg-force-cheeseshop env
-# remove the dist directory
-rm -R dist || echo -n
-# build an sdist of this version of airportlocker
-env/bin/python setup.py sdist
-# install the sdist just created (with [server])
-env/bin/easy_install -f "dist" airportlocker[server]
 export no_proxy=localhost
-yg-dependency-context "env/bin/python setup.py ptr '--junitxml=test results.xml'"
+yg-dependency-context "env/bin/python setup.py ptr '--junitxml=test results.xml' --extras"
