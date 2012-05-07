@@ -27,6 +27,8 @@ setup_params = dict(
 		"yg.process>=1.0.1,<2.0dev",
 	] + py25reqs + py26reqs,
 	extras_require=dict(
+		# note, if you change the server requirements, you must also update
+		#  the requirements.txt (because pip doesn't support extras)
 		server=[
 			"eggmonster>=4.1,<6.0dev",
 			"fab>=2.4,<3.0dev",

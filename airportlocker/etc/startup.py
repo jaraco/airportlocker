@@ -13,6 +13,9 @@ BASE = pkg_resources.resource_filename('airportlocker', '')
 
 fab.config['base'] = BASE
 
+if 'PORT' in os.environ:
+	env['airportlocker_port'] = os.environ['PORT']
+
 eggmonster.load_default_yaml(file=os.path.join(BASE, 'etc', 'baseconf.yaml'))
 if not eggmonster.managed_env():
 	eggmonster.load_local_yaml(file=os.path.normpath(os.path.join(BASE, 'devel.yaml')))

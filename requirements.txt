@@ -1,0 +1,5 @@
+.
+# In addition to airportlocker dependencies, we also need airportlocker[server] reqs
+eggmonster>=4.1,<6.0dev
+fab>=2.4,<3.0dev
+pymongo
