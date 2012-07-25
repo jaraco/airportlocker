@@ -1,14 +1,19 @@
-import mimetypes
-mimetypes.init()
-mimetypes.add_type('video/m4v', '.m4v')
-mimetypes.add_type('audio/m4a', '.m4a')
-mimetypes.add_type('text/csv', '.csv')
-
 import re
 import os
+import mimetypes
+import platform
+
 import cherrypy
 
 import airportlocker
+
+if platform.system() != 'Windows':
+	# Only init on non-Windows because the Windows registry doesn't have
+	#  proper IANA types (i.e. zip~=application/x-zip-compressed)
+	mimetypes.init()
+mimetypes.add_type('video/m4v', '.m4v')
+mimetypes.add_type('audio/m4a', '.m4a')
+mimetypes.add_type('text/csv', '.csv')
 
 class ResourceMixin(object):
 	'''This mixin provides the filesystem interface for working with
@@ -88,7 +93,7 @@ class ResourceMixin(object):
 		prefix = self.clean_fn_regex.sub('_', prefix)
 		index = self.get_next_index(folder, fn, type, prefix)
 		return self.add_extension(fn, type, index)
-		
+
 	def save_file(self, fs, name=None, prefix=None):
 		folder = airportlocker.filestore
 		mtype, e = mimetypes.guess_type(fs.filename)
@@ -157,5 +162,5 @@ class ResourceMixin(object):
 			'Content-Type': ct or 'text/plain',
 			'Content-Length': size,
 		})
-		return 
-		
+		return
+
