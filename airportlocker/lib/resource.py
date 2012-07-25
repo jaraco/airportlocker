@@ -163,4 +163,3 @@ class ResourceMixin(object):
 			'Content-Length': size,
 		})
 		return
-

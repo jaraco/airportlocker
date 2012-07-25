@@ -63,13 +63,14 @@ class TestFileNaming(object):
 			('foo.bar.zip', ZIP, 'foo.bar.zip'),
 			('hello world.doc', DOC, 'hello world.doc'),
 			('picture.jpg', JPEG, 'picture.jpg'),
-			('yeah', JPEG, 'yeah.jpg'),
 			('YEAH.JPG', JPEG, 'YEAH.jpg'),
 			('mytext.txt', TXT, 'mytext.txt'),
 			('my video', M4V, 'my video.m4v'),
 		]
 		for fn, type, expected in filenames:
 			assert self.obj.add_extension(fn, type) == expected
+		assert self.obj.add_extension('yeah', JPEG) in (
+			'yeah.jpg', 'yeah.jpe', 'yeah.jpeg')
 
 	def test_last_index(self):
 		py.test.skip("fails - no longer matches API")
