@@ -1,12 +1,11 @@
-import importlib
 import os
+import importlib
 
+import pkg_resources
 import cherrypy
+import fab
 
 import airportlocker
-# need to startup the app before importing control.urls
-importlib.import_module('airportlocker.etc.startup')
-from airportlocker.control.urls import api, dev
 from airportlocker.lib.errors import handle_500
 
 
@@ -17,7 +16,7 @@ app_conf = {
 		'script_name': '/',
 	},
 	'/': {
-		'request.dispatch': api,
+		'request.dispatch': None,
 		'request.error_response': handle_500,
 		'request.process_request_body': False,
 	},
@@ -29,11 +28,15 @@ app_conf = {
 }
 
 def setupapp():
+	fab.config['base'] = pkg_resources.resource_filename('airportlocker', '')
+	# import urls after base is set (because templates fail to load otherwise)
+	urls = importlib.import_module('airportlocker.control.urls')
+	app_conf['/']['request.dispatch'] = urls.api
 	if airportlocker.config.production:
 		cherrypy.config.update({'environment': 'production'})
 	else:
 		app_conf['/_dev'] = {
-			'request.dispatch': dev,
+			'request.dispatch': urls.dev,
 		}
 	cherrypy.config.update({
 		'server.socket_port': airportlocker.config.airportlocker_port,

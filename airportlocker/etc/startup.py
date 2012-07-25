@@ -2,15 +2,9 @@ import os
 import sys
 import logging
 
-import pkg_resources
 import pymongo
-import fab
 
 import airportlocker
-
-BASE = pkg_resources.resource_filename('airportlocker', '')
-
-fab.config['base'] = BASE
 
 # set the level for the root logger so DEBUG and INFO messages for all loggers
 #  are allowed to the various handlers.
