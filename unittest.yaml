@@ -1,7 +1,0 @@
-airportlocker[server]:
-    Environment:
-        production : False
-        filestore : 'filestore'
-
-    Applications:
-        - Name: main

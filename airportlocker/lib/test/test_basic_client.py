@@ -1,22 +1,27 @@
 import os
 import time
-import httplib2
+import yaml
+import importlib
 
+import httplib2
 import pkg_resources
 import cherrypy._cpserver
-from eggmonster import runner
-
 from fab.testing import FabBrowser
 
+import airportlocker.control.root
+from airportlocker.etc.vr_launch import ConfigDict
 from airportlocker.lib.client import AirportLockerClient
 
 here = os.path.abspath(os.path.dirname(__file__))
 
 def embed_server():
-	req = pkg_resources.Requirement.parse('airportlocker')
-	config_file = pkg_resources.resource_filename(req, 'unittest.yaml')
+	config_file = pkg_resources.resource_filename(
+		'airportlocker.lib.test', 'config.yaml')
 	config_file = os.path.normpath(config_file)
-	runner.main(config_file, 'airportlocker[server].embed', False)
+	with open(config_file) as config_stream:
+		airportlocker.config = ConfigDict(yaml.load(config_stream))
+	importlib.import_module('airportlocker.etc.startup')
+	airportlocker.control.root.start()
 
 def wait_for_http(url):
 	h = httplib2.Http()
@@ -37,7 +42,7 @@ class TestBasicClient(object):
 
 		# fab templates loaded and other stuff ready
 		wait_for_http('http://localhost:8090/_dev/')
-		
+
 		self.base_url = 'http://localhost:8090/'
 		self.browser = FabBrowser()
 
@@ -48,10 +53,8 @@ class TestBasicClient(object):
 		client = AirportLockerClient(self.base_url, httplib2.Http())
 		test_file = os.path.join(here, 'upload_test_file.txt')
 		result = client.create(test_file, {'foo': 'bar'})
-		print result		
+		print result
 		assert result
 		remote_file = client.read(result['value'])
 		assert remote_file
 		assert remote_file == open(test_file, 'r').read()
-
-		

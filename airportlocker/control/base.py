@@ -2,8 +2,6 @@ import cgi
 import fab
 import cherrypy
 
-from eggmonster import env
-
 import airportlocker
 
 class Resource(fab.FabPage):
@@ -34,7 +32,7 @@ class Resource(fab.FabPage):
 		# remove underscore, which is sometimes included to suppress caching
 		kw.pop('_', None)
 
-		self.db = airportlocker.store[env.docset]
+		self.db = airportlocker.store[airportlocker.config.docset]
 
 		# get the actual result
 		source = getattr(self, m)(page, *args, **kw)

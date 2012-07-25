@@ -3,16 +3,16 @@ import cgitb
 
 import cherrypy
 import fab
-
-from eggmonster import env
 from yg.process.erroremail import email_error
+
+import airportlocker
 
 
 def handle_500(include_ex_message=False):
 	tb_info = sys.exc_info()
 	cherrypy.log.error(cgitb.text(tb_info))
 	cherrypy.response.status = 500
-	if env.email_error:
+	if airportlocker.config.email_error:
 		exc = tb_info[1]
 		if hasattr(fab.request, 'error_info') and fab.request.error_info:
 			extra_info = fab.request.error_info
@@ -23,11 +23,14 @@ def handle_500(include_ex_message=False):
 		if getattr(exc, 'do_not_email', False):
 			pass
 		else:
-			email_error(env.email_server, env.email_list, 'Gryphon-2', tb_info, extra_info)
+			email_error(
+				airportlocker.config.email_server,
+				airportlocker.config.email_list, 'Airportlocker', tb_info,
+				extra_info)
 		cherrypy.response.body = ["Error Occurred"]
 		if include_ex_message and exc.message:
 			cherrypy.response.body.append(': %s' % (exc.message))
 	else:
 		from fab import cgitb_ext
-		cherrypy.response.body = [cgitb_ext.format_tb_for_display(appname='Gryphon')]
-
+		cherrypy.response.body = [cgitb_ext.format_tb_for_display(
+			appname='Airportlocker')]

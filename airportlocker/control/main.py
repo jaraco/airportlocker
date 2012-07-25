@@ -9,11 +9,10 @@ from pprint import pprint
 import fab
 import cherrypy
 
+import airportlocker
 from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.resource import ResourceMixin
-
-from eggmonster import env
 
 def success(value):
 	return json.dumps({'status' : 'success', 'value' : value})
@@ -54,7 +53,7 @@ class ListResources(Resource):
 
 class ViewResource(Resource):
 	def GET(self, page, id):
-		results = self.db.find_one(dict(_id=id)) 
+		results = self.db.find_one(dict(_id=id))
 		if not results:
 			raise cherrypy.HTTPError(404)
 		return json.dumps(results)
@@ -69,7 +68,7 @@ class ReadResource(Resource, ResourceMixin):
 
 	def HEAD(self, page, *args, **kw):
 		path = '/'.join(args)
-		cherrypy.response.headers['Connection'] = 'close'		
+		cherrypy.response.headers['Connection'] = 'close'
 		return self.head_file(path)
 
 class CreateResource(Resource, ResourceMixin):
@@ -114,7 +113,7 @@ class UpdateResource(Resource, ResourceMixin):
 
 	def get_doc(self, key):
 		return self.db.find_one(dict(_id=key))
-	
+
 	@post
 	def PUT(self, page, fields, id):
 		cur_doc = self.get_doc(id)
@@ -144,4 +143,4 @@ class DeleteResource(Resource, ResourceMixin):
 			self.remove_file(meta['name'])
 			self.db.remove(id)
 		return success({'deleted': meta})
-		
+

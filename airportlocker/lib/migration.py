@@ -19,8 +19,8 @@ def from_faststore():
 	Assumes faststore 0.8 was installed by a previous install of
 	airportlocker in this Python environment (or manually).
 	"""
-	from eggmonster import env
-	has_faststore_config = hasattr(env, 'fs_host') and hasattr(env, 'fs_port')
+	config = airportlocker.config
+	has_faststore_config = 'fs_host' in config and 'fs_port' in config
 	if not has_faststore_config:
 		# if the faststore config has been removed, assume no migration
 		#  is necessary
@@ -29,10 +29,10 @@ def from_faststore():
 	pkg_resources.require('faststore==0.8')
 	from faststore.client import FastStoreClient
 	log.info('FastStore configuration found - migrating records')
-	source = FastStoreClient(env.fs_host, env.fs_port)
-	dest = airportlocker.store[env.docset]
+	source = FastStoreClient(config.fs_host, config.fs_port)
+	dest = airportlocker.store[config.docset]
 	source_keys = set(
-		key for key in source.keys(env.docset)
+		key for key in source.keys(config.docset)
 		if not key.startswith('__view__')
 		)
 	dest_keys = set(rec['_id'] for rec in dest.find())
@@ -46,17 +46,17 @@ def from_faststore():
 	for key in missing:
 		log.debug('Migrating %s', key)
 		try:
-			dest.insert(json.loads(source.retr(env.docset, key)))
+			dest.insert(json.loads(source.retr(config.docset, key)))
 		except Exception:
 			log.error("Unhandled exception migrating %s", key)
 	log.info('Migration of %d records completed in %s.', len(missing),
 		elapsed.split())
 
 def do_local_faststore_migration():
-	from eggmonster import env
-	env.fs_host = 'mongodb01.g.yougov.local'
-	env.fs_port = 10104
-	env.docset = 'luggage'
+	config = airportlocker.config
+	config.fs_host = 'mongodb01.g.yougov.local'
+	config.fs_port = 10104
+	config.docset = 'luggage'
 	logging.basicConfig(level=logging.DEBUG)
 	import pymongo
 	airportlocker.store = pymongo.Connection()['airportlocker']

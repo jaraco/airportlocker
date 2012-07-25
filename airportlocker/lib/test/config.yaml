@@ -1,0 +1,24 @@
+production : False
+filestore : 'filestore'
+
+airportlocker_port : 8090
+docset : 'luggage'
+
+# mongodb store
+mongo_host : localhost
+mongo_port : 27017
+mongo_db_name : airportlocker
+
+# performance tweaks (necessary for static file serving)
+threads : 30
+
+# error emails
+email_server: 'vemail1'
+
+# Logging to eggmonster
+eggmonster_error : false
+eggmonster_access : false
+
+log_host : "vesyslogd"
+log_port : 13000
+log_facility : "airportlocker"

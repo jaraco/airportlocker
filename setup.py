@@ -18,19 +18,18 @@ setup_params = dict(
 	],
 	entry_points={
 		'eggmonster.applications': [
-			'main = airportlocker.control.root:run_airportlocker',
-			'embed = airportlocker.control.root:start_airportlocker',
+			'main = airportlocker.control.em_launch:run',
 		],
 	},
 	install_requires=[
 		"yg.performance>=1.1,<2.0dev",
 		"yg.process>=1.0.2,<2.0dev",
+		'jaraco.util',
 	] + py25reqs + py26reqs,
 	extras_require=dict(
 		# note, if you change the server requirements, you must also update
 		#  the requirements.txt (because pip doesn't support extras)
 		server=[
-			"eggmonster>=4.1,<6.0dev",
 			"fab>=2.4,<3.0dev",
 			"pymongo",
 		],
