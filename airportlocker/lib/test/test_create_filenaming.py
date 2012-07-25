@@ -3,8 +3,6 @@ import shutil
 
 from StringIO import StringIO
 
-import fab
-import cherrypy
 import py.test
 
 import airportlocker.lib.resource
@@ -78,7 +76,7 @@ class TestFileNaming(object):
 		assert self.obj.get_next_index(self.mfs, 'new', JPEG) == None
 		assert self.obj.get_next_index(self.mfs, 'foo', JPEG) == 1
 		assert self.obj.get_next_index(self.mfs, 'foo_bar', JPEG) == 2
-		
+
 		# the initial file was removed so we can fill it in here
 		assert self.obj.get_next_index(self.mfs, 'foo_bar_', JPEG) == None
 		new_file = os.path.join(self.mfs, 'foo_bar_.jpg')
