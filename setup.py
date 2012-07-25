@@ -22,6 +22,7 @@ setup_params = dict(
 		],
 	},
 	install_requires=[
+		'pyYAML',
 		"yg.performance>=1.1,<2.0dev",
 		"yg.process>=1.0.2,<2.0dev",
 		'jaraco.util',
