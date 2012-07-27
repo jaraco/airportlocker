@@ -72,8 +72,8 @@ class TestFileNaming(object):
 		assert self.obj.add_extension('yeah', JPEG) in (
 			'yeah.jpg', 'yeah.jpe', 'yeah.jpeg')
 
+	@py.test.mark.xfail(reason="no longer matches API")
 	def test_last_index(self):
-		py.test.skip("fails - no longer matches API")
 		assert self.obj.get_next_index(self.mfs, 'new', JPEG) == None
 		assert self.obj.get_next_index(self.mfs, 'foo', JPEG) == 1
 		assert self.obj.get_next_index(self.mfs, 'foo_bar', JPEG) == 2
@@ -87,8 +87,8 @@ class TestFileNaming(object):
 		assert self.obj.get_next_index(self.mfs, 'foo_bar_', JPEG) == 2
 		os.remove(new_file)
 
+	@py.test.mark.xfail(reason="no longer matches API")
 	def test_verified_filename(self):
-		py.test.skip("fails - no longer matches API")
 		# no files are written so the checks always return with the
 		# original file comparisons
 		new_names = [
