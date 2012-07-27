@@ -1,9 +1,7 @@
 import os
-import shutil
 import urlparse
 
 import httplib2
-import py.test
 
 from optparse import OptionParser
 from pprint import pprint
@@ -29,7 +27,7 @@ def update_sample_file(name):
 
 
 class AirportLockerClient(object):
-	
+
 	def __init__(self, base):
 		self.h = httplib2.Http()
 		self.base = base
@@ -68,7 +66,6 @@ class AirportLockerClient(object):
 			print c
 			raise
 		return response
-	
 
 	def view(self, id):
 		res, c = self.h.request(self.api('/view/%s' % id))
@@ -86,7 +83,7 @@ class AirportLockerClient(object):
 def test_create(exc):
 	print 'Create'
 	create_sample_file(sample_fn)
-	sample = exc.create(sample_fn, {'yeah' : 'this field'})
+	sample = exc.create(sample_fn, {'yeah': 'this field'})
 	pprint(sample)
 	print 'Done'
 	print
@@ -120,7 +117,7 @@ def test_delete(exc, id):
 	result = exc.delete(id)
 	pprint(result)
 	print 'Done'
-	print 
+	print
 
 
 if __name__=='__main__':

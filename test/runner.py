@@ -1,7 +1,5 @@
 from optparse import OptionParser
 import timeit
-from subprocess import call
-
 
 if __name__ == '__main__':
 	usage = 'usage: %prog {airportlocker url}'
@@ -12,4 +10,3 @@ if __name__ == '__main__':
 	stmt = "call(['python', 'exerciser.py', '%s'])" % args[0]
 	timer = timeit.Timer(stmt, 'from subprocess import call')
 	print timer.timeit(number=10)
-	
