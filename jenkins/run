@@ -1,2 +1,3 @@
 #!/bin/bash
-python2.7 setup.py setopt -c easy_install -o index-url -s http://cheese.yougov.net -f /dev/null ptr '--junitxml=test results.xml' --extras --index-url=http://cheese.yougov.net
+python2.7 -c "import setuptools; setuptools.setup()" setopt -c easy_install -o index-url -s http://cheese.yougov.net
+python2.7 setup.py ptr '--junitxml=test results.xml' --extras --index-url=http://cheese.yougov.net
