@@ -1,3 +1,2 @@
 #!/bin/bash
-export no_proxy=localhost
-yg-dependency-context "python2.7 setup.py ptr '--junitxml=test results.xml' --extras --index-url=http://cheese.yougov.net"
+python2.7 setup.py ptr '--junitxml=test results.xml' --extras --index-url=http://cheese.yougov.net
