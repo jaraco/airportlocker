@@ -31,7 +31,7 @@ setup_params = dict(
 		# note, if you change the server requirements, you must also update
 		#  the requirements.txt (because pip doesn't support extras)
 		server=[
-			"fab>=2.4,<3.0dev",
+			"fab>=2.4,<4.0dev",
 			"pymongo",
 		],
 		client=[
