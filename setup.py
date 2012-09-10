@@ -13,9 +13,6 @@ setup_params = dict(
 	url="http://dev.yougov.com/",
 	packages=setuptools.find_packages(),
 	include_package_data=True,
-	data_files=[
-		('', ['unittest.yaml']),
-	],
 	entry_points={
 		'eggmonster.applications': [
 			'main = airportlocker.control.em_launch:run',
