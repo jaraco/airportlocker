@@ -1,7 +1,6 @@
 import os
 import shutil
-
-from StringIO import StringIO
+import io
 
 import py.test
 
@@ -13,7 +12,7 @@ class MockResource(airportlocker.lib.filesystem.FileStorage):
 
 class MockFileObj(object):
 	def __init__(self, fn, contents):
-		self.file = StringIO()
+		self.file = io.BytesIO()
 		self.file.write('\n'.join(contents))
 		self.file.seek(0)
 		self.filename = fn
