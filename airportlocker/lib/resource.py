@@ -43,7 +43,7 @@ class ResourceMixin(object):
 		'''Removes the extension for use in other algorithms'''
 		if not ext.startswith('.'):
 			ext = '.' + ext
-		m = re.match(r'(.*)' + re.escape(ext), fn, flags=re.IGNORE_CASE)
+		m = re.match(r'(.*)' + re.escape(ext), fn, flags=re.IGNORECASE)
 		if m:
 			return m.groups()[0]
 		return fn
