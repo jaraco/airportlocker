@@ -94,7 +94,7 @@ class FileStorage(object):
 		filepath = self.verified_filename(filepath)
 		filepath = self._ensure_extension(filepath, fs.filename)
 		self._write_file(filepath, fs.file)
-		return filepath
+		return os.path.basename(filepath)
 
 	@staticmethod
 	def _ensure_extension(filename, source_filename):
