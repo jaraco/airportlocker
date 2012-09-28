@@ -5,12 +5,12 @@ from StringIO import StringIO
 
 import py.test
 
-import airportlocker.lib.resource
+import airportlocker.lib.filesystem
 
 # is this still needed
 airportlocker.filestore = os.path.dirname(os.path.abspath(__file__))
 
-class MockResource(airportlocker.lib.resource.ResourceMixin):
+class MockResource(airportlocker.lib.filesystem.FileStorage):
 	pass
 
 
@@ -105,7 +105,7 @@ class TestFileNaming(object):
 
 		for fn, ext, expected in new_names:
 			new_name = self.obj.verified_filename(self.mfs, fn, ext)
-			assert new_name  == expected
+			assert new_name == expected
 
 	def test_file_io(self):
 		fn = 'a_test_file.txt'
