@@ -15,9 +15,11 @@ mimetypes.add_type('video/m4v', '.m4v')
 mimetypes.add_type('audio/m4a', '.m4a')
 mimetypes.add_type('text/csv', '.csv')
 
-class ResourceMixin(object):
-	'''This mixin provides the filesystem interface for working with
-	resource files.'''
+class FileStorage(object):
+	'''
+	A mix-in class to be used with Resource controller objects providing
+	filesystem-backed resource file storage.
+	'''
 
 	clean_fn_regex = re.compile(r'[@\!\? \+\*\#]')
 	index_re = re.compile(r'(.*)_(\d+).(.*)')
@@ -35,7 +37,8 @@ class ResourceMixin(object):
 			return exts[-1]
 		return '.uknown'
 
-	def has_extension(self, fn, ext):
+	@staticmethod
+	def has_extension(fn, ext):
 		return os.path.splitext(fn)[1].lower() == ext
 
 	@staticmethod
@@ -49,8 +52,9 @@ class ResourceMixin(object):
 		return fn
 
 	def add_extension(self, fn, type, index=None):
-		'''Unwraps the file name so we can append the next number in
-		the sequence.'''
+		'''
+		Unwrap the file name and append the index if provided.
+		'''
 		ext = self.get_extension(type, fn)
 		if self.has_extension(fn, ext):
 			fn = self.rm_ext(fn, ext)
