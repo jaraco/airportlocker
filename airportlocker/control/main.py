@@ -1,24 +1,18 @@
 from __future__ import with_statement
-import os
-import glob
 import uuid
-import itertools
-from string import Template
-from pprint import pprint
 
 import fab
 import cherrypy
 
-import airportlocker
 from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.resource import ResourceMixin
 
 def success(value):
-	return json.dumps({'status' : 'success', 'value' : value})
+	return json.dumps({'status': 'success', 'value': value})
 
 def failure(message):
-	return json.dumps({'status' : 'failure', 'reason' : message})
+	return json.dumps({'status': 'failure', 'reason': message})
 
 class BasicUpload(HtmlResource):
 	template = fab.template('base.tmpl')
