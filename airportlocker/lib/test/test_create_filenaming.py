@@ -53,21 +53,6 @@ class TestFileNaming(object):
 	def teardown_class(self):
 		shutil.rmtree(self.mfs)
 
-	def test_add_extension(self):
-		filenames = [
-			('hello.world', ZIP, 'hello.world.zip'),
-			('foo.bar.zip', ZIP, 'foo.bar.zip'),
-			('hello world.doc', DOC, 'hello world.doc'),
-			('picture.jpg', JPEG, 'picture.jpg'),
-			('YEAH.JPG', JPEG, 'YEAH.jpg'),
-			('mytext.txt', TXT, 'mytext.txt'),
-			('my video', M4V, 'my video.m4v'),
-		]
-		for fn, type, expected in filenames:
-			assert self.obj.add_extension(fn, type) == expected
-		assert self.obj.add_extension('yeah', JPEG) in (
-			'yeah.jpg', 'yeah.jpe', 'yeah.jpeg')
-
 	@py.test.mark.xfail(reason="no longer matches API")
 	def test_last_index(self):
 		assert self.obj.get_next_index(self.mfs, 'new', JPEG) == None
