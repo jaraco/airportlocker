@@ -7,9 +7,6 @@ import py.test
 
 import airportlocker.lib.filesystem
 
-# is this still needed
-airportlocker.filestore = os.path.dirname(os.path.abspath(__file__))
-
 class MockResource(airportlocker.lib.filesystem.FileStorage):
 	pass
 
