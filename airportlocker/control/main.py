@@ -6,7 +6,8 @@ import cherrypy
 
 from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
-from airportlocker.lib.filesystem import FileStorage, NotFoundError
+from airportlocker.lib.filesystem import FileStorage
+from airportlocker.lib.storage import NotFoundError
 
 def success(value):
 	return json.dumps({'status': 'success', 'value': value})
