@@ -6,7 +6,7 @@ import cherrypy
 
 from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
-from airportlocker.lib.resource import ResourceMixin
+from airportlocker.lib.filesystem import FileStorage
 
 def success(value):
 	return json.dumps({'status': 'success', 'value': value})
@@ -52,7 +52,7 @@ class ViewResource(Resource):
 			raise cherrypy.HTTPError(404)
 		return json.dumps(results)
 
-class ReadResource(Resource, ResourceMixin):
+class ReadResource(Resource, FileStorage):
 	def GET(self, page, *args, **kw):
 		if not args:
 			raise cherrypy.HTTPError(404)
@@ -65,7 +65,7 @@ class ReadResource(Resource, ResourceMixin):
 		cherrypy.response.headers['Connection'] = 'close'
 		return self.head_file(path)
 
-class CreateResource(Resource, ResourceMixin):
+class CreateResource(Resource, FileStorage):
 	'''
 	Save the file and make sure the filename is as close as possible to the
 	original while still being unique.
@@ -76,11 +76,11 @@ class CreateResource(Resource, ResourceMixin):
 
 	@post
 	def POST(self, page, fields):
-		'''Uses the ResourceMixin to save the file'''
+		'''Uses the FileStorage to save the file'''
 		fields_valid = '_new' in fields and '_lockerfile' in fields
 		if not fields_valid:
-			return failure('A "_new" and "_lockerfile" are required to create '
-						   'a new document.')
+			return failure('A "_new" and "_lockerfile" are required to '
+				'create a new document.')
 
 		# clean up the meta data
 		meta = dict([
@@ -103,7 +103,7 @@ class CreateResource(Resource, ResourceMixin):
 		inserted_id = self.db.insert(meta)
 		return success(inserted_id)
 
-class UpdateResource(Resource, ResourceMixin):
+class UpdateResource(Resource, FileStorage):
 
 	def get_doc(self, key):
 		return self.db.find_one(dict(_id=key))
@@ -130,11 +130,10 @@ class UpdateResource(Resource, ResourceMixin):
 			self.update_file(new_doc['name'], fields['_lockerfile'].file)
 		return success({'updated': json.dumps(new_doc)})
 
-class DeleteResource(Resource, ResourceMixin):
+class DeleteResource(Resource, FileStorage):
 	def DELETE(self, page, id):
 		meta = self.db.find_one(dict(_id=id)) or {}
 		if meta:
 			self.remove_file(meta['name'])
 			self.db.remove(id)
 		return success({'deleted': meta})
-
