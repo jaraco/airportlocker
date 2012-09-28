@@ -61,107 +61,83 @@ class FileStorage(object):
 	filesystem-backed resource file storage.
 	'''
 
-	clean_fn_regex = re.compile(r'[@\!\? \+\*\#]')
-	index_re = re.compile(r'(.*)_(\d+).(.*)')
+	bad_filename_chars = re.compile(r'[@\!\? \+\*\#]')
+	"Characters that get replaced with underscores"
 
-	def get_extension(self, mtype, fn=None):
-		if mtype == 'none' and fn:
-			mtype, e = mimetypes.guess_type(fn)
-		exts = mimetypes.guess_all_extensions(mtype)
-		if exts:
-			if fn:
-				cur_ext = os.path.splitext(fn)[1]
-				if cur_ext.lower() in exts:
-					return cur_ext.lower()
-			# take the last one
-			return exts[-1]
-		return '.uknown'
-
-	@staticmethod
-	def has_extension(fn, ext):
-		return os.path.splitext(fn)[1].lower() == ext
-
-	@staticmethod
-	def rm_ext(fn, ext):
-		'''Removes the extension for use in other algorithms'''
-		if not ext.startswith('.'):
-			ext = '.' + ext
-		m = re.match(r'(.*)' + re.escape(ext), fn, flags=re.IGNORECASE)
-		if m:
-			return m.groups()[0]
-		return fn
-
-	def add_extension(self, fn, type, index=None):
+	def verified_filename(self, fn):
 		'''
-		Unwrap the file name and append the index if provided.
+		Return a unique, human-readable filename that's safe to save to the
+		filesystem.
 		'''
-		ext = self.get_extension(type, fn)
-		if self.has_extension(fn, ext):
-			fn = self.rm_ext(fn, ext)
-		parts = [fn]
-		if index:
-			parts.append('_%s' % index)
-		if not ext.startswith('.'):
-			parts.append('.')
-		parts.append(ext)
-		fn = ''.join(parts)
-		return fn
+		fn = self.bad_filename_chars.sub('_', fn)
+		return unique_name(numbered_files(fn), self.exists)
 
-	def get_next_index(self, folder, fn, type, prefix):
-		'''Gets the next number to uniquify a filename:
-		1. Check if the file exists if not return
-		2. Loop through files looking for matches on the filename pattern
-		3. Any matches, add the integer to a list
-		4. If there are any listed numbers, get the max and add 1
-		5. Return 1 since it is the first duplicate'''
+	def exists(self, filepath):
+		"""
+		Return True iff filepath already exists in the filestore.
+		"""
+		fullpath = os.path.join(self.root, filepath)
+		return os.path.exists(fullpath)
 
-		fullpath = self.add_extension(os.path.join(folder, prefix, fn), type)
-		if not os.path.exists(fullpath) or not os.path.isfile(fullpath):
-			return None
-		ext = self.get_extension(type, fn) # this includes the '.'
-		regex = '(.*)%s/%s_(\d+)%s$' % (prefix, self.rm_ext(fn, ext), ext)
-		fexp = re.compile(regex)
-		indexes = []
-		for root, dirs, fnames in os.walk(folder):
-			for fname in fnames:
-				cur_fn = os.path.join(root, fname)
-				match = fexp.match(cur_fn)
-				if match:
-					indexes.append(int(match.groups()[1]))
-		if indexes:
-			return max(indexes) + 1
-		return 1
-
-	def verified_filename(self, folder, fn, type, prefix):
-		'''Returns a unique human readable filename (ie not a uuid)'''
-		fn = self.clean_fn_regex.sub('_', fn)
-		prefix = self.clean_fn_regex.sub('_', prefix)
-		index = self.get_next_index(folder, fn, type, prefix)
-		return self.add_extension(fn, type, index)
+	@property
+	def root(self):
+		return airportlocker.filestore
 
 	def save_file(self, fs, name=None, prefix=None):
-		folder = airportlocker.filestore
-		mtype, e = mimetypes.guess_type(fs.filename)
+		"""
+		Save the CherryPy File object fs to self.root/prefix
+		"""
 		prefix = prefix or ''
 		if prefix.endswith('/'):
 			prefix = prefix[:-1]
-		fn = self.verified_filename(folder, name or fs.filename, mtype, prefix)
-		path = os.path.join(folder, prefix, fn)
-		self._write_file(path, fs.file)
-		return fn
+		filepath = os.path.join(prefix, name or fs.filename)
+		filepath = self.verified_filename(filepath)
+		filepath = self._ensure_extension(filepath, fs.filename)
+		self._write_file(filepath, fs.file)
+		return filepath
 
-	def _write_file(self, path, fh):
-		dirname = os.path.dirname(path)
-		if not os.path.exists(dirname) or not os.path.isdir(dirname):
+	@staticmethod
+	def _ensure_extension(filename, source_filename):
+		"""
+		Ensure the filename has an extension and that it matches the source
+		filename. If it doesn't, append the extension from the source
+		filename. This method is for backward compatibility, matching previous
+		behavior where a user can supply a name but the name need not include
+		the extension.
+
+		>>> FileStorage._ensure_extension('foo', 'foo.txt')
+		'foo.txt'
+		>>> FileStorage._ensure_extension('foo.jpg', 'foo.JPG')
+		'foo.jpg'
+
+		It should work too if the extensions resolve to the same mime type.
+		>>> FileStorage._ensure_extension('foo.jpg', 'foo.jpeg')
+		'foo.jpg'
+
+		It might look weird, but if the filename has an incorrect extension,
+		differing from the source_filename, the source takes precedence.
+		>>> FileStorage._ensure_extension('foo.txt', 'my file.jpeg')
+		'foo.txt.jpeg'
+		"""
+		_, source_ext = os.path.splitext(source_filename)
+		guess = mimetypes.guess_type
+		if guess(filename) != guess(source_filename):
+			filename += source_ext
+		return filename
+
+	def _write_file(self, target, stream):
+		"""
+		Write stream to target in self.root
+		"""
+		target = os.path.join(self.root, target)
+		dirname = os.path.dirname(target)
+		if not os.path.isdir(dirname):
 			os.makedirs(dirname)
-		newfile = open(path, 'w+')
-		for chunk in fh:
-			newfile.write(chunk)
-		newfile.close()
+		with open(target, 'w+') as newfile:
+			for chunk in stream:
+				newfile.write(chunk)
 
-	def update_file(self, fn, fh):
-		path = os.path.join(airportlocker.filestore, fn)
-		self._write_file(path, fh)
+	update_file = _write_file
 
 	def get_resource(self, key):
 		resource = None
