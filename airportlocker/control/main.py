@@ -18,6 +18,7 @@ class BasicUpload(HtmlResource):
 	template = fab.template('base.tmpl')
 	body = fab.template('basicform.tmpl')
 	def GET(self, page, *args, **kw):
+		cherrypy.response.headers['Content-Type'] = 'application/xhtml+xml'
 		page.args = kw
 
 

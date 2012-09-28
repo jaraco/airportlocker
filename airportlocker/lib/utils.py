@@ -1,4 +1,7 @@
 from __future__ import with_statement
+
+import os
+
 import mimetypes
 import tempfile
 
@@ -22,6 +25,9 @@ class MultiPartBody(object):
 
 
 class MultiPart(object):
+	"""
+	A MIME multipart object for uploading a single _lockerfile
+	"""
 	boundary = '----------12308129817491874--'
 	le = '\r\n'
 	cd = 'Content-Disposition: form-data;'
@@ -30,6 +36,9 @@ class MultiPart(object):
 	lbreak = ''
 
 	def __init__(self, fn, fields=None):
+		"""
+		fn is the path to the file on the local filesystem
+		"""
 		self.fn = fn
 		self.fields = fields or {}
 		self.filename_key = '_lockerfile'
@@ -66,8 +75,11 @@ class MultiPart(object):
 			yield self._line(self.lbreak)
 			yield self._line(v)
 		with open(self.fn, 'r') as fh:
+			# browsers normally just pass the filename and not the local path
+			# so do the same here.
+			filename = os.path.basename(self.fn)
 			yield self._line(self._start())
-			yield self._line(self.file_header % (self.filename_key, self.fn))
+			yield self._line(self.file_header % (self.filename_key, filename))
 			yield self._line(self._content_type())
 			yield self._line(self.lbreak)
 			yield self._line(fh.read())
