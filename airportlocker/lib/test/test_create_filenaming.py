@@ -6,7 +6,7 @@ import py.test
 
 import airportlocker.lib.filesystem
 
-class MockResource(airportlocker.lib.filesystem.FileStorage):
+class MockStorage(airportlocker.lib.filesystem.FileStorage):
 	pass
 
 
@@ -32,10 +32,10 @@ M4V = 'video/m4v'
 class TestFileNaming(object):
 
 	def setup_class(self):
-		self.obj = MockResource()
+		self.storage = MockStorage()
 		self.mfs = '.test_mockfilestore'
 		airportlocker.filestore = self.mfs
-		if not os.path.exists(self.mfs) or not os.path.isdir(self.mfs):
+		if not os.path.isdir(self.mfs):
 			os.mkdir(self.mfs)
 		self.sample_filenames = [
 			'foo.jpg',
@@ -53,19 +53,25 @@ class TestFileNaming(object):
 	def teardown_class(self):
 		shutil.rmtree(self.mfs)
 
+	def test_exists(self):
+		for filename in self.sample_filenames:
+			assert self.storage.exists(filename)
+		for filename in ['welcome', 'enough']:
+			assert not self.storage.exists(filename)
+
 	@py.test.mark.xfail(reason="no longer matches API")
 	def test_last_index(self):
-		assert self.obj.get_next_index(self.mfs, 'new', JPEG) == None
-		assert self.obj.get_next_index(self.mfs, 'foo', JPEG) == 1
-		assert self.obj.get_next_index(self.mfs, 'foo_bar', JPEG) == 2
+		assert self.storage.get_next_index(self.mfs, 'new', JPEG) == None
+		assert self.storage.get_next_index(self.mfs, 'foo', JPEG) == 1
+		assert self.storage.get_next_index(self.mfs, 'foo_bar', JPEG) == 2
 
 		# the initial file was removed so we can fill it in here
-		assert self.obj.get_next_index(self.mfs, 'foo_bar_', JPEG) == None
+		assert self.storage.get_next_index(self.mfs, 'foo_bar_', JPEG) == None
 		new_file = os.path.join(self.mfs, 'foo_bar_.jpg')
 		open(new_file, 'a').close()
 
 		# now it should hit two
-		assert self.obj.get_next_index(self.mfs, 'foo_bar_', JPEG) == 2
+		assert self.storage.get_next_index(self.mfs, 'foo_bar_', JPEG) == 2
 		os.remove(new_file)
 
 	def test_verified_filename(self):
@@ -84,7 +90,7 @@ class TestFileNaming(object):
 		]
 
 		for fn, expected in new_names:
-			new_name = self.obj.verified_filename(fn)
+			new_name = self.storage.verified_filename(fn)
 			assert new_name == expected
 
 	def test_file_io(self):
@@ -92,17 +98,17 @@ class TestFileNaming(object):
 		fullpath = os.path.join(airportlocker.filestore, fn)
 		contents = [str(x) for x in range(1, 20)]
 		fake_file = MockFileObj(fn, contents)
-		self.obj.save_file(fake_file)
+		self.storage.save_file(fake_file)
 		assert os.path.exists(fullpath)
 
 		contents2 = [str(x) for x in range(2, 22, 2)]
 		contents2_str = '\n'.join(contents2)
 		update_file = MockFileObj(fn, contents2)
-		self.obj.update_file(fn, update_file)
+		self.storage.update_file(fn, update_file)
 		updated_content = open(fullpath).read()
 		assert updated_content == contents2_str
 
-		self.obj.remove_file(fn)
+		self.storage.remove_file(fn)
 		assert not os.path.exists(fullpath)
 		assert os.path.exists(fullpath + '.deleted')
 		os.remove(os.path.join(airportlocker.filestore, fn + '.deleted'))
