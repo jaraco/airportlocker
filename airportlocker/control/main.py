@@ -6,13 +6,20 @@ import cherrypy
 
 from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
-from airportlocker.lib.filesystem import FileStorage
+from airportlocker.lib.filesystem import FileStorage, NotFoundError
 
 def success(value):
 	return json.dumps({'status': 'success', 'value': value})
 
 def failure(message):
 	return json.dumps({'status': 'failure', 'reason': message})
+
+def items(field_storage):
+	"""
+	Like dict.items, but for cgi.FieldStorage
+	"""
+	for key in field_storage.keys():
+		yield key, field_storage.getvalue(key)
 
 class BasicUpload(HtmlResource):
 	template = fab.template('base.tmpl')
@@ -22,33 +29,33 @@ class BasicUpload(HtmlResource):
 		page.args = kw
 
 
-class ListResources(Resource):
+class ListResources(Resource, FileStorage):
 	def GET(self, page, q=None, **kw):
-		if q or kw:
-			cherrypy.response.headers['Cache-Control'] = 'no-cache'
-			if q == '__all':
-				res = self._list()
-			else:
-				res = self._query(**kw)
-			return json.dumps(res)
-		# need a query
-		raise cherrypy.HTTPError(404)
+		if not q or not kw:
+			# need a query
+			raise cherrypy.HTTPError(404)
+		cherrypy.response.headers['Cache-Control'] = 'no-cache'
+		if q == '__all':
+			res = self._list()
+		else:
+			res = self._query(**kw)
+		return json.dumps(res)
 
 	def _list(self):
 		def add_url(row):
 			row['url'] = '/static/%(_id)s' % row
 			return row
-		return map(add_url, self.db.find())
+		return map(add_url, self.find())
 
 	def _query(self, **kw):
 		"""
 		Return all records that match the query.
 		"""
-		return list(self.db.find(kw))
+		return list(self.find(kw))
 
-class ViewResource(Resource):
+class ViewResource(Resource, FileStorage):
 	def GET(self, page, id):
-		results = self.db.find_one(dict(_id=id))
+		results = self.find_one(dict(_id=id))
 		if not results:
 			raise cherrypy.HTTPError(404)
 		return json.dumps(results)
@@ -74,6 +81,7 @@ class CreateResource(Resource, FileStorage):
 	cases = [
 		'_prefix',
 	]
+	"A list of all metadata keys that begin with _"
 
 	@post
 	def POST(self, page, fields):
@@ -84,57 +92,51 @@ class CreateResource(Resource, FileStorage):
 				'create a new document.')
 
 		# clean up the meta data
-		meta = dict([
-			(k, fields.getvalue(k)) for k in fields.keys()
+		meta = dict(
+			(k, v) for k, v in items(fields)
 			if not k.startswith('_') or k in self.cases
-		])
+		)
+
 		# gen an id
 		meta['_id'] = str(uuid.uuid4())
 
-		# give it a name
-		if 'name' in fields:
-			fn = fields['name'].value
-		else:
-			fn = fields['_lockerfile'].filename
+		# use override name field if supplied, else use source filename
+		name = (fields['name'].value
+			if 'name' in fields else fields['_lockerfile'].filename)
 
-		# save the file and grab its name
-		meta['_filename'] = self.save_file(fields['_lockerfile'], fn, prefix=meta.get('_prefix'))
-		meta['name'] = meta['_filename']
-		meta['_mime'] = fields['_lockerfile'].type
-		inserted_id = self.db.insert(meta)
-		return success(inserted_id)
+		return success(self.save(fields['_lockerfile'], name, meta))
 
 class UpdateResource(Resource, FileStorage):
 
+	cases = [
+		'_prefix',
+	]
+	"A list of all metadata keys that begin with _"
+
 	def get_doc(self, key):
-		return self.db.find_one(dict(_id=key))
+		return self.find_one(dict(_id=key))
 
 	@post
 	def PUT(self, page, fields, id):
 		cur_doc = self.get_doc(id)
 		if not cur_doc:
 			raise cherrypy.HTTPNotFound()
-		have_file = bool('_lockerfile' in fields)
-		meta = dict([
-			(k, fields.getvalue(k)) for k in fields.keys()
-			if not k.startswith('_')
-		])
-		meta['_id'] = cur_doc['_id']
-		meta['_filename'] = cur_doc['_filename']
-		meta['name'] = cur_doc['name']
-		if have_file:
-			meta['_mime'] = fields['_lockerfile'].type or cur_doc['_mime']
-		spec = dict(_id=id)
-		self.db.update(spec, meta)
-		new_doc = self.get_doc(id)
-		if have_file:
-			self.update_file(new_doc['name'], fields['_lockerfile'].file)
+
+		cp_file = fields.get('_lockerfile', None)
+
+		# clean up the meta data
+		meta = dict(
+			(k, v) for k, v in items(fields)
+			if not k.startswith('_') or k in self.cases
+		)
+
+		try:
+			new_doc = self.update(id, meta, cp_file)
+		except NotFoundError:
+			raise cherrypy.HTTPNotFound()
+
 		return success({'updated': json.dumps(new_doc)})
 
 class DeleteResource(Resource, FileStorage):
 	def DELETE(self, page, id):
-		meta = self.db.find_one(dict(_id=id)) or {}
-		if meta:
-			self.remove_file(meta['name'])
-			self.db.remove(id)
-		return success({'deleted': meta})
+		return success({'deleted': self.delete(id)})

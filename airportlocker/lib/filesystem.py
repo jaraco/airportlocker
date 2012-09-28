@@ -54,8 +54,20 @@ def unique_name(candidates, exists):
 	"""
 	return next(itertools.ifilterfalse(exists, candidates))
 
+class NotFoundError(Exception): pass
 
-class FileStorage(object):
+class Storage(object):
+	def find(self, *args, **kwargs):
+		return self.coll.find(*args, **kwargs)
+
+	def find_one(self, *args, **kwargs):
+		return self.coll.find_one(*args, **kwargs)
+
+	@property
+	def coll(self):
+		return airportlocker.store[airportlocker.config.docset]
+
+class FileStorage(Storage):
 	'''
 	A mix-in class to be used with Resource controller objects providing
 	filesystem-backed resource file storage.
@@ -82,6 +94,15 @@ class FileStorage(object):
 	@property
 	def root(self):
 		return airportlocker.filestore
+
+	def save(self, cp_file, name, meta):
+		# save the file and grab its name
+		meta['_filename'] = self.save_file(cp_file, name,
+			prefix=meta.get('_prefix'))
+		meta['name'] = meta['_filename']
+		meta['_mime'] = cp_file.type
+		inserted_id = self.coll.insert(meta)
+		return inserted_id
 
 	def save_file(self, fs, name=None, prefix=None):
 		"""
@@ -139,6 +160,25 @@ class FileStorage(object):
 
 	update_file = _write_file
 
+	def update(self, id, meta, cp_file=None):
+		cur_doc = self.find_one(dict(_id=id))
+		if not cur_doc:
+			raise NotFoundError(id)
+
+		# copy values from current document (overriding any values supplied
+		# by the query).
+		meta['_id'] = cur_doc['_id']
+		meta['_filename'] = cur_doc['_filename']
+		meta['name'] = cur_doc['name']
+		if cp_file:
+			meta['_mime'] = cp_file.type or cur_doc['_mime']
+		spec = dict(_id=id)
+		self.coll.update(spec, meta)
+		new_doc = self.find_one(dict(_id=id))
+		if cp_file:
+			self.update_file(new_doc['name'], cp_file.file)
+		return new_doc
+
 	def get_resource(self, key):
 		resource = None
 		ct = 'application/octet-stream'
@@ -147,7 +187,7 @@ class FileStorage(object):
 			resource = open(fullpath, 'r')
 			ct, enc = mimetypes.guess_type(key)
 		else:
-			doc = self.db.find_one(key)
+			doc = self.coll.find_one(key)
 			if doc is None:
 				raise cherrypy.HTTPError(404)
 			fullpath = os.path.join(airportlocker.filestore,
@@ -157,6 +197,13 @@ class FileStorage(object):
 			resource = open(fullpath)
 			ct = doc['_mime']
 		return resource, ct
+
+	def delete(self, id):
+		meta = self.coll.find_one(dict(_id=id)) or {}
+		if meta:
+			self.remove_file(meta['name'])
+			self.coll.remove(id)
+		return meta
 
 	def remove_file(self, fn):
 		'''We do not actually remove the file. We just add a "deleted"
