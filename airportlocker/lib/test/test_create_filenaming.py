@@ -68,24 +68,23 @@ class TestFileNaming(object):
 		assert self.obj.get_next_index(self.mfs, 'foo_bar_', JPEG) == 2
 		os.remove(new_file)
 
-	@py.test.mark.xfail(reason="no longer matches API")
 	def test_verified_filename(self):
 		# no files are written so the checks always return with the
 		# original file comparisons
 		new_names = [
-			('foo', JPEG, 'foo_1.jpg'),
-			('foo bar ', JPEG, 'foo_bar_.jpg'),
-			('foo bar', JPEG, 'foo_bar_2.jpg'),
-			('foo@bar', JPEG, 'foo_bar_2.jpg'),
-			('foo!bar', JPEG, 'foo_bar_2.jpg'),
-			('foo?bar', JPEG, 'foo_bar_2.jpg'),
-			('foo+bar', JPEG, 'foo_bar_2.jpg'),
-			('foo*bar', JPEG, 'foo_bar_2.jpg'),
-			('foo#bar', JPEG, 'foo_bar_2.jpg'),
+			('foo.jpg', 'foo_1.jpg'),
+			('foo bar .jpg', 'foo_bar_.jpg'),
+			('foo bar.jpg', 'foo_bar_2.jpg'),
+			('foo@bar.jpg', 'foo_bar_2.jpg'),
+			('foo!bar.jpg', 'foo_bar_2.jpg'),
+			('foo?bar.jpg', 'foo_bar_2.jpg'),
+			('foo+bar.jpg', 'foo_bar_2.jpg'),
+			('foo*bar.jpg', 'foo_bar_2.jpg'),
+			('foo#bar.jpg', 'foo_bar_2.jpg'),
 		]
 
-		for fn, ext, expected in new_names:
-			new_name = self.obj.verified_filename(self.mfs, fn, ext)
+		for fn, expected in new_names:
+			new_name = self.obj.verified_filename(fn)
 			assert new_name == expected
 
 	def test_file_io(self):
