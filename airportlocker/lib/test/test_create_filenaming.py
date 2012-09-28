@@ -59,21 +59,6 @@ class TestFileNaming(object):
 		for filename in ['welcome', 'enough']:
 			assert not self.storage.exists(filename)
 
-	@py.test.mark.xfail(reason="no longer matches API")
-	def test_last_index(self):
-		assert self.storage.get_next_index(self.mfs, 'new', JPEG) == None
-		assert self.storage.get_next_index(self.mfs, 'foo', JPEG) == 1
-		assert self.storage.get_next_index(self.mfs, 'foo_bar', JPEG) == 2
-
-		# the initial file was removed so we can fill it in here
-		assert self.storage.get_next_index(self.mfs, 'foo_bar_', JPEG) == None
-		new_file = os.path.join(self.mfs, 'foo_bar_.jpg')
-		open(new_file, 'a').close()
-
-		# now it should hit two
-		assert self.storage.get_next_index(self.mfs, 'foo_bar_', JPEG) == 2
-		os.remove(new_file)
-
 	def test_verified_filename(self):
 		# no files are written so the checks always return with the
 		# original file comparisons
