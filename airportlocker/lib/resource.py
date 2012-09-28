@@ -38,11 +38,12 @@ class ResourceMixin(object):
 	def has_extension(self, fn, ext):
 		return os.path.splitext(fn)[1].lower() == ext
 
-	def rm_ext(self, fn, ext):
+	@staticmethod
+	def rm_ext(fn, ext):
 		'''Removes the extension for use in other algorithms'''
 		if not ext.startswith('.'):
 			ext = '.' + ext
-		m = re.match(r'(.*)(\%s|\%s)' % (ext, ext.upper()), fn)
+		m = re.match(r'(.*)' + re.escape(ext), fn, flags=re.IGNORE_CASE)
 		if m:
 			return m.groups()[0]
 		return fn
