@@ -153,8 +153,8 @@ class FileStorage(storage.Storage):
 
 	def delete(self, id):
 		"""
-		Delete the file indicated by id. Return the metadata if it exists
-		or an empty dict otherwise.
+		Delete the file indicated by id. Return the metadata for the deleted
+		document or an empty dict if the id did not exist.
 		"""
 		meta = self.coll.find_one(self.by_id(id)) or {}
 		if meta:

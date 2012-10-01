@@ -34,7 +34,6 @@ class GridFSStorage(storage.Storage):
 		prefix = prefix.rstrip('/')
 		filename = os.path.join(prefix, name or cp_file.filename)
 		filename = self.verified_filename(filename)
-		meta['name'] = filename
 		meta['content_type'] = cp_file.content_type
 		return unicode(
 			self.fs.put(cp_file.file, filename=filename, **meta)
@@ -48,7 +47,21 @@ class GridFSStorage(storage.Storage):
 		# stubbed
 
 	def get_resource(self, key):
-		pass # stubbed
+		"""
+		Retrieve a resource by key (file path or unique ID).
+		Returns the document stream and content type.
+		"""
+		if self.fs.exists(filename=key):
+			file = self.fs.get_last_version(key)
+		elif self.fs.exists(self.by_id(key)):
+			file = self.fs.get(self.by_id(key))
+		else:
+			raise storage.NotFoundError(key)
+		return file, file.content_type
 
 	def delete(self, id):
-		pass # stubbed
+		"""
+		Delete the file indicated by id. Return the metadata for the deleted
+		document or an empty dict if the id did not exist.
+		"""
+		# stubbed
