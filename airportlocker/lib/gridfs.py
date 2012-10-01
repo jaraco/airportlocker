@@ -106,20 +106,15 @@ class GridFSStorage(storage.Storage):
 		return meta
 
 	@classmethod
-	def migrate(cls):
+	def migrate(cls, mongodb_url, file_store):
 		"""
 		Migrate the data from a FileStorage instance.
 		"""
 		import pymongo
-		import argparse
-		from airportlocker.vr_launch import ConfigDict
-		from airportlocker import filesystem
+		from airportlocker.control.vr_launch import ConfigDict
+		from airportlocker.lib import filesystem
 		import posixpath
-		parser = argparse.ArgumentParser()
-		parser.add_argument('mongodb_url')
-		parser.add_argument('file_store')
-		args = parser.parse_args()
-		airportlocker.store = pymongo.Connection(args.mongodb_url)
+		airportlocker.store = pymongo.Connection(mongodb_url).airportlocker
 		airportlocker.config = ConfigDict(
 			docset = 'luggage',
 		)
@@ -133,5 +128,5 @@ class GridFSStorage(storage.Storage):
 				(k,v) for k,v in doc.items()
 				if not k.startswith('_') and k != 'name'
 			)
-			with open(os.path.join(args.file_store, filename), 'rb') as f:
+			with open(os.path.join(file_store, filename), 'rb') as f:
 				dest._save(f, filename, content_type, meta)
