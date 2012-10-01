@@ -134,7 +134,7 @@ class FileStorage(storage.Storage):
 		resource = None
 		ct = 'application/octet-stream'
 		fullpath = os.path.join(airportlocker.filestore, key)
-		if os.path.exists(fullpath) and os.path.isfile(fullpath):
+		if os.path.isfile(fullpath):
 			resource = open(fullpath, 'r')
 			ct, enc = mimetypes.guess_type(key)
 		else:
@@ -165,7 +165,7 @@ class FileStorage(storage.Storage):
 		'''We do not actually remove the file. We just add a "deleted"
 		extension. Clean up can be done via cron if necessary.'''
 		path = os.path.join(airportlocker.filestore, fn)
-		if os.path.exists(path) and os.path.isfile(path):
+		if os.path.isfile(path):
 			os.rename(path, '%s.deleted' % path)
 
 	def return_file(self, path):
