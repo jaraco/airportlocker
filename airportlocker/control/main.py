@@ -19,7 +19,7 @@ def items(field_storage):
 	Like dict.items, but for cgi.FieldStorage
 	"""
 	for key in field_storage.keys():
-		yield key, field_storage.value(key)
+		yield key, field_storage.getvalue(key)
 
 class BasicUpload(HtmlResource):
 	template = fab.template('base.tmpl')
