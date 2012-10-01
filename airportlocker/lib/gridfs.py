@@ -5,6 +5,7 @@ import os
 import gridfs
 
 from . import storage
+import airportlocker
 
 class GridFSStorage(storage.Storage):
 	'''
@@ -34,10 +35,12 @@ class GridFSStorage(storage.Storage):
 		prefix = prefix.rstrip('/')
 		filename = os.path.join(prefix, name or cp_file.filename)
 		filename = self.verified_filename(filename)
-		return unicode(
-			self.fs.put(cp_file.file, filename=filename,
-				content_type = cp_file.content_type, **meta)
-		)
+		return unicode(self._save(cp_file.file, filename=filename,
+			content_type=cp_file.content_type, **meta))
+
+	def _save(self, stream, filename, content_type, meta):
+		return self.fs.put(stream, filename=filename,
+			content_type=content_type, **meta)
 
 	def update(self, id, meta, cp_file=None):
 		"""
@@ -101,3 +104,34 @@ class GridFSStorage(storage.Storage):
 		except gridfs.errors.NoFile:
 			return {}
 		return meta
+
+	@classmethod
+	def migrate(cls):
+		"""
+		Migrate the data from a FileStorage instance.
+		"""
+		import pymongo
+		import argparse
+		from airportlocker.vr_launch import ConfigDict
+		from airportlocker import filesystem
+		import posixpath
+		parser = argparse.ArgumentParser()
+		parser.add_argument('mongodb_url')
+		parser.add_argument('file_store')
+		args = parser.parse_args()
+		airportlocker.store = pymongo.Connection(args.mongodb_url)
+		airportlocker.config = ConfigDict(
+			docset = 'luggage',
+		)
+		source = filesystem.FileStorage()
+		dest = cls()
+		for doc in source.coll.find():
+			filename = posixpath.join(doc.get('_prefix', ''),
+				doc['_filename'])
+			content_type = doc['_mime']
+			meta = dict(
+				(k,v) for k,v in doc.items()
+				if not k.startswith('_') and k != 'name'
+			)
+			with open(os.path.join(args.file_store, filename), 'rb') as f:
+				dest._save(f, filename, content_type, meta)
