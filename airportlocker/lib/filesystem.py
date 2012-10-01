@@ -135,8 +135,6 @@ class FileStorage(storage.Storage):
 		Retrieve a resource by key (either by file path or unique ID).
 		Returns the document stream and content type.
 		"""
-		resource = None
-		ct = 'application/octet-stream'
 		fullpath = os.path.join(airportlocker.filestore, key)
 		if os.path.isfile(fullpath):
 			resource = open(fullpath, 'rb')
