@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 
 import gridfs
+import bson
 
 from . import storage
 
@@ -11,6 +12,14 @@ class GridFSStorage(storage.Storage):
 	A mix-in class to be used with Resource controller objects providing
 	gridfs-backed resource file storage.
 	'''
+
+	@staticmethod
+	def by_id(id):
+		"""
+		Create a query to find a record by id (result will be passed as the
+		first argument to self.find_one).
+		"""
+		return bson.objectid.ObjectId(id)
 
 	@property
 	def fs(self):
