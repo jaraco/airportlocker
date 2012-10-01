@@ -118,8 +118,12 @@ class GridFSStorage(storage.Storage):
 		airportlocker.config = ConfigDict(
 			docset = 'luggage',
 		)
+		airportlocker.filestore = file_store
 		source = filesystem.FileStorage()
 		dest = cls()
+		# first validate
+		if not cls.validate(source):
+			return
 		for doc in source.coll.find():
 			filename = posixpath.join(doc.get('_prefix', ''),
 				doc['_filename'])
@@ -128,5 +132,18 @@ class GridFSStorage(storage.Storage):
 				(k,v) for k,v in doc.items()
 				if not k.startswith('_') and k != 'name'
 			)
-			with open(os.path.join(file_store, filename), 'rb') as f:
+			with open(os.path.join(source.root, filename), 'rb') as f:
 				dest._save(f, filename, content_type, meta)
+
+	@classmethod
+	def validate(cls, source):
+		import posixpath
+		valid = True
+		for doc in source.coll.find():
+			filename = posixpath.join(source.root, doc.get('_prefix', ''),
+				doc['_filename'])
+			content_type = doc['_mime']
+			if not os.path.isfile(filename):
+				print(filename, "doesn't exist")
+				valid = False
+		return valid
