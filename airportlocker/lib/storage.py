@@ -1,6 +1,8 @@
 import os
 import itertools
 
+import bson
+
 import airportlocker
 
 class NotFoundError(Exception): pass
@@ -20,7 +22,17 @@ class Storage(object):
 		"""
 		Create a query to find a record by id (result will be passed as the
 		first argument to self.find_one).
+
+		If ID looks like an ObjectID, construct one. Otherwise, use the string
+		directly.
+
+		When UUIDs have all been converted to ObjectIds, then the trap for
+		the exception can be removed.
 		"""
+		try:
+			id = bson.objectid.ObjectId(id)
+		except Exception:
+			pass
 		return id
 
 	@property
