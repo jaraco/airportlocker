@@ -34,17 +34,47 @@ class GridFSStorage(storage.Storage):
 		prefix = prefix.rstrip('/')
 		filename = os.path.join(prefix, name or cp_file.filename)
 		filename = self.verified_filename(filename)
-		meta['content_type'] = cp_file.content_type
 		return unicode(
-			self.fs.put(cp_file.file, filename=filename, **meta)
+			self.fs.put(cp_file.file, filename=filename,
+				content_type = cp_file.content_type, **meta)
 		)
 
 	def update(self, id, meta, cp_file=None):
 		"""
 		Update the document identified by id with the new metadata and file
 		(if supplied).
+		Return the updated metadata.
 		"""
-		# stubbed
+		if not self.exists(id):
+			raise storage.NotFoundError(id)
+
+		if cp_file:
+			return self.replace_file(id, meta, cp_file)
+
+		# don't allow overriding of these keys
+		for key in ('_id', '_filename', 'name'):
+			meta.pop(key, None)
+		spec = dict(_id=self.by_id(id))
+		self.coll.files.update(spec, {"$set": meta})
+		new_doc = self.find_one(self.by_id(id))
+		return new_doc
+
+	def replace_file(self, id, meta, cp_file):
+		"""
+		GridFS doesn't easily enable overriding an existing file, so we do
+		the work here. id must exist.
+
+		Saves the new file, removes the old file.
+
+		Return the newly-created doc (which will have a new id).
+
+		This behavior was created to match the FileStorage implementation.
+		Consider re-defining the meaning of .update to be more
+		straightforward.
+		"""
+		new_id = self.save(cp_file, None, meta)
+		self.delete(id)
+		return self.fs.get(self.by_id(new_id))._file
 
 	def get_resource(self, key):
 		"""

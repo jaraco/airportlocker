@@ -114,6 +114,7 @@ class FileStorage(storage.Storage):
 		"""
 		Update the document identified by id with the new metadata and file
 		(if supplied).
+		Return the updated metadata.
 		"""
 		if not self.exists(id):
 			raise storage.NotFoundError(id)
