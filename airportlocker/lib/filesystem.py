@@ -52,7 +52,7 @@ class FileStorage(storage.Storage):
 		meta['name'] = meta['_filename']
 		meta['_mime'] = cp_file.type
 		inserted_id = self.coll.insert(meta)
-		return inserted_id
+		return unicode(inserted_id)
 
 	def save_file(self, fs, name=None, prefix=None):
 		"""
@@ -141,7 +141,7 @@ class FileStorage(storage.Storage):
 			resource = open(fullpath, 'rb')
 			ct, enc = mimetypes.guess_type(key)
 		else:
-			doc = self.coll.find_one(key)
+			doc = self.coll.find_one(self.by_id(key))
 			if doc is None:
 				raise storage.NotFoundError(key)
 			fullpath = os.path.join(airportlocker.filestore,
