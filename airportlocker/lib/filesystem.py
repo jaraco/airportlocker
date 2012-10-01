@@ -115,20 +115,21 @@ class FileStorage(storage.Storage):
 	update_file = _write_file
 
 	def update(self, id, meta, cp_file=None):
-		cur_doc = self.find_one(dict(_id=id))
-		if not cur_doc:
+		"""
+		Update the document identified by id with the new metadata and file
+		(if supplied).
+		"""
+		if not self.exists(id):
 			raise storage.NotFoundError(id)
 
-		# copy values from current document (overriding any values supplied
-		# by the query).
-		meta['_id'] = cur_doc['_id']
-		meta['_filename'] = cur_doc['_filename']
-		meta['name'] = cur_doc['name']
-		if cp_file:
-			meta['_mime'] = cp_file.type or cur_doc['_mime']
-		spec = dict(_id=id)
-		self.coll.update(spec, meta)
-		new_doc = self.find_one(dict(_id=id))
+		# don't allow overriding of these keys
+		for key in ('_id', '_filename', 'name'):
+			meta.pop(key, None)
+		if cp_file and cp_file.type:
+			meta['_mime'] = cp_file.type
+		spec = dict(_id=self.by_id(id))
+		self.coll.update(spec, {"$set": meta})
+		new_doc = self.find_one(self.by_id(id))
 		if cp_file:
 			self.update_file(new_doc['name'], cp_file.file)
 		return new_doc
@@ -153,8 +154,13 @@ class FileStorage(storage.Storage):
 		return resource, ct
 
 	def delete(self, id):
-		meta = self.coll.find_one(dict(_id=id)) or {}
+		"""
+		Delete the file indicated by id. Return the metadata if it exists
+		or an empty dict otherwise.
+		"""
+		meta = self.coll.find_one(self.by_id(id)) or {}
 		if meta:
+			# TODO - what about the prefix?
 			self.remove_file(meta['name'])
 			self.coll.remove(id)
 		return meta
