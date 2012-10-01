@@ -64,4 +64,10 @@ class GridFSStorage(storage.Storage):
 		Delete the file indicated by id. Return the metadata for the deleted
 		document or an empty dict if the id did not exist.
 		"""
-		# stubbed
+		try:
+			id = self.by_id(id)
+			meta = self.fs.get(id)._file
+			self.fs.delete(id)
+		except gridfs.errors.NoFile:
+			return {}
+		return meta
