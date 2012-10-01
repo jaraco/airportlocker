@@ -104,7 +104,7 @@ class FileStorage(storage.Storage):
 		dirname = os.path.dirname(target)
 		if not os.path.isdir(dirname):
 			os.makedirs(dirname)
-		with open(target, 'w+') as newfile:
+		with open(target, 'w+b') as newfile:
 			for chunk in stream:
 				newfile.write(chunk)
 
@@ -131,11 +131,15 @@ class FileStorage(storage.Storage):
 		return new_doc
 
 	def get_resource(self, key):
+		"""
+		Retrieve a resource by key (either by file path or unique ID).
+		Returns the document stream and content type.
+		"""
 		resource = None
 		ct = 'application/octet-stream'
 		fullpath = os.path.join(airportlocker.filestore, key)
 		if os.path.isfile(fullpath):
-			resource = open(fullpath, 'r')
+			resource = open(fullpath, 'rb')
 			ct, enc = mimetypes.guess_type(key)
 		else:
 			doc = self.coll.find_one(key)

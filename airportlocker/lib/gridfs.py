@@ -41,7 +41,11 @@ class GridFSStorage(storage.Storage):
 		)
 
 	def update(self, id, meta, cp_file=None):
-		pass # stubbed
+		"""
+		Update the document identified by id with the new metadata and file
+		(if supplied).
+		"""
+		# stubbed
 
 	def get_resource(self, key):
 		pass # stubbed
