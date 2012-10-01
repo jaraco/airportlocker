@@ -12,6 +12,17 @@ class Storage(object):
 	def find_one(self, *args, **kwargs):
 		return self.coll.find_one(*args, **kwargs)
 
+	def exists(self, id):
+		return bool(self.find_one(self.by_id(id)))
+
+	@staticmethod
+	def by_id(id):
+		"""
+		Create a query to find a record by id (result will be passed as the
+		first argument to self.find_one).
+		"""
+		return id
+
 	@property
 	def coll(self):
 		return airportlocker.store[airportlocker.config.docset]

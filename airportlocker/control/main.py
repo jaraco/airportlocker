@@ -1,5 +1,4 @@
 from __future__ import with_statement
-import uuid
 
 import fab
 import cherrypy
@@ -56,7 +55,7 @@ class ListResources(Resource, FileStorage):
 
 class ViewResource(Resource, FileStorage):
 	def GET(self, page, id):
-		results = self.find_one(dict(_id=id))
+		results = self.find_one(self.by_id(id))
 		if not results:
 			raise cherrypy.HTTPError(404)
 		return json.dumps(results)
@@ -98,9 +97,6 @@ class CreateResource(Resource, FileStorage):
 			if not k.startswith('_') or k in self.cases
 		)
 
-		# gen an id
-		meta['_id'] = str(uuid.uuid4())
-
 		# use override name field if supplied, else use source filename
 		name = (fields['name'].value
 			if 'name' in fields else fields['_lockerfile'].filename)
@@ -114,13 +110,9 @@ class UpdateResource(Resource, FileStorage):
 	]
 	"A list of all metadata keys that begin with _"
 
-	def get_doc(self, key):
-		return self.find_one(dict(_id=key))
-
 	@post
 	def PUT(self, page, fields, id):
-		cur_doc = self.get_doc(id)
-		if not cur_doc:
+		if not self.exists(id):
 			raise cherrypy.HTTPNotFound()
 
 		cp_file = fields.get('_lockerfile', None)

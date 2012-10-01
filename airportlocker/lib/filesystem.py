@@ -2,6 +2,7 @@ import re
 import os
 import mimetypes
 import platform
+import uuid
 
 import cherrypy
 
@@ -48,6 +49,10 @@ class FileStorage(storage.Storage):
 		# save the file and grab its name
 		meta['_filename'] = self.save_file(cp_file, name,
 			prefix=meta.get('_prefix'))
+
+		# For legacy purposes, generate a UUID.
+		meta['_id'] = unicode(uuid.uuid4())
+
 		meta['name'] = meta['_filename']
 		meta['_mime'] = cp_file.type
 		inserted_id = self.coll.insert(meta)
