@@ -19,7 +19,7 @@ def items(field_storage):
 	Like dict.items, but for cgi.FieldStorage
 	"""
 	for key in field_storage.keys():
-		yield key, field_storage.getvalue(key)
+		yield key, field_storage.value(key)
 
 class BasicUpload(HtmlResource):
 	template = fab.template('base.tmpl')
@@ -72,6 +72,28 @@ class ReadResource(Resource, FileStorage):
 		path = '/'.join(args)
 		cherrypy.response.headers['Connection'] = 'close'
 		return self.head_file(path)
+
+	def return_file(self, path):
+		try:
+			resource, ct = self.get_resource(path)
+		except NotFoundError:
+			raise cherrypy.HTTPNotFound()
+		cherrypy.response.headers.update({
+			'Content-Type': ct or 'text/plain',
+		})
+		return resource
+
+	def head_file(self, path):
+		try:
+			resource, ct = self.get_resource(path)
+		except NotFoundError:
+			raise cherrypy.HTTPNotFound()
+		size = sum([len(l) for l in resource])
+		cherrypy.response.headers.update({
+			'Content-Type': ct or 'text/plain',
+			'Content-Length': size,
+		})
+		return
 
 class CreateResource(Resource, FileStorage):
 	'''

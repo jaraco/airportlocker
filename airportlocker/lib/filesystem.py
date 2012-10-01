@@ -142,11 +142,11 @@ class FileStorage(storage.Storage):
 		else:
 			doc = self.coll.find_one(key)
 			if doc is None:
-				raise cherrypy.HTTPError(404)
+				raise storage.NotFoundError(key)
 			fullpath = os.path.join(airportlocker.filestore,
 				doc.get('_prefix', ''), doc['name'])
 			if not os.path.isfile(fullpath):
-				raise cherrypy.HTTPError(404)
+				raise storage.NotFoundError(key)
 			resource = open(fullpath)
 			ct = doc['_mime']
 		return resource, ct
@@ -169,23 +169,3 @@ class FileStorage(storage.Storage):
 		path = os.path.join(airportlocker.filestore, fn)
 		if os.path.isfile(path):
 			os.rename(path, '%s.deleted' % path)
-
-	def return_file(self, path):
-		resource, ct = self.get_resource(path)
-		if not resource:
-			raise cherrypy.HTTPError(404)
-		cherrypy.response.headers.update({
-			'Content-Type': ct or 'text/plain',
-		})
-		return resource
-
-	def head_file(self, path):
-		resource, ct = self.get_resource(path)
-		if not resource:
-			raise cherrypy.HTTPError(404)
-		size = sum([len(l) for l in resource])
-		cherrypy.response.headers.update({
-			'Content-Type': ct or 'text/plain',
-			'Content-Length': size,
-		})
-		return
