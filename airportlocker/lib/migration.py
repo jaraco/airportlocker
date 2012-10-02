@@ -27,11 +27,8 @@ class FSMigration(object):
 			log.info("validation failed; no migration attempted")
 			return
 		watch = Stopwatch()
-		for doc in source.coll.find():
-			filename = posixpath.join(doc.get('_prefix', ''),
-				doc['_filename'])
-			if self.exists(filename):
-				continue
+		for doc in self.__new_docs(source):
+			filename = self.__full_path(doc)
 			content_type = doc['_mime']
 			meta = dict(
 				(k,v) for k,v in doc.items()
@@ -43,13 +40,22 @@ class FSMigration(object):
 			log.info("Migrated %s", filename)
 		log.info("Migration completed in %s", watch.split())
 
+	def __full_path(self, doc):
+		return posixpath.join(doc.get('_prefix', ''), doc['_filename'])
+
+	def __new_docs(self, source):
+		return (
+			doc for doc in source.coll.find()
+			if not self.exists(self.__full_path(doc))
+		)
+
 	def __validate(self, source):
 		"""
 		Validate each of the records in the database (in advance)
 		"""
 		valid = True
 		watch = Stopwatch()
-		for doc in source.coll.find():
+		for doc in self.__new_docs():
 			if not '_mime' in doc:
 				log.info("%s: no content type", doc['_id'])
 				valid = False
