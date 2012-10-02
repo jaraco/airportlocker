@@ -29,6 +29,8 @@ def _do_migration():
 		params = airportlocker.config.get('migrate_params', {})
 		storage.migrate(**params)
 
+logging.getLogger('airportlocker').info('starting')
+
 airportlocker.storage_class = _get_storage_class()
 airportlocker.storage_class.startup()
 airportlocker.store = pymongo.Connection(
