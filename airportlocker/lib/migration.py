@@ -23,7 +23,7 @@ class FSMigration(object):
 		# first validate the source
 		source = airportlocker.lib.filesystem.FileStorage()
 		log.info("Migrating %s records", source.coll.count())
-		if not self.__validate(self.__new_docs(source)):
+		if not self.__validate(source):
 			log.info("validation failed; no migration attempted")
 			return
 		watch = Stopwatch()
@@ -50,13 +50,13 @@ class FSMigration(object):
 			if not self.exists(self.__full_path(doc))
 		)
 
-	def __validate(self, docs):
+	def __validate(self, source):
 		"""
 		Validate each of the records in the database (in advance)
 		"""
 		valid = True
 		watch = Stopwatch()
-		for doc in docs:
+		for doc in self.__new_docs(source):
 			if not '_mime' in doc:
 				log.info("%s: no content type", doc['_id'])
 				valid = False
@@ -65,7 +65,15 @@ class FSMigration(object):
 				req = MethodRequest(url, method='HEAD')
 				urllib2.urlopen(req)
 			except Exception:
-				log.info("error retrieving %s", url)
+				mongs_url = ('http://mongs.yougov.net/{server}/{collection}/'
+					'{query}/1/'.format(
+						server=source.coll.database.connection.host,
+						collection=source.coll.name,
+						query='{"_id": "%s"}' % doc['_id'],
+					)
+				)
+				log.info("error retrieving %s. check document at %s", url,
+					mongs_url)
 				valid = False
 		log.info("Validation completed in %s", watch.split())
 		return valid
