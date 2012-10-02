@@ -26,16 +26,15 @@ def setup_logging():
 		attach_eggmonster_handler('cherrypy.access')
 
 def load_config():
-	eggmonster.load_default_yaml(file=pkg_resources.resource_filename(
-		'airportlocker.etc', 'baseconf.yaml'))
 	if not eggmonster.managed_env():
 		eggmonster.load_local_yaml(file=pkg_resources.resource_filename(
 			'airportlocker.etc', 'devel.yaml'))
+	# update default config with eggmonster.env
+	airportlocker.config.update(eggmonster.env)
 
 def run():
+	"simple eggmonster entry point"
 	load_config()
-	airportlocker.config = eggmonster.env
 	importlib.import_module('airportlocker.etc.startup')
 	setup_logging()
-	# simple eggmonster entry point
 	root.run()

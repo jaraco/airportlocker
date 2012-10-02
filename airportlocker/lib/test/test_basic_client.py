@@ -9,7 +9,6 @@ import cherrypy._cpserver
 from fab.testing import FabBrowser
 
 import airportlocker.control.root
-from airportlocker.control.vr_launch import ConfigDict
 from airportlocker.lib.client import AirportLockerClient
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -19,7 +18,7 @@ def embed_server():
 		'airportlocker.lib', 'test/config.yaml')
 	config_file = os.path.normpath(config_file)
 	with open(config_file) as config_stream:
-		airportlocker.config = ConfigDict(yaml.load(config_stream))
+		airportlocker.config.update(yaml.load(config_stream))
 	importlib.import_module('airportlocker.etc.startup')
 	airportlocker.control.root.start()
 
