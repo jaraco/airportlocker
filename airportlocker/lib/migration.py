@@ -48,14 +48,33 @@ class FSMigration(object):
 		Validate each of the records in the database (in advance)
 		"""
 		valid = True
+		watch = Stopwatch()
 		for doc in source.coll.find():
 			if not '_mime' in doc:
 				log.info("%s: no content type", doc['_id'])
 				valid = False
 			try:
 				url = urlparse.urljoin(self.base, doc['_id'])
-				urllib2.urlopen(url)
+				req = MethodRequest(url, method='HEAD')
+				urllib2.urlopen(req)
 			except Exception:
 				log.info("error retrieving %s", url)
 				valid = False
+		log.info("Validation completed in %s", watch.split())
 		return valid
+
+# copied from jaraco.net
+class MethodRequest(urllib2.Request):
+	def __init__(self, *args, **kwargs):
+		"""
+		Construct a MethodRequest. Usage is the same as for
+		`urllib2.Request` except it also takes an optional `method`
+		keyword argument. If supplied, `method` will be used instead of
+		the default.
+		"""
+		if 'method' in kwargs:
+			self.method = kwargs.pop('method')
+		return urllib2.Request.__init__(self, *args, **kwargs)
+
+	def get_method(self):
+		return getattr(self, 'method', urllib2.Request.get_method(self))
