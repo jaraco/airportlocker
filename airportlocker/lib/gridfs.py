@@ -142,7 +142,9 @@ class GridFSStorage(storage.Storage):
 		for doc in source.coll.find():
 			filename = posixpath.join(source.root, doc.get('_prefix', ''),
 				doc['_filename'])
-			content_type = doc['_mime']
+			if not '_mime' in doc:
+				print("no content type")
+				valid = False
 			if not os.path.isfile(filename):
 				print(filename, "doesn't exist")
 				valid = False
