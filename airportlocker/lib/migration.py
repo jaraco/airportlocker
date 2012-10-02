@@ -19,6 +19,7 @@ class FSMigration(object):
 		self.base = retrieve_base
 		# first validate the source
 		source = airportlocker.lib.filesystem.FileStorage()
+		print("Migrating", source.coll.count(), "records")
 		if not self.__validate(source):
 			print("validation failed; no migration attempted")
 			return
