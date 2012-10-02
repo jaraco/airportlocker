@@ -7,6 +7,8 @@ import logging
 import posixpath
 import urllib2
 
+from jaraco.util.timing import Stopwatch
+
 import airportlocker.lib.filesystem
 
 log = logging.getLogger(__name__)
@@ -23,9 +25,12 @@ class FSMigration(object):
 		if not self.__validate(source):
 			print("validation failed; no migration attempted")
 			return
+		watch = Stopwatch()
 		for doc in source.coll.find():
 			filename = posixpath.join(doc.get('_prefix', ''),
 				doc['_filename'])
+			if self.exists(filename):
+				continue
 			content_type = doc['_mime']
 			meta = dict(
 				(k,v) for k,v in doc.items()
@@ -34,6 +39,8 @@ class FSMigration(object):
 			url = urllib2.urljoin(self.base, doc['_id'])
 			stream = urllib2.urlopen(url)
 			self._save(stream, filename, content_type, meta)
+			print("Migrated", filename)
+		print("Migration completed in", watch.split())
 
 	def __validate(self, source):
 		"""
