@@ -6,6 +6,7 @@ from __future__ import print_function, unicode_literals, absolute_import
 import logging
 import posixpath
 import urllib2
+import urlparse
 
 from jaraco.util.timing import Stopwatch
 
@@ -36,7 +37,7 @@ class FSMigration(object):
 				(k,v) for k,v in doc.items()
 				if not k.startswith('_') and k != 'name'
 			)
-			url = urllib2.urljoin(self.base, doc['_id'])
+			url = urlparse.urljoin(self.base, doc['_id'])
 			stream = urllib2.urlopen(url)
 			self._save(stream, filename, content_type, meta)
 			print("Migrated", filename)
@@ -52,7 +53,7 @@ class FSMigration(object):
 				print("no content type")
 				valid = False
 			try:
-				url = urllib2.urljoin(self.base, doc['_id'])
+				url = urlparse.urljoin(self.base, doc['_id'])
 				urllib2.urlopen(url)
 			except Exception:
 				print("error retrieving", url)
