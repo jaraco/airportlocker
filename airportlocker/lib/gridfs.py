@@ -5,9 +5,9 @@ import os
 import gridfs
 
 from . import storage
-import airportlocker
+from . import migration
 
-class GridFSStorage(storage.Storage):
+class GridFSStorage(storage.Storage, migration.FSMigration):
 	'''
 	A mix-in class to be used with Resource controller objects providing
 	gridfs-backed resource file storage.
@@ -104,48 +104,3 @@ class GridFSStorage(storage.Storage):
 		except gridfs.errors.NoFile:
 			return {}
 		return meta
-
-	@classmethod
-	def migrate(cls, mongodb_url, file_store):
-		"""
-		Migrate the data from a FileStorage instance.
-		"""
-		import pymongo
-		from airportlocker.control.vr_launch import ConfigDict
-		from airportlocker.lib import filesystem
-		import posixpath
-		airportlocker.store = pymongo.Connection(mongodb_url).airportlocker
-		airportlocker.config = ConfigDict(
-			docset = 'luggage',
-		)
-		airportlocker.filestore = file_store
-		source = filesystem.FileStorage()
-		dest = cls()
-		# first validate
-		if not cls.validate(source):
-			return
-		for doc in source.coll.find():
-			filename = posixpath.join(doc.get('_prefix', ''),
-				doc['_filename'])
-			content_type = doc['_mime']
-			meta = dict(
-				(k,v) for k,v in doc.items()
-				if not k.startswith('_') and k != 'name'
-			)
-			with open(os.path.join(source.root, filename), 'rb') as f:
-				dest._save(f, filename, content_type, meta)
-
-	@classmethod
-	def validate(cls, source):
-		import posixpath
-		valid = True
-		for doc in source.coll.find():
-			filename = posixpath.join(source.root, doc.get('_prefix', ''),
-				doc['_filename'])
-			if not '_mime' in doc:
-				print("no content type")
-				valid = False
-			if not os.path.isfile(filename):
-				print(filename, "doesn't exist")
-				valid = False
-		return valid
