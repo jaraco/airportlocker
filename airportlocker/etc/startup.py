@@ -36,7 +36,8 @@ def _get_storage_class():
 def _do_migration():
 	storage = airportlocker.storage_class()
 	if hasattr(storage, 'migrate'):
-		storage.migrate()
+		params = airportlocker.config.get('migrate_params', {})
+		storage.migrate(**params)
 
 airportlocker.filestore = _get_filestore()
 airportlocker.storage_class = _get_storage_class()
