@@ -22,9 +22,9 @@ class FSMigration(object):
 		self.base = retrieve_base
 		# first validate the source
 		source = airportlocker.lib.filesystem.FileStorage()
-		print("Migrating", source.coll.count(), "records")
+		log.info("Migrating %s records", source.coll.count())
 		if not self.__validate(source):
-			print("validation failed; no migration attempted")
+			log.info("validation failed; no migration attempted")
 			return
 		watch = Stopwatch()
 		for doc in source.coll.find():
@@ -40,8 +40,8 @@ class FSMigration(object):
 			url = urlparse.urljoin(self.base, doc['_id'])
 			stream = urllib2.urlopen(url)
 			self._save(stream, filename, content_type, meta)
-			print("Migrated", filename)
-		print("Migration completed in", watch.split())
+			log.info("Migrated %s", filename)
+		log.info("Migration completed in %s", watch.split())
 
 	def __validate(self, source):
 		"""
@@ -50,12 +50,12 @@ class FSMigration(object):
 		valid = True
 		for doc in source.coll.find():
 			if not '_mime' in doc:
-				print("no content type")
+				log.info("%s: no content type", doc['_id'])
 				valid = False
 			try:
 				url = urlparse.urljoin(self.base, doc['_id'])
 				urllib2.urlopen(url)
 			except Exception:
-				print("error retrieving", url)
+				log.info("error retrieving %s", url)
 				valid = False
 		return valid
