@@ -65,12 +65,15 @@ class FSMigration(object):
 				req = MethodRequest(url, method='HEAD')
 				urllib2.urlopen(req)
 			except Exception:
-				mongs_url = ('http://mongs.yougov.net/{server}/{collection}/'
+				mongs_url = urllib2.quote('http://mongs.yougov.net/{server}/'
+					'{database}/'
+					'{collection}/'
 					'{query}/1/'.format(
 						server=source.coll.database.connection.host,
+						database=source.coll.database.name,
 						collection=source.coll.name,
 						query='{"_id": "%s"}' % doc['_id'],
-					)
+					), safe='/:',
 				)
 				log.info("error retrieving %s. check document at %s", url,
 					mongs_url)
