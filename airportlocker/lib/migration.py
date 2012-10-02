@@ -23,7 +23,7 @@ class FSMigration(object):
 		# first validate the source
 		source = airportlocker.lib.filesystem.FileStorage()
 		log.info("Migrating %s records", source.coll.count())
-		if not self.__validate(source):
+		if not self.__validate(self.__new_docs(source)):
 			log.info("validation failed; no migration attempted")
 			return
 		watch = Stopwatch()
@@ -49,13 +49,13 @@ class FSMigration(object):
 			if not self.exists(self.__full_path(doc))
 		)
 
-	def __validate(self, source):
+	def __validate(self, docs):
 		"""
 		Validate each of the records in the database (in advance)
 		"""
 		valid = True
 		watch = Stopwatch()
-		for doc in self.__new_docs():
+		for doc in docs:
 			if not '_mime' in doc:
 				log.info("%s: no content type", doc['_id'])
 				valid = False
