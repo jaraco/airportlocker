@@ -44,8 +44,9 @@ class FSMigration(object):
 		return posixpath.join(doc.get('_prefix', ''), doc['_filename'])
 
 	def __new_docs(self, source):
+		docs = tuple(source.coll.find())
 		return (
-			doc for doc in source.coll.find()
+			doc for doc in docs
 			if not self.exists(self.__full_path(doc))
 		)
 
