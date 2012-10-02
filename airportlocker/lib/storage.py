@@ -17,6 +17,14 @@ class Storage(object):
 	def exists(self, id):
 		return bool(self.find_one(self.by_id(id)))
 
+	@classmethod
+	def startup(cls):
+		"""
+		Set up any initial state necessary for this storage class.
+
+		Invoked by airportlocker.etc.startup on startup.
+		"""
+
 	@staticmethod
 	def by_id(id):
 		"""

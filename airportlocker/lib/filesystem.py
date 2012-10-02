@@ -2,8 +2,7 @@ import re
 import os
 import mimetypes
 import platform
-
-import cherrypy
+import sys
 
 import airportlocker
 from . import storage
@@ -24,6 +23,15 @@ class FileStorage(storage.Storage):
 
 	bad_filename_chars = re.compile(r'[@\!\? \+\*\#]')
 	"Characters that get replaced with underscores"
+
+	@classmethod
+	def startup(cls):
+		filestore = airportlocker.config.filestore
+		filestore = filestore.replace('{prefix}', sys.prefix)
+		filestore = filestore.replace('/usr/var', '/var')
+		if not os.path.isdir(filestore):
+			os.makedirs(filestore)
+		airportlocker.filestore = filestore
 
 	def verified_filename(self, fn):
 		'''
