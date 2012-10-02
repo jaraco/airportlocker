@@ -23,6 +23,3 @@ airportlocker.store = pymongo.Connection(
 	airportlocker.config.mongo_host,
 	airportlocker.config.mongo_port
 	)[airportlocker.config.mongo_db_name]
-
-from airportlocker.lib import migration
-migration.from_faststore()
