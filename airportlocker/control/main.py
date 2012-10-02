@@ -3,9 +3,9 @@ from __future__ import with_statement
 import fab
 import cherrypy
 
+import airportlocker
 from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
-from airportlocker.lib.filesystem import FileStorage
 from airportlocker.lib.storage import NotFoundError
 
 def success(value):
@@ -29,7 +29,7 @@ class BasicUpload(HtmlResource):
 		page.args = kw
 
 
-class ListResources(Resource, FileStorage):
+class ListResources(Resource, airportlocker.storage_class):
 	def GET(self, page, q=None, **kw):
 		if not q or not kw:
 			# need a query
@@ -53,14 +53,14 @@ class ListResources(Resource, FileStorage):
 		"""
 		return list(self.find(kw))
 
-class ViewResource(Resource, FileStorage):
+class ViewResource(Resource, airportlocker.storage_class):
 	def GET(self, page, id):
 		results = self.find_one(self.by_id(id))
 		if not results:
 			raise cherrypy.HTTPError(404)
 		return json.dumps(results)
 
-class ReadResource(Resource, FileStorage):
+class ReadResource(Resource, airportlocker.storage_class):
 	def GET(self, page, *args, **kw):
 		if not args:
 			raise cherrypy.HTTPError(404)
@@ -95,7 +95,7 @@ class ReadResource(Resource, FileStorage):
 		})
 		return
 
-class CreateResource(Resource, FileStorage):
+class CreateResource(Resource, airportlocker.storage_class):
 	'''
 	Save the file and make sure the filename is as close as possible to the
 	original while still being unique.
@@ -107,7 +107,7 @@ class CreateResource(Resource, FileStorage):
 
 	@post
 	def POST(self, page, fields):
-		'''Uses the FileStorage to save the file'''
+		'''Save the file to storage'''
 		fields_valid = '_new' in fields and '_lockerfile' in fields
 		if not fields_valid:
 			return failure('A "_new" and "_lockerfile" are required to '
@@ -125,7 +125,7 @@ class CreateResource(Resource, FileStorage):
 
 		return success(self.save(fields['_lockerfile'], name, meta))
 
-class UpdateResource(Resource, FileStorage):
+class UpdateResource(Resource, airportlocker.storage_class):
 
 	cases = [
 		'_prefix',
@@ -152,6 +152,6 @@ class UpdateResource(Resource, FileStorage):
 
 		return success({'updated': json.dumps(new_doc)})
 
-class DeleteResource(Resource, FileStorage):
+class DeleteResource(Resource, airportlocker.storage_class):
 	def DELETE(self, page, id):
 		return success({'deleted': self.delete(id)})
