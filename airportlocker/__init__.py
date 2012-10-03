@@ -41,3 +41,6 @@ config = ConfigDict(
 	log_port = 13000,
 	log_facility = "airportlocker",
 )
+
+_default_config = ConfigDict(config)
+"A copy of the default config"
