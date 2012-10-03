@@ -3,7 +3,10 @@ import importlib
 import fab
 import cherrypy
 import py.test
+import mock
 import pkg_resources
+
+from airportlocker.lib import storage
 
 main = None
 
@@ -17,3 +20,14 @@ class TestReadResource():
 		res = main.ReadResource()
 		with py.test.raises(cherrypy.NotFound):
 			res.GET(None)
+
+	def test_not_found_returns_404(self):
+		"""
+		If the get_resource function raises a storage.NotFoundError, the GET
+		should raise cherrypy.NotFound.
+		"""
+		res = main.ReadResource()
+		never_found = mock.Mock(side_effect=storage.NotFoundError)
+		res.get_resource = never_found
+		with py.test.raises(cherrypy.NotFound):
+			res.GET(None, 'foo', 'bar')

@@ -40,6 +40,7 @@ setup_params = dict(
 	],
 	tests_require = [
 		'pytest',
+		'mock',
 	],
 )
 
