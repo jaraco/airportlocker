@@ -24,12 +24,13 @@ class FSMigration(object):
 		self.bad_ids = set(bad_ids)
 		# first validate the source
 		source = airportlocker.lib.filesystem.FileStorage()
-		log.info("Migrating %s records", source.coll.count())
-		if not self.__validate(source):
+		docs = self.__new_docs(source)
+		log.info("Migrating %s records", len(docs))
+		if not self.__validate(docs, source):
 			log.info("validation failed; no migration attempted")
 			return
 		watch = Stopwatch()
-		for doc in self.__new_docs(source):
+		for doc in docs:
 			filename = self.__full_path(doc)
 			content_type = doc['_mime']
 			meta = dict(
@@ -46,20 +47,21 @@ class FSMigration(object):
 		return posixpath.join(doc.get('_prefix', ''), doc['_filename'])
 
 	def __new_docs(self, source):
-		docs = tuple(source.coll.find())
-		return (
-			doc for doc in docs
-			if not self.exists(self.__full_path(doc))
-			and not doc['_id'] in self.bad_ids
+		existing = set(doc['filename'] for doc in
+			self.coll.files.find(fields=['filename']))
+		return tuple(
+			doc for doc in source.coll.find()
+			if self.__full_path(doc) not in existing
+			and doc['_id'] not in self.bad_ids
 		)
 
-	def __validate(self, source):
+	def __validate(self, docs, source):
 		"""
 		Validate each of the records in the database (in advance)
 		"""
 		valid = True
 		watch = Stopwatch()
-		for doc in self.__new_docs(source):
+		for doc in docs:
 			if not '_mime' in doc:
 				log.info("%s: no content type", doc['_id'])
 				valid = False
@@ -69,9 +71,7 @@ class FSMigration(object):
 				urllib2.urlopen(req)
 			except Exception:
 				mongs_url = urllib2.quote('http://mongs.yougov.net/{server}/'
-					'{database}/'
-					'{collection}/'
-					'{query}/1/'.format(
+					'{database}/{collection}/{query}/1/'.format(
 						server=source.coll.database.connection.host,
 						database=source.coll.database.name,
 						collection=source.coll.name,
