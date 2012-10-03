@@ -33,7 +33,7 @@ class ListResources(Resource, airportlocker.storage_class):
 	def GET(self, page, q=None, **kw):
 		if not q or not kw:
 			# need a query
-			raise cherrypy.HTTPError(404)
+			raise cherrypy.HTTPNotFound()
 		cherrypy.response.headers['Cache-Control'] = 'no-cache'
 		if q == '__all':
 			res = self._list()
@@ -57,13 +57,13 @@ class ViewResource(Resource, airportlocker.storage_class):
 	def GET(self, page, id):
 		results = self.find_one(self.by_id(id))
 		if not results:
-			raise cherrypy.HTTPError(404)
+			raise cherrypy.HTTPNotFound()
 		return json.dumps(results)
 
 class ReadResource(Resource, airportlocker.storage_class):
 	def GET(self, page, *args, **kw):
 		if not args:
-			raise cherrypy.HTTPError(404)
+			raise cherrypy.HTTPNotFound()
 		path = '/'.join(args)
 		cherrypy.response.headers['Connection'] = 'close'
 		return self.return_file(path)
