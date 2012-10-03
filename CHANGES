@@ -1,0 +1,17 @@
+1.0
+===
+
+The version was bumped to 1.0 to indicate the backward incompatibility in the
+removed faststore migration. The application should otherwise be
+backward-compatible with all 0.x versions (or at least recent ones).
+
+* Faststore migration removed.
+* Completed implementation of GridFS backend. Enable by adding to the config::
+
+    storage_class: airportlocker.lib.gridfs:GridFSStorage
+
+0.11
+====
+
+* Added support for Velociraptor-based deployment.
+* Removed dependency on pmxtools.

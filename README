@@ -3,8 +3,9 @@
 airportlocker
 =============
 
-Media resource storage for YouGov apps. Uses MongoDB for metadata storage
-and file system for media storage.
+Media resource storage for YouGov apps. Uses MongoDB for storage of metadata
+and provides two backends for configurable storage of the file payload (either
+in MongoDB or on the filesystem).
 
 Stores all media with versions where the resource URI is unchanging for
 a given resource.
