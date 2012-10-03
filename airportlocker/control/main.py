@@ -77,7 +77,7 @@ class ReadResource(Resource, airportlocker.storage_class):
 		try:
 			resource, ct = self.get_resource(path)
 		except NotFoundError:
-			raise cherrypy.HTTPNotFound()
+			raise cherrypy.NotFound()
 		cherrypy.response.headers.update({
 			'Content-Type': ct or 'text/plain',
 		})
@@ -87,7 +87,7 @@ class ReadResource(Resource, airportlocker.storage_class):
 		try:
 			resource, ct = self.get_resource(path)
 		except NotFoundError:
-			raise cherrypy.HTTPNotFound()
+			raise cherrypy.NotFound()
 		size = sum([len(l) for l in resource])
 		cherrypy.response.headers.update({
 			'Content-Type': ct or 'text/plain',
@@ -135,7 +135,7 @@ class UpdateResource(Resource, airportlocker.storage_class):
 	@post
 	def PUT(self, page, fields, id):
 		if not self.exists(id):
-			raise cherrypy.HTTPNotFound()
+			raise cherrypy.NotFound()
 
 		cp_file = fields.get('_lockerfile', None)
 
@@ -148,7 +148,7 @@ class UpdateResource(Resource, airportlocker.storage_class):
 		try:
 			new_doc = self.update(id, meta, cp_file)
 		except NotFoundError:
-			raise cherrypy.HTTPNotFound()
+			raise cherrypy.NotFound()
 
 		return success({'updated': json.dumps(new_doc)})
 
