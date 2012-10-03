@@ -13,7 +13,11 @@ class ConfigDict(ItemsAsAttributes, dict):
 # default config values
 config = ConfigDict(
 	airportlocker_port = 8090,
+	production = False,
 	docset = 'luggage',
+
+	# file storage
+	storage_class = 'airportlocker.lib.filesystem:FileStorage',
 	filestore = 'file_storage',
 
 	# mongodb store
@@ -25,7 +29,9 @@ config = ConfigDict(
 	threads = 30,
 
 	# error emails
-	email_server= 'vemail1',
+	email_error = False,
+	email_list = [],
+	email_server = 'vemail1',
 
 	# Logging to eggmonster
 	eggmonster_error = False,
