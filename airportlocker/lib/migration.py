@@ -15,11 +15,13 @@ import airportlocker.lib.filesystem
 log = logging.getLogger(__name__)
 
 class FSMigration(object):
-	def migrate(self, retrieve_base):
+	def migrate(self, retrieve_base, bad_ids=()):
 		"""
-		Migrate data from a previous filesystem-backed instance.
+		Migrate data from a previous filesystem-backed instance. Skip any
+		documents identified by bad_ids.
 		"""
 		self.base = retrieve_base
+		self.bad_ids = set(bad_ids)
 		# first validate the source
 		source = airportlocker.lib.filesystem.FileStorage()
 		log.info("Migrating %s records", source.coll.count())
@@ -48,6 +50,7 @@ class FSMigration(object):
 		return (
 			doc for doc in docs
 			if not self.exists(self.__full_path(doc))
+			and not doc['_id'] in self.bad_ids
 		)
 
 	def __validate(self, source):
