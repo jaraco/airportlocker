@@ -138,18 +138,26 @@ class CatalogMissingMigration(object):
 
 	def backfill(self):
 		source = airportlocker.lib.filesystem.FileStorage()
+		log.info('Walking %s for uncatalogged files.',
+			airportlocker.config.filestore)
+		deleted = []
+		exists = []
+		queued = []
 		for filepath in airportlocker.config.filestore.walkfiles():
 			if filepath.endswith('.deleted'):
+				deleted.append(filepath)
 				continue
 			relpath = airportlocker.config.filestore.relpathto(filepath)
 			if source.exists(relpath):
-				continue
-			self.add_file(filepath)
+				exists.append(relpath)
+			queued.append(filepath)
+		log.info("Found %d missing files", len(queued))
+		map(self.add_file, queued)
 
 	def add_file(self, filepath):
 		#m_time = datetime.datetime.utcfromtimestamp(filepath.getmtime())
 		target_path = airportlocker.config.filestore.relpathto(filepath)
-		print("Adding missing file", target_path)
+		log.info("Adding missing file %s", target_path)
 		type_, encoding = mimetypes.guess_type(filepath)
 		if not type_:
 			raise ValueError("Couldn't guess type of {0}".format(filepath))
