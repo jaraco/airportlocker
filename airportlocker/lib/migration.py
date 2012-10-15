@@ -14,7 +14,6 @@ import mimetypes
 from jaraco.util.timing import Stopwatch
 
 import airportlocker.lib.filesystem
-import airportlocker.lib.gridfs
 
 log = logging.getLogger(__name__)
 
@@ -134,7 +133,8 @@ class CatalogMissingMigration(object):
 		cls().backfill()
 
 	def __init__(self):
-		self.target = airportlocker.lib.gridfs.GridFSStorage()
+		gridfs = importlib.import_module('airportlocker.lib.gridfs')
+		self.target = gridfs.GridFSStorage()
 
 	def backfill(self):
 		source = airportlocker.lib.filesystem.FileStorage()
