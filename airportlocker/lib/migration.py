@@ -7,10 +7,14 @@ import logging
 import posixpath
 import urllib2
 import urlparse
+import argparse
+import importlib
+import mimetypes
 
 from jaraco.util.timing import Stopwatch
 
 import airportlocker.lib.filesystem
+import airportlocker.config.gridfs
 
 log = logging.getLogger(__name__)
 
@@ -99,3 +103,55 @@ class MethodRequest(urllib2.Request):
 
 	def get_method(self):
 		return getattr(self, 'method', urllib2.Request.get_method(self))
+
+class CatalogMissingMigration(object):
+	"""
+	During the last attempted migration, we found that many of the resources
+	on the filesystem are being referenced by at least some surveys. This
+	migration script should be run on the filesystem-based airportlocker host.
+	It will run through the filesystem and identify any resources that are
+	not in the catalog and add them.
+	"""
+	@classmethod
+	def get_args(cls):
+		parser = argparse.ArgumentParser()
+		parser.add_argument('--mongo-host',
+			default=airportlocker.config.mongo_host)
+		parser.add_argument('--filestore',
+			default=airportlocker.config.filestore)
+		args = parser.parse_args()
+		airportlocker.config.update(vars(args))
+
+	@classmethod
+	def run(cls):
+		"""
+		Launch this migration from the command-line. Set config parameters
+		using command-line options.
+		"""
+		cls.get_args()
+		logging.basicConfig(level=logging.INFO)
+		importlib.import_module('airportlocker.etc.startup')
+		cls().backfill()
+
+	def __init__(self):
+		self.target = airportlocker.lib.gridfs.GridFSStorage()
+
+	def backfill(self):
+		source = airportlocker.lib.filesystem.FileStorage()
+		for filepath in airportlocker.config.filestore.walkfiles():
+			if filepath.endswith('.deleted'):
+				continue
+			relpath = airportlocker.config.filestore.relpathto(filepath)
+			if source.exists(relpath):
+				continue
+			self.add_file(filepath)
+
+	def add_file(self, filepath):
+		#m_time = datetime.datetime.utcfromtimestamp(filepath.getmtime())
+		target_path = airportlocker.config.filestore.relpathto(filepath)
+		print("Adding missing file", target_path)
+		type_, encoding = mimetypes.guess_type(filepath)
+		if not type_:
+			raise ValueError("Couldn't guess type of {0}".format(filepath))
+		with filepath.open() as stream:
+			self.target._save(stream, target_path, type_, meta={})
