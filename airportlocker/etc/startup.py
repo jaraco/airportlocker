@@ -2,6 +2,7 @@ import logging
 import importlib
 
 import pymongo
+import path
 
 import airportlocker
 
@@ -30,6 +31,11 @@ def _do_migration():
 		storage.migrate(**params)
 
 logging.getLogger('airportlocker').info('starting')
+
+# ensure filestore is created as a path.path object.
+if airportlocker.config.get('filestore', None):
+	airportlocker.config.update(
+		filestore = path.path(airportlocker.config.filestore))
 
 airportlocker.storage_class = _get_storage_class()
 airportlocker.storage_class.startup()
