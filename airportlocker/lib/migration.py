@@ -137,7 +137,6 @@ class CatalogMissingMigration(object):
 		self.target = gridfs.GridFSStorage()
 
 	def backfill(self):
-		source = airportlocker.lib.filesystem.FileStorage()
 		log.info('Walking %s for uncatalogged files.',
 			airportlocker.config.filestore)
 		deleted = []
@@ -148,11 +147,19 @@ class CatalogMissingMigration(object):
 				deleted.append(filepath)
 				continue
 			relpath = airportlocker.config.filestore.relpathto(filepath)
-			if source.exists(relpath):
+			if self.catalog_exists(relpath):
 				exists.append(relpath)
+				continue
 			queued.append(filepath)
 		log.info("Found %d missing files", len(queued))
 		map(self.add_file, queued)
+
+	def catalog_exists(self, relpath):
+		query = dict(
+			_filename = relpath.basename(),
+			_prefix = relpath.dirname() or None,
+		)
+		return bool(airportlocker.config.storage.luggage.find(query).count())
 
 	def add_file(self, filepath):
 		#m_time = datetime.datetime.utcfromtimestamp(filepath.getmtime())
