@@ -159,7 +159,7 @@ class CatalogMissingMigration(object):
 			_filename = relpath.basename(),
 			_prefix = relpath.dirname() or None,
 		)
-		return bool(airportlocker.config.storage.luggage.find(query).count())
+		return bool(airportlocker.storage.luggage.find(query).count())
 
 	def add_file(self, filepath):
 		#m_time = datetime.datetime.utcfromtimestamp(filepath.getmtime())
