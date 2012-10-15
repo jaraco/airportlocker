@@ -14,7 +14,7 @@ import mimetypes
 from jaraco.util.timing import Stopwatch
 
 import airportlocker.lib.filesystem
-import airportlocker.config.gridfs
+import airportlocker.lib.gridfs
 
 log = logging.getLogger(__name__)
 
