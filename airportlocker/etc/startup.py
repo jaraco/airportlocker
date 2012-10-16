@@ -1,5 +1,6 @@
 import logging
 import importlib
+import threading
 
 import pymongo
 import path
@@ -28,7 +29,8 @@ def _do_migration():
 	storage = airportlocker.storage_class()
 	if hasattr(storage, 'migrate'):
 		params = airportlocker.config.get('migrate_params', {})
-		storage.migrate(**params)
+		threading.Thread(name='migration', target=storage.migrate,
+			kwargs=params).start()
 
 logging.getLogger('airportlocker').info('starting')
 
