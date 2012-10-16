@@ -31,7 +31,7 @@ class BasicUpload(HtmlResource):
 
 class ListResources(Resource, airportlocker.storage_class):
 	def GET(self, page, q=None, **kw):
-		if not q or not kw:
+		if not q and not kw:
 			# need a query
 			raise cherrypy.NotFound()
 		cherrypy.response.headers['Cache-Control'] = 'no-cache'
