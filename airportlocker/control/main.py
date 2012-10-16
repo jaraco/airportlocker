@@ -31,7 +31,7 @@ class BasicUpload(HtmlResource):
 
 class ListResources(Resource, FileStorage):
 	def GET(self, page, q=None, **kw):
-		if not q or not kw:
+		if not q and not kw:
 			# need a query
 			raise cherrypy.HTTPError(404)
 		cherrypy.response.headers['Cache-Control'] = 'no-cache'
