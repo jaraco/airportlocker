@@ -163,8 +163,10 @@ class CatalogMissingMigration(object):
 		return bool(store.coll.find(query).count())
 
 	def add_file(self, filepath):
-		#m_time = datetime.datetime.utcfromtimestamp(filepath.getmtime())
 		target_path = airportlocker.config.filestore.relpathto(filepath)
+		if self.target.exists(target_path):
+			log.debug("%s already exists", target_path)
+			return
 		log.info("Adding missing file %s", target_path)
 		type_, encoding = mimetypes.guess_type(filepath)
 		if not type_:
