@@ -11,37 +11,32 @@ class Resource(fab.FabPage):
 		return cherrypy.response.headers['Content-Type'] in json_types
 
 	def control(self, page, *args, **kw):
-		m = cherrypy.request.method.upper()
-		if kw.get('_method'):
-			m = kw['_method'].upper()
-			del kw['_method']
-		if not hasattr(self, m):
+		method_name = kw.pop('_method', None) or cherrypy.request.method
+		method = getattr(self, method_name.upper(), None)
+		if not method:
 			raise cherrypy.HTTPError(405)
 
 		cherrypy.response.headers['Content-Type'] = 'text/plain' # 'application/json'
 
 		# these are top level actions so we remove them from the kw args
-		jsonp_cb = kw.get('jsonp_callback', None)
-		if jsonp_cb:
-			del kw['jsonp_callback']
-
-		redirect_url = kw.get('_redirect', None)
-		if redirect_url:
-			del kw['_redirect']
+		jsonp_cb = kw.pop('jsonp_callback', None)
+		redirect_url = kw.pop('_redirect', None)
 
 		# remove underscore, which is sometimes included to suppress caching
 		kw.pop('_', None)
 
-		# get the actual result
-		source = getattr(self, m)(page, *args, **kw)
+		# invoke the method and get the response
+		resp = method(page, *args, **kw)
 
 		if redirect_url:
 			raise cherrypy.HTTPRedirect(redirect_url)
 
 		if jsonp_cb and self.is_json():
+			# wrap the response a callback for JSONP.
 			cherrypy.response.headers['Content-Type'] = 'text/javascript'
-			return '%s(%s);' % (jsonp_cb, source)
-		return source
+			return '%s(%s);' % (jsonp_cb, resp)
+
+		return resp
 
 
 class HtmlResource(Resource):
