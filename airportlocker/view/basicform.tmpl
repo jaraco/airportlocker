@@ -17,8 +17,8 @@ $(document).ready( function () {
         var val = $('#field-name').attr('value');
         if (val) {
             add_field(val);
-        } else { 
-            alert('hey seriously... I need a name.'); 
+        } else {
+            alert('hey seriously... I need a name.');
         }
     });
 });
@@ -40,11 +40,12 @@ $(document).ready( function () {
   </form>
 </div>
 
-<textarea rows="15" cols="60">
+<div id="simpleform">
+<h1>Simple Form</h1>
 <form action="/" method="POST" enctype="multipart/form-data">
   <input type="hidden" name="_new" value="True" />
   <input type="file" name="_lockerfile" />
   <input type="submit" value="submit" name="_submit" />
 </form>
-</textarea>
+</div>
 
