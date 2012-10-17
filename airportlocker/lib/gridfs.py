@@ -13,6 +13,12 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 	gridfs-backed resource file storage.
 	'''
 
+	def find(self, *args, **kwargs):
+		return self.coll.files.find(*args, **kwargs)
+
+	def find_one(self, *args, **kwargs):
+		return self.coll.files.find_one(*args, **kwargs)
+
 	@property
 	def fs(self):
 		return gridfs.GridFS(self.coll.database, self.coll.name)
