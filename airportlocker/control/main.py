@@ -30,15 +30,15 @@ class BasicUpload(HtmlResource):
 
 
 class ListResources(Resource, airportlocker.storage_class):
-	def GET(self, page, q=None, **kw):
-		if not q and not kw:
-			# need a query
-			raise cherrypy.NotFound()
+	def GET(self, page, **kw):
 		cherrypy.response.headers['Cache-Control'] = 'no-cache'
-		if q == '__all':
-			res = self._list()
-		else:
+		# traditionally, q must be __all to query all. Now that's the default
+		#  behavior if no kw is passed... but support it for compatibility.
+		kw.pop('q', None)
+		if kw:
 			res = self._query(**kw)
+		else:
+			res = self._list()
 		return json.dumps(res)
 
 	def _list(self):

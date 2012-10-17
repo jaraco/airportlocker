@@ -11,7 +11,7 @@ parser.add_argument('host')
 parser.add_argument('port', type=int)
 args = parser.parse_args()
 
-root = 'http://{host}:{port}/?q=__all'.format(**vars(args))
+root = 'http://{host}:{port}/'.format(**vars(args))
 for try_ in itertools.count(1):
 	try:
 		items = json.load(urllib2.urlopen(root))
