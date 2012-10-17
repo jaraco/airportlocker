@@ -41,7 +41,7 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 		filename = os.path.join(prefix, name or field.filename)
 		filename = self.verified_filename(filename)
 		return unicode(self._save(field.file, filename=filename,
-			content_type=field.type, **meta))
+			content_type=field.type, meta=meta))
 
 	def _save(self, stream, filename, content_type, meta):
 		return self.fs.put(stream, filename=filename,
