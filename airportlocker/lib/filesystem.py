@@ -84,7 +84,7 @@ class FileStorage(storage.Storage):
 		(if supplied).
 		Return the updated metadata.
 		"""
-		if not self.exists(id):
+		if not self.coll.find_one(id):
 			raise storage.NotFoundError(id)
 
 		# don't allow overriding of these keys

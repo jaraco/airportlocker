@@ -46,7 +46,7 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 		(if supplied).
 		Return the updated metadata.
 		"""
-		if not self.exists(id):
+		if not self.coll.files.find_one(id):
 			raise storage.NotFoundError(id)
 
 		if cp_file:
