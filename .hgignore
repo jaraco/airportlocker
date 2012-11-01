@@ -7,3 +7,4 @@ dist
 temp
 filestore
 file_metadata
+env
