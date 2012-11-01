@@ -2,8 +2,6 @@ import os
 import shutil
 import io
 
-import py.test
-
 import airportlocker.lib.filesystem
 
 class MockStorage(airportlocker.lib.filesystem.FileStorage):
