@@ -1,5 +1,7 @@
 from __future__ import with_statement
 
+import posixpath
+
 import fab
 import cherrypy
 
@@ -100,10 +102,6 @@ class CreateResource(Resource, airportlocker.storage_class):
 	Save the file and make sure the filename is as close as possible to the
 	original while still being unique.
 	'''
-	cases = [
-		'_prefix',
-	]
-	"A list of all metadata keys that begin with _"
 
 	@post
 	def POST(self, page, fields):
@@ -113,17 +111,27 @@ class CreateResource(Resource, airportlocker.storage_class):
 			return failure('A "_new" and "_lockerfile" are required to '
 				'create a new document.')
 
-		# clean up the meta data
-		meta = dict(
-			(k, v) for k, v in items(fields)
-			if not k.startswith('_') or k in self.cases
-		)
+		# cast fields to a dict here because CGIFieldStorage doesn't have
+		#  a pop attribute.
+		prefix = dict(fields).pop('_prefix', '')
+		stream = fields['_lockerfile'].file
+		content_type = fields['_lockerfile'].type
 
 		# use override name field if supplied, else use source filename
 		name = (fields['name'].value
 			if 'name' in fields else fields['_lockerfile'].filename)
+		# but always trust the original filename for the extension
+		self._ensure_extension(name, fields['_lockerfile'].filename)
 
-		return success(self.save(fields['_lockerfile'], name, meta))
+		filepath = posixpath.join(prefix, name)
+
+		# metadata are all fields that don't begin with '_'
+		meta = dict(
+			(k, v) for k, v in items(fields)
+			if not k.startswith('_')
+		)
+
+		return success(self.save(stream, filepath, content_type, meta))
 
 class UpdateResource(Resource, airportlocker.storage_class):
 

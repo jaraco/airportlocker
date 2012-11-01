@@ -10,19 +10,6 @@ class MockStorage(airportlocker.lib.filesystem.FileStorage):
 	pass
 
 
-class MockFileObj(object):
-	def __init__(self, fn, contents):
-		self.file = io.BytesIO()
-		self.file.write('\n'.join(contents))
-		self.file.seek(0)
-		self.filename = fn
-		self.type = 'text/plain'
-
-	def __iter__(self):
-		self.file.seek(0)
-		for l in self.file.readlines():
-			yield l
-
 JPEG = 'image/jpeg'
 DOC = 'application/msword'
 TXT = 'text/plain'
@@ -80,20 +67,20 @@ class TestFileNaming(object):
 
 	def test_file_io(self):
 		fn = 'a_test_file.txt'
-		fullpath = os.path.join(airportlocker.filestore, fn)
+		expected_save_file = os.path.join(airportlocker.filestore, fn)
 		contents = [str(x) for x in range(1, 20)]
-		fake_file = MockFileObj(fn, contents)
-		self.storage.save_file(fake_file)
-		assert os.path.exists(fullpath)
+		fake_file = io.BytesIO(''.join(contents))
+		self.storage._write_file(fn, fake_file)
+		assert os.path.exists(expected_save_file)
 
 		contents2 = [str(x) for x in range(2, 22, 2)]
-		contents2_str = '\n'.join(contents2)
-		update_file = MockFileObj(fn, contents2)
-		self.storage.update_file(fn, update_file)
-		updated_content = open(fullpath).read()
-		assert updated_content == contents2_str
+		update_file = io.BytesIO('\n'.join(contents2))
+		self.storage._write_file(fn, update_file)
+		with open(expected_save_file) as f:
+			updated_content = f.read()
+		assert updated_content == update_file.getvalue()
 
 		self.storage.remove_file(fn)
-		assert not os.path.exists(fullpath)
-		assert os.path.exists(fullpath + '.deleted')
+		assert not os.path.exists(expected_save_file)
+		assert os.path.exists(expected_save_file + '.deleted')
 		os.remove(os.path.join(airportlocker.filestore, fn + '.deleted'))

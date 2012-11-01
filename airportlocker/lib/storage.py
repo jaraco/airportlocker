@@ -1,5 +1,6 @@
 import os
 import itertools
+import mimetypes
 
 import bson
 
@@ -46,6 +47,35 @@ class Storage(object):
 	@property
 	def coll(self):
 		return airportlocker.store[airportlocker.config.docset]
+
+	@staticmethod
+	def _ensure_extension(filename, source_filename):
+		"""
+		Ensure the filename has an extension and that it matches the source
+		filename. If it doesn't, append the extension from the source
+		filename. This method is for backward compatibility, matching previous
+		behavior where a user can supply a name but the name need not include
+		the extension.
+
+		>>> Storage._ensure_extension('foo', 'foo.txt')
+		'foo.txt'
+		>>> Storage._ensure_extension('foo.jpg', 'foo.JPG')
+		'foo.jpg'
+
+		It should work too if the extensions resolve to the same mime type.
+		>>> Storage._ensure_extension('foo.jpg', 'foo.jpeg')
+		'foo.jpg'
+
+		It might look weird, but if the filename has an incorrect extension,
+		differing from the source_filename, the source takes precedence.
+		>>> Storage._ensure_extension('foo.txt', 'my file.jpeg')
+		'foo.txt.jpeg'
+		"""
+		_, source_ext = os.path.splitext(source_filename)
+		guess = mimetypes.guess_type
+		if guess(filename) != guess(source_filename):
+			filename += source_ext
+		return filename
 
 def numbered_files(filepath, format="{name}_{num}{ext}"):
 	"""

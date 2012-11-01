@@ -25,8 +25,7 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 
 	def verified_filename(self, fn):
 		'''
-		Return a unique, human-readable filename that's safe to save to the
-		filesystem.
+		Return a unique, human-readable filename that's safe to save.
 		'''
 		return storage.unique_name(storage.numbered_files(fn), self.exists)
 
@@ -36,21 +35,9 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 		"""
 		return self.fs.exists(filename=filepath)
 
-	def save(self, cp_file, name, meta):
-		"""
-		"""
-		#cp_file isn't actually a CherryPy file, as the name might suggest.
-		#It's a CGIFieldStorage.
-		field = cp_file
-		prefix = meta.pop('_prefix', '')
-		prefix = prefix.rstrip('/')
-		filename = os.path.join(prefix, name or field.filename)
-		filename = self.verified_filename(filename)
-		return unicode(self._save(field.file, filename=filename,
-			content_type=field.type, meta=meta))
-
-	def _save(self, stream, filename, content_type, meta):
-		return self.fs.put(stream, filename=filename,
+	def save(self, stream, filepath, content_type, meta):
+		filepath = self.verified_filename(filepath)
+		return self.fs.put(stream, filename=filepath,
 			content_type=content_type, **meta)
 
 	def update(self, id, meta, cp_file=None):
