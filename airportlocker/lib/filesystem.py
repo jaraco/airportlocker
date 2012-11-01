@@ -78,25 +78,27 @@ class FileStorage(storage.Storage):
 
 	update_file = _write_file
 
-	def update(self, id, meta, cp_file=None):
+	def update(self, id, meta, stream=None, content_type=None):
 		"""
-		Update the document identified by id with the new metadata and file
+		Update the document identified by id with the new metadata and stream
 		(if supplied).
 		Return the updated metadata.
 		"""
 		if not self.coll.find_one(id):
 			raise storage.NotFoundError(id)
 
-		# don't allow overriding of these keys
-		for key in ('_id', '_filename', 'name'):
-			meta.pop(key, None)
-		if cp_file and cp_file.type:
-			meta['_mime'] = cp_file.type
+		if stream:
+			if not content_type:
+				raise ValueError("You can't update the stream without "
+					"specifying the content type.")
+			meta['_mime'] = content_type
 		spec = dict(_id=self.by_id(id))
 		self.coll.update(spec, {"$set": meta})
 		new_doc = self.find_one(self.by_id(id))
-		if cp_file:
-			self.update_file(new_doc['name'], cp_file.file)
+		if stream:
+			filepath = os.path.join(new_doc.get('_prefix', ''),
+				new_doc['_filename'])
+			self.update_file(filepath, stream)
 		return new_doc
 
 	def get_resource(self, key):

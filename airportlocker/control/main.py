@@ -135,26 +135,22 @@ class CreateResource(Resource, airportlocker.storage_class):
 
 class UpdateResource(Resource, airportlocker.storage_class):
 
-	cases = [
-		'_prefix',
-	]
-	"A list of all metadata keys that begin with _"
-
 	@post
 	def PUT(self, page, fields, id):
-		if not self.exists(id):
-			raise cherrypy.NotFound()
+		file_ob = fields.get('_lockerfile', None)
+		params = dict(
+			stream = file_ob.file,
+			content_type = file_ob.type,
+		) if file_ob else dict()
 
-		cp_file = fields.get('_lockerfile', None)
-
-		# clean up the meta data
+		# metadata are all fields that don't begin with '_'
 		meta = dict(
 			(k, v) for k, v in items(fields)
-			if not k.startswith('_') or k in self.cases
+			if not k.startswith('_')
 		)
 
 		try:
-			new_doc = self.update(id, meta, cp_file)
+			new_doc = self.update(id, meta=meta, **params)
 		except NotFoundError:
 			raise cherrypy.NotFound()
 
