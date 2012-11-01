@@ -38,6 +38,12 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 		return self.fs.put(stream, filename=filepath,
 			content_type=content_type, **meta)
 
+	@staticmethod
+	def _ensure_extension(name, orig_name):
+		# just return the original name - no override needed for GridFS
+		# storage
+		return name
+
 	def update(self, id, meta, stream=None, content_type=None):
 		"""
 		Update the document identified by id with the new metadata and file
