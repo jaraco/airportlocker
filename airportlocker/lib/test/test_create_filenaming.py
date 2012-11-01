@@ -16,7 +16,7 @@ TXT = 'text/plain'
 ZIP = 'application/zip'
 M4V = 'video/m4v'
 
-class TestFileNaming(object):
+class TestFileStorage(object):
 	@classmethod
 	def setup_class(cls):
 		cls.storage = MockStorage()
