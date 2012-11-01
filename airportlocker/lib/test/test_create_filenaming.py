@@ -17,14 +17,14 @@ ZIP = 'application/zip'
 M4V = 'video/m4v'
 
 class TestFileNaming(object):
-
-	def setup_class(self):
-		self.storage = MockStorage()
-		self.mfs = '.test_mockfilestore'
-		airportlocker.filestore = self.mfs
-		if not os.path.isdir(self.mfs):
-			os.mkdir(self.mfs)
-		self.sample_filenames = [
+	@classmethod
+	def setup_class(cls):
+		cls.storage = MockStorage()
+		cls.mfs = '.test_mockfilestore'
+		airportlocker.filestore = cls.mfs
+		if not os.path.isdir(cls.mfs):
+			os.mkdir(cls.mfs)
+		cls.sample_filenames = [
 			'foo.jpg',
 			'foo_bar.jpg',
 			'foo_bar_1.jpg',
@@ -32,13 +32,14 @@ class TestFileNaming(object):
 			'a/b/bar.jpg',
 			'x/y/z.m4v',
 		]
-		for fn in self.sample_filenames:
+		for fn in cls.sample_filenames:
 			if os.path.dirname(fn):
-				os.makedirs(os.path.join(self.mfs, os.path.dirname(fn)))
-			open(os.path.join(self.mfs, fn), 'a').close()
+				os.makedirs(os.path.join(cls.mfs, os.path.dirname(fn)))
+			open(os.path.join(cls.mfs, fn), 'a').close()
 
-	def teardown_class(self):
-		shutil.rmtree(self.mfs)
+	@classmethod
+	def teardown_class(cls):
+		shutil.rmtree(cls.mfs)
 
 	def test_exists(self):
 		for filename in self.sample_filenames:
