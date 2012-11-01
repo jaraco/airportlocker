@@ -121,7 +121,7 @@ class CreateResource(Resource, airportlocker.storage_class):
 		name = (fields['name'].value
 			if 'name' in fields else fields['_lockerfile'].filename)
 		# but always trust the original filename for the extension
-		self._ensure_extension(name, fields['_lockerfile'].filename)
+		name = self._ensure_extension(name, fields['_lockerfile'].filename)
 
 		filepath = posixpath.join(prefix, name)
 
