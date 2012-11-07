@@ -1,40 +1,46 @@
+from __future__ import unicode_literals
+
 import argparse
 from pprint import pprint
 
 from airportlocker.lib.client import AirportLockerClient
 from airportlocker import json
 
-if __name__ == '__main__':
+def json_read_file(filename):
+	with open(filename) as f:
+		return json.load(f)
+
+def json_string(string):
+	return json.loads(string)
+
+class AddMetadata(argparse.Action):
+	def __call__(self, parser, namespace, values, option_string):
+		namespace.meta[self.dest] = values
+
+class UpdateDict(argparse.Action):
+	def __call__(self, parser, namespace, values, option_string):
+		getattr(namespace, self.dest).update(values)
+
+def get_args(*args, **kwargs):
 	parser = argparse.ArgumentParser()
 	parser.add_argument('filename')
 	parser.add_argument('url', help="Airportlocker URL")
-	parser.add_argument('-j', '--json', dest='jsonfile',
-		help='A JSON metadata file')
-	parser.add_argument('-s', '--json-string', dest='jsonstr',
-		help='JSON dict string for meta data.')
-	parser.add_argument('-n', '--name',
+	parser.add_argument('-j', '--json', dest='meta', type=json_read_file,
+		help='A JSON metadata file', default={}, action=UpdateDict)
+	parser.add_argument('-s', '--json-string', dest='meta', type=json_string,
+		help='JSON dict string for meta data.', action=UpdateDict)
+	parser.add_argument('-n', '--name', action=AddMetadata,
 		help='The explicit name you want for the file.')
 
-	args = parser.parse_args()
+	return parser.parse_args(*args, **kwargs)
 
-	fields = {}
-	if args.name:
-		fields.update({'name': args.name})
+def main():
+	args = get_args()
 
-	if args.jsonfile or args.jsonstr:
-		if args.jsonfile:
-			try:
-				fields.update(json.load(args.jsonfile))
-			except:
-				parser.error('Failure loading the JSON file.')
-				raise
-		if args.jsonstr:
-			try:
-				fields.update(json.loads(args.jsonstr))
-			except:
-				parser.error('Failure loading the JSON string.')
-				raise
 	client = AirportLockerClient(args.url)
-	result = client.create(args.filename, fields)
+	result = client.create(args.filename, args.meta)
 	pprint(result)
 	pprint(client.view(result['value']))
+
+if __name__ == '__main__':
+	main()
