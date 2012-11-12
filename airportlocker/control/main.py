@@ -46,6 +46,7 @@ class ListResources(Resource, airportlocker.storage_class):
 	def _list(self):
 		def add_url(row):
 			row['url'] = '/static/%(_id)s' % row
+			row['_id'] = str(row['_id'])
 			return row
 		return map(add_url, self.find())
 
