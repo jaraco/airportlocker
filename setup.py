@@ -29,7 +29,7 @@ setup_params = dict(
 		#  the requirements.txt (because pip doesn't support extras)
 		server=[
 			"fab>=2.4,<4.0dev",
-			"pymongo",
+			"pymongo>=2.3",
 		],
 		client=[
 			"httplib2",
