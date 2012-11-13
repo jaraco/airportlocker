@@ -38,6 +38,13 @@ class Resource(fab.FabPage):
 
 		return resp
 
+	def OPTIONS(self, page):
+		""" We need an options method so we can expose the
+		Access-Control-Allow-Origin header when an ajax request
+		asks for it before a POST """
+		cherrypy.response.status = 201
+		return
+
 
 class HtmlResource(Resource):
 	template = fab.template('base.tmpl')

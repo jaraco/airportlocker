@@ -27,6 +27,11 @@ app_conf = {
 	},
 }
 
+def CORS():
+	cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
+	cherrypy.response.headers['Access-Control-Allow-Headers'] = \
+												'x-requested-with, content-type'
+
 def setupapp():
 	fab.config['base'] = pkg_resources.resource_filename('airportlocker', '')
 	# import urls after base is set (because templates fail to load otherwise)
@@ -38,12 +43,15 @@ def setupapp():
 		app_conf['/_dev'] = {
 			'request.dispatch': urls.dev,
 		}
+
+	cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
 	cherrypy.config.update({
 		'server.socket_port': airportlocker.config.airportlocker_port,
 		'server.socket_host': '0.0.0.0',
 		'server.thread_pool': airportlocker.config.threads,
 		'log.screen': True,
 		'autoreload_on': True,
+		'tools.CORS.on': True
 	})
 
 def run():

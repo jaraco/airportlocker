@@ -104,19 +104,6 @@ class CreateResource(Resource, airportlocker.storage_class):
 	original while still being unique.
 	'''
 
-	def OPTIONS(self, page):
-		""" We need an options method so we can expose the
-		Access-Control-Allow-Origin header when an ajax request
-		asks for it before a POST """
-		cherrypy.response.status = 201
-		cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
-		cherrypy.response.headers['Access-Control-Allow-Headers'] = \
-						'x-requested-with, content-type'
-		# Not sure what to return here, RFC says it should include
-		# information about the communication options. Doesn't seem to
-		# be relevant to the tested ajax requests.
-		return "POST"
-
 	@post
 	def POST(self, page, fields):
 		'''Save the file to storage'''
@@ -144,10 +131,6 @@ class CreateResource(Resource, airportlocker.storage_class):
 			(k, v) for k, v in items(fields)
 			if not k.startswith('_')
 		)
-		cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
-		cherrypy.response.headers['Access-Control-Allow-Headers'] = \
-						'x-requested-with, content-type'
-
 		return success(self.save(stream, filepath, content_type, meta))
 
 class UpdateResource(Resource, airportlocker.storage_class):
