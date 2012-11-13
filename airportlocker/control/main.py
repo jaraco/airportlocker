@@ -144,6 +144,9 @@ class CreateResource(Resource, airportlocker.storage_class):
 			(k, v) for k, v in items(fields)
 			if not k.startswith('_')
 		)
+		cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
+		cherrypy.response.headers['Access-Control-Allow-Headers'] = \
+						'x-requested-with, content-type'
 
 		return success(self.save(stream, filepath, content_type, meta))
 
