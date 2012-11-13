@@ -20,6 +20,7 @@ api.add_route('post_update', 'edit/:id', UpdateResource(), method='PUT')
 api.add_route('delete', 'edit/:id', DeleteResource(), method='DELETE')
 api.add_route('index', '', ListResources(), method='GET')
 api.add_route('create', '', CreateResource(), method='POST')
+api.add_route('options', '', CreateResource(), method='OPTIONS')
 
 dev = FabDispatcher()
 dev.add_route('index', '_dev', BasicUpload(), method='GET')

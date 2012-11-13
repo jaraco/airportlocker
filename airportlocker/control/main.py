@@ -104,6 +104,16 @@ class CreateResource(Resource, airportlocker.storage_class):
 	original while still being unique.
 	'''
 
+	def OPTIONS(self, page):
+		""" We need an options method so we can expose the
+		Access-Control-Allow-Origin header when an ajax request
+		asks for it before a POST """
+		cherrypy.response.status = 201
+		cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
+		cherrypy.response.headers['Access-Control-Allow-Headers'] = \
+						'x-requested-with, content-type'
+		return {}
+
 	@post
 	def POST(self, page, fields):
 		'''Save the file to storage'''
