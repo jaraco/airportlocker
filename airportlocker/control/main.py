@@ -112,7 +112,10 @@ class CreateResource(Resource, airportlocker.storage_class):
 		cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
 		cherrypy.response.headers['Access-Control-Allow-Headers'] = \
 						'x-requested-with, content-type'
-		return {}
+		# Not sure what to return here, RFC says it should include
+		# information about the communication options. Doesn't seem to
+		# be relevant to the tested ajax requests.
+		return "POST"
 
 	@post
 	def POST(self, page, fields):
