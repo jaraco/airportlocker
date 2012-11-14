@@ -1,0 +1,3 @@
+production : False
+mongo_host: localhost 
+storage_class: airportlocker.lib.gridfs:GridFSStorage

@@ -9,3 +9,22 @@ in MongoDB or on the filesystem).
 
 Stores all media with versions where the resource URI is unchanging for
 a given resource.
+
+You can consume the API using XMLHttpRequest since we include Access-Control-Allow headers.
+
+
+Running airportlocker
+---------------------
+
+Clone the repo, and install/update the requirements:
+
+pip install -U . -i http://cheese.yougov.net
+
+To run a dev airporlocker instance you can do it with using the
+velociraptor runer and the config at the root of your repo checkout like this:
+
+PORT=5600 python -m airportlocker.control.vr_launch --config=configs/dev_vr.yaml
+
+The service will be running at:
+
+http://localhost:5600
