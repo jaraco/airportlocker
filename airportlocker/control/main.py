@@ -115,7 +115,7 @@ class CreateResource(Resource, airportlocker.storage_class):
         # cast fields to a dict here because CGIFieldStorage doesn't have
         # a pop attribute. Also we can't pass FieldStorage to posixpath
         # later so use it's value if it is there.
-        prefix = fields.get('_prefix', None)
+        prefix = dict(fields).pop('_prefix', None)
         if prefix is not None:
             prefix = prefix.value
 
