@@ -14,7 +14,7 @@ var add_field = function (name) {
 
 $(document).ready( function () {
     $('#add_field_btn').click(function () {
-        var val = $('#field-name').attr('value');
+        var val = $('#field-name').val();
         if (val) {
             add_field(val);
         } else {

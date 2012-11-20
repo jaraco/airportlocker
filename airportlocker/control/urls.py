@@ -1,12 +1,12 @@
 from fab.cp_tools import FabDispatcher
 
-from airportlocker.control.main import ListResources
-from airportlocker.control.main import CreateResource
-from airportlocker.control.main import UpdateResource
-from airportlocker.control.main import ReadResource
-from airportlocker.control.main import ViewResource
-from airportlocker.control.main import DeleteResource
 from airportlocker.control.main import BasicUpload
+from airportlocker.control.main import CreateResource
+from airportlocker.control.main import DeleteResource
+from airportlocker.control.main import ListResources
+from airportlocker.control.main import ReadResource
+from airportlocker.control.main import UpdateResource
+from airportlocker.control.main import ViewResource
 
 
 api = FabDispatcher()
