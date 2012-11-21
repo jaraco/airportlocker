@@ -1,5 +1,6 @@
 from __future__ import with_statement
 
+import os
 import posixpath
 
 import fab
@@ -23,6 +24,13 @@ def items(field_storage):
     for key in field_storage.keys():
         yield key, field_storage.getvalue(key)
 
+def add_extra_metadata(row):
+    row['url'] = '/static/%(_id)s' % row
+    row['name_url'] = '/static/%(filename)s' % row
+    row['cached_url'] = '/cached/%(md5)s/%(filename)s' % row
+    row['_id'] = str(row['_id'])
+    return row
+
 class BasicUpload(HtmlResource):
     template = fab.template('base.tmpl')
     body = fab.template('basicform.tmpl')
@@ -44,17 +52,11 @@ class ListResources(Resource, airportlocker.storage_class):
         return json.dumps(res)
 
     def _list(self):
-        def add_url(row):
-            row['url'] = '/static/%(_id)s' % row
-            row['_id'] = str(row['_id'])
-            return row
-        return map(add_url, self.find())
+        return map(add_extra_metadata, self.find())
 
     def _query(self, **kw):
-        """
-        Return all records that match the query.
-        """
-        return list(self.find(kw))
+        """ Return all records that match the query. """
+        return map(add_extra_metadata, self.find(kw))
 
 class ViewResource(Resource, airportlocker.storage_class):
     def GET(self, page, id):
@@ -98,11 +100,32 @@ class ReadResource(Resource, airportlocker.storage_class):
         })
         return
 
+class CachedResource(Resource, airportlocker.storage_class):
+    """ Expose for CDNed MD5 version, we use /MD5/Filename as url, Filename can be /SurveyName/Filename
+    """
+    def GET(self, page, *args, **kw):
+        if not args:
+            raise cherrypy.NotFound()
+        if len(args) != 3:
+            raise cherrypy.NotFound()
+        path = '/'.join(args[1:])
+        if self.fs.exists(filename=path):
+            found_file = self.fs.get_last_version(path)
+            if found_file._file['md5'] == args[0]:
+                resource, ct = self.get_resource(path)
+                cherrypy.response.headers.update({
+                    'Content-Type': ct or 'text/plain',
+                    })
+                return resource
+
+        raise cherrypy.NotFound()
+
+
 class CreateResource(Resource, airportlocker.storage_class):
-    '''
+    """
     Save the file and make sure the filename is as close as possible to the
     original while still being unique.
-    '''
+    """
 
     @post
     def POST(self, page, fields):
@@ -118,6 +141,8 @@ class CreateResource(Resource, airportlocker.storage_class):
         prefix = dict(fields).pop('_prefix', None)
         if prefix is not None:
             prefix = prefix.value
+        else:
+            prefix = ''
 
         stream = fields['_lockerfile'].file
         content_type = fields['_lockerfile'].type

@@ -29,7 +29,7 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 
 	def exists(self, filepath):
 		"""
-		Return True iff filepath already exists in the filestore.
+		Return True if filepath already exists in the filestore.
 		"""
 		return self.fs.exists(filename=filepath)
 
