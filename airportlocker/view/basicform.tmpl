@@ -1,36 +1,12 @@
-<script type="text/javascript">
-var delete_field = function () {
-    var that = $(this);
-    that.parent('.can-delete').remove();
-};
-
-var add_field = function (name) {
-    $('#fields').append($('<div class="can-delete" />')
-        .append($('<label for="'+name+'">'+name+'</label>'))
-        .append($('<input type="text" name="'+name+'" />'))
-        .append($('<span class="delete-text">[delete]</span>')
-            .click(delete_field)));
-}
-
-$(document).ready( function () {
-    $('#add_field_btn').click(function () {
-        var val = $('#field-name').val();
-        if (val) {
-            add_field(val);
-        } else {
-            alert('hey seriously... I need a name.');
-        }
-    });
-});
-</script>
-
-<div id="add-field">
-  <input type="text" id="field-name" name="field-name" />
-  <input type="button" id="add_field_btn" name="add_field" value="add" />
-</div>
 <div id="theforms">
   <form action="/" method="POST" enctype="multipart/form-data">
+    <p> This allows to upload to / multiple files with the _new param. In gryphon mobile admin we use Prefix and Survey name filled with the current survey when we upload the file. </p>
     <input type="hidden" name="_new" value="True" />
+
+    <label for="_prefix">Prefix (Survey Name):</label> <input name="_prefix" />
+    <label for="_prefix">Survey Name:</label> <input name="surveyName" />
+    <label for="_prefix">Username:</label> <input name="userName" />
+
     <!-- doing three uploads -->
     <input type="file" name="_lockerfile[]" />
     <input type="file" name="_lockerfile[]" />
@@ -44,6 +20,9 @@ $(document).ready( function () {
 <h1>Simple Form</h1>
 <form action="/" method="POST" enctype="multipart/form-data">
   <input type="hidden" name="_new" value="True" />
+  <label for="_prefix">Prefix (Survey Name):</label> <input name="_prefix" />
+  <label for="_prefix">Survey Name:</label> <input name="surveyName" />
+  <label for="_prefix">Username:</label> <input name="userName" />
   <input type="file" name="_lockerfile" />
   <input type="submit" value="submit" name="_submit" />
 </form>
