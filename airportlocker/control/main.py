@@ -106,7 +106,7 @@ class CachedResource(Resource, airportlocker.storage_class):
     def GET(self, page, *args, **kw):
         if not args:
             raise cherrypy.NotFound()
-        if len(args) != 3:
+        if len(args) < 3:
             raise cherrypy.NotFound()
         path = '/'.join(args[1:])
         if self.fs.exists(filename=path):
