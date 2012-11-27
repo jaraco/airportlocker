@@ -1,6 +1,8 @@
 import posixpath
 import httplib2
+import urllib
 import urlparse
+
 
 from airportlocker.lib.utils import MultiPart
 from airportlocker import json
@@ -28,6 +30,19 @@ class AirportLockerClient(object):
 			base = ''
 		result = urlparse.urljoin(base, pjoin(self._api[action], prefix, tail))
 		return result
+
+	def new_api(self, filename):
+		""" New API call, instead of constructing a URL it goes to
+		airportlocker, searches for the file and gets the cached md5 url.
+		"""
+		url = urlparse.urljoin(self.base, self.api('query')) + '?' + \
+              urllib.urlencode({'filename': filename})
+		response, content = self.h.request(url, method='GET')
+		filejson = json.loads(content)
+		if len(filejson):
+			return urlparse.urljoin(self.base, filejson[0]['cached_url'])
+		return 'invalid file'
+
 
 	def create(self, fn, fields=None):
 		fields = fields or {}
@@ -69,7 +84,8 @@ class AirportLockerClient(object):
 
 	def exists(self, id, prefix=None):
 		prefix = prefix or ''
-		res, c = self.h.request(self.api('read', id, prefix=prefix), method='HEAD')
+		res, c = self.h.request(self.api('read', id, prefix=prefix),
+            method='HEAD')
 		return res['status'].startswith('20')
 
 	def query(self, qs):
