@@ -26,12 +26,17 @@ def items(field_storage):
 
 def add_extra_metadata(row):
     row['url'] = '/static/%(_id)s' % row
+
     if row['filename'].startswith('/'):
         row['name_url'] = '/static%(filename)s' % row
         row['cached_url'] = '/cached/%(md5)s%(filename)s' % row
     else:
         row['name_url'] = '/static/%(filename)s' % row
         row['cached_url'] = '/cached/%(md5)s/%(filename)s' % row
+
+    if 'shortname' not in row:
+        row['shortname'] = row['filename'].split('/')[-1]
+
     row['_id'] = str(row['_id'])
     return row
 
@@ -160,7 +165,6 @@ class CreateResource(Resource, airportlocker.storage_class):
             if 'name' in fields else fields['_lockerfile'].filename)
         # but always trust the original filename for the extension
         name = self._ensure_extension(name, fields['_lockerfile'].filename)
-
         filepath = posixpath.join(prefix, name)
 
         # metadata are all fields that don't begin with '_'
@@ -168,8 +172,10 @@ class CreateResource(Resource, airportlocker.storage_class):
             (k, v) for k, v in items(fields)
             if not k.startswith('_')
         )
-        oid = self.save(stream, filepath, content_type, meta)
+        # Preserve original filename as a shortname
+        meta['shortname'] = fields['_lockerfile'].filename
 
+        oid = self.save(stream, filepath, content_type, meta)
         return success(oid)
 
 class UpdateResource(Resource, airportlocker.storage_class):
