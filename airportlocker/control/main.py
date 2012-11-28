@@ -26,8 +26,12 @@ def items(field_storage):
 
 def add_extra_metadata(row):
     row['url'] = '/static/%(_id)s' % row
-    row['name_url'] = '/static/%(filename)s' % row
-    row['cached_url'] = '/cached/%(md5)s/%(filename)s' % row
+    if row['filename'].startswith('/'):
+        row['name_url'] = '/static%(filename)s' % row
+        row['cached_url'] = '/cached/%(md5)s%(filename)s' % row
+    else:
+        row['name_url'] = '/static/%(filename)s' % row
+        row['cached_url'] = '/cached/%(md5)s/%(filename)s' % row
     row['_id'] = str(row['_id'])
     return row
 
@@ -106,18 +110,22 @@ class CachedResource(Resource, airportlocker.storage_class):
     def GET(self, page, *args, **kw):
         if not args:
             raise cherrypy.NotFound()
-        if len(args) < 3:
+        if len(args) < 2:
             raise cherrypy.NotFound()
+        found_file = None
         path = '/'.join(args[1:])
         if self.fs.exists(filename=path):
             found_file = self.fs.get_last_version(path)
+        elif not path.startswith('/') and self.fs.exists(filename='/' + path):
+            path = '/' + path
+            found_file = self.fs.get_last_version(path)
+        if found_file is not None:
             if found_file._file['md5'] == args[0]:
                 resource, ct = self.get_resource(path)
                 cherrypy.response.headers.update({
                     'Content-Type': ct or 'text/plain',
                     })
                 return resource
-
         raise cherrypy.NotFound()
 
 
