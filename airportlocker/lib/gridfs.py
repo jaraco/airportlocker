@@ -50,7 +50,7 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 		stream (if supplied).
 		Return the updated metadata.
 		"""
-		if not self.coll.files.find_one(id):
+		if not self.get_resource(id):
 			raise storage.NotFoundError(id)
 
 		if stream:
@@ -77,7 +77,7 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 		Consider re-defining the meaning of .update to be more
 		straightforward.
 		"""
-		orig_meta = self.coll.files.find_one(id)
+		orig_meta = self.find_one(self.by_id(id))
 		filepath = orig_meta['filename']
 		new_id = self.save(stream, filepath, content_type, meta)
 		self.delete(id)

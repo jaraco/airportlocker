@@ -133,6 +133,52 @@ class CachedResource(Resource, airportlocker.storage_class):
                 return resource
         raise cherrypy.NotFound()
 
+class CreateOrReplaceResource(Resource, airportlocker.storage_class):
+    """
+    New endpoint, determine if the incoming file already exists, if it does
+    then replace it, if it doesn't then create a new one.
+    """
+    @post
+    def POST(self, page, fields):
+        print "YEASGASFASDFASF"
+        fields_valid = '_lockerfile' in fields
+        if not fields_valid:
+            return failure('A  "_lockerfile" is required.')
+
+        # cast fields to a dict here because CGIFieldStorage doesn't have
+        # a pop attribute. Also we can't pass FieldStorage to posixpath
+        # later so use it's value if it is there.
+        prefix = fields['_prefix'].value if '_prefix' in fields else ''
+
+        stream = fields['_lockerfile'].file
+        content_type = fields['_lockerfile'].type
+
+        # use override name field if supplied, else use source filename
+        name = (fields['name'].value
+                if 'name' in fields else fields['_lockerfile'].filename)
+        # but always trust the original filename for the extension
+        name = self._ensure_extension(name, fields['_lockerfile'].filename)
+
+        filepath = posixpath.join(prefix, name)
+        # metadata are all fields that don't begin with '_'
+        meta = dict(
+            (k, v) for k, v in items(fields)
+                if not k.startswith('_')
+        )
+        # Preserve original filename as a shortname
+        meta['shortname'] = fields['_lockerfile'].filename
+
+        current_files = self.find({'filename': filepath}).sort('date')
+        if current_files.count():
+            latest = current_files[0]
+            object_id = str(latest['_id'])
+            new_doc = self.update(object_id, meta, stream, content_type)
+            return success({'updated': json.dumps(new_doc)})
+
+
+        oid = self.save(stream, filepath, content_type, meta)
+        new_doc = self.find_one(self.by_id(oid))
+        return success({'created': json.dumps(new_doc)})
 
 class CreateResource(Resource, airportlocker.storage_class):
     """
@@ -151,11 +197,7 @@ class CreateResource(Resource, airportlocker.storage_class):
         # cast fields to a dict here because CGIFieldStorage doesn't have
         # a pop attribute. Also we can't pass FieldStorage to posixpath
         # later so use it's value if it is there.
-        prefix = dict(fields).pop('_prefix', None)
-        if prefix is not None:
-            prefix = prefix.value
-        else:
-            prefix = ''
+        prefix = fields['_prefix'].value if '_prefix' in fields else ''
 
         stream = fields['_lockerfile'].file
         content_type = fields['_lockerfile'].type

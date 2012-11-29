@@ -3,6 +3,7 @@ from fab.cp_tools import FabDispatcher
 from airportlocker.control.main import BasicUpload
 from airportlocker.control.main import CachedResource
 from airportlocker.control.main import CreateResource
+from airportlocker.control.main import CreateOrReplaceResource
 from airportlocker.control.main import DeleteResource
 from airportlocker.control.main import ListResources
 from airportlocker.control.main import ReadResource
@@ -12,6 +13,8 @@ from airportlocker.control.main import ViewResource
 
 api = FabDispatcher()
 api.add_route('cached', 'cached/*', CachedResource(), method='GET')
+api.add_route('create_or_replace', 'post', CreateOrReplaceResource(),
+    method='POST')
 api.add_route('read', 'static/*', ReadResource(), method='GET')
 api.add_route('head', 'static/*', ReadResource(), method='HEAD')
 api.add_route('view', 'view/:id', ViewResource(), method='GET')
