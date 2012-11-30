@@ -1,13 +1,14 @@
 import getopt
 import importlib
 import logging
-import os
 import sys
 
+import os
 import yaml
 
 import airportlocker
 from airportlocker.control import root
+
 
 def setup_logging():
 	logging.basicConfig(level=logging.INFO)
@@ -21,7 +22,7 @@ def run():
 			opts, args = getopt.getopt(sys.argv[1:],
 						   'c', ['config='])
 		except getopt.GetoptError as err:
-			print srt(err)
+			print str(err)
 			sys.exit(2)
 		for o, a in opts:
 			if o in ('-c', '--config'):

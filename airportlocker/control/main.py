@@ -1,6 +1,5 @@
 from __future__ import with_statement
 
-import os
 import posixpath
 
 import fab
@@ -14,8 +13,10 @@ from airportlocker.lib.storage import NotFoundError
 def success(value):
     return json.dumps({'status': 'success', 'value': value})
 
+
 def failure(message):
     return json.dumps({'status': 'failure', 'reason': message})
+
 
 def items(field_storage):
     """
@@ -23,6 +24,7 @@ def items(field_storage):
     """
     for key in field_storage.keys():
         yield key, field_storage.getvalue(key)
+
 
 def add_extra_metadata(row):
     row['url'] = '/static/%(_id)s' % row
@@ -39,6 +41,42 @@ def add_extra_metadata(row):
 
     row['_id'] = str(row['_id'])
     return row
+
+
+def validate_fields(fields, required=None):
+    if required is None:
+        required = ["_new", "_lockerfile"]
+    for field in required:
+        if field not in fields:
+            return False
+    return True
+
+
+def extract_fields(fields):
+    # cast fields to a dict here because CGIFieldStorage doesn't have
+    # a pop attribute. Also we can't pass FieldStorage to posixpath
+    # later so use it's value if it is there.
+    prefix = fields['_prefix'].value if '_prefix' in fields else ''
+
+    stream = fields['_lockerfile'].file
+    content_type = fields['_lockerfile'].type
+
+    # use override name field if supplied, else use source filename
+    name = (fields['name'].value
+            if 'name' in fields else fields['_lockerfile'].filename)
+    return prefix, stream, content_type, name
+
+
+def prepare_meta(fields):
+    meta = dict(
+        (k, v) for k, v in items(fields)
+            if not k.startswith('_')
+    )
+    # Preserve original filename as a shortname
+    if '_lockerfile' in fields:
+        meta['shortname'] = fields['_lockerfile'].filename
+    return meta
+
 
 class BasicUpload(HtmlResource):
     template = fab.template('base.tmpl')
@@ -67,12 +105,14 @@ class ListResources(Resource, airportlocker.storage_class):
         """ Return all records that match the query. """
         return map(add_extra_metadata, self.find(kw))
 
+
 class ViewResource(Resource, airportlocker.storage_class):
     def GET(self, page, id):
         results = self.find_one(self.by_id(id))
         if not results:
             raise cherrypy.NotFound()
         return json.dumps(results)
+
 
 class ReadResource(Resource, airportlocker.storage_class):
     def GET(self, page, *args, **kw):
@@ -109,8 +149,10 @@ class ReadResource(Resource, airportlocker.storage_class):
         })
         return
 
+
 class CachedResource(Resource, airportlocker.storage_class):
-    """ Expose for CDNed MD5 version, we use /MD5/Filename as url, Filename can be /SurveyName/Filename
+    """ Expose for CDNed MD5 version, we use /MD5/Filename as url,
+    Filename can be /SurveyName/Filename
     """
     def GET(self, page, *args, **kw):
         if not args:
@@ -133,6 +175,8 @@ class CachedResource(Resource, airportlocker.storage_class):
                 return resource
         raise cherrypy.NotFound()
 
+
+
 class CreateOrReplaceResource(Resource, airportlocker.storage_class):
     """
     New endpoint, determine if the incoming file already exists, if it does
@@ -140,85 +184,49 @@ class CreateOrReplaceResource(Resource, airportlocker.storage_class):
     """
     @post
     def POST(self, page, fields):
-        print "YEASGASFASDFASF"
-        fields_valid = '_lockerfile' in fields
-        if not fields_valid:
-            return failure('A  "_lockerfile" is required.')
+        if not validate_fields(fields, ["_lockerfile", ]):
+            return failure('A "_lockerfile" is required.')
 
-        # cast fields to a dict here because CGIFieldStorage doesn't have
-        # a pop attribute. Also we can't pass FieldStorage to posixpath
-        # later so use it's value if it is there.
-        prefix = fields['_prefix'].value if '_prefix' in fields else ''
+        prefix, stream, content_type, name = extract_fields(fields)
 
-        stream = fields['_lockerfile'].file
-        content_type = fields['_lockerfile'].type
-
-        # use override name field if supplied, else use source filename
-        name = (fields['name'].value
-                if 'name' in fields else fields['_lockerfile'].filename)
         # but always trust the original filename for the extension
         name = self._ensure_extension(name, fields['_lockerfile'].filename)
+        file_path = posixpath.join(prefix, name)
 
-        filepath = posixpath.join(prefix, name)
-        # metadata are all fields that don't begin with '_'
-        meta = dict(
-            (k, v) for k, v in items(fields)
-                if not k.startswith('_')
-        )
-        # Preserve original filename as a shortname
-        meta['shortname'] = fields['_lockerfile'].filename
+        meta = prepare_meta(fields)
 
-        current_files = self.find({'filename': filepath}).sort('date')
+        current_files = self.find({'filename': file_path}).sort('date')
         if current_files.count():
-            latest = current_files[0]
-            object_id = str(latest['_id'])
+            object_id = str(current_files[0]['_id'])
             new_doc = self.update(object_id, meta, stream, content_type)
             return success({'updated': json.dumps(new_doc)})
 
-
-        oid = self.save(stream, filepath, content_type, meta)
+        oid = self.save(stream, file_path, content_type, meta)
         new_doc = self.find_one(self.by_id(oid))
         return success({'created': json.dumps(new_doc)})
+
 
 class CreateResource(Resource, airportlocker.storage_class):
     """
     Save the file and make sure the filename is as close as possible to the
     original while still being unique.
     """
-
     @post
     def POST(self, page, fields):
-        '''Save the file to storage'''
-        fields_valid = '_new' in fields and '_lockerfile' in fields
-        if not fields_valid:
+        if not validate_fields(fields):
             return failure('A "_new" and "_lockerfile" are required to '
                 'create a new document.')
 
-        # cast fields to a dict here because CGIFieldStorage doesn't have
-        # a pop attribute. Also we can't pass FieldStorage to posixpath
-        # later so use it's value if it is there.
-        prefix = fields['_prefix'].value if '_prefix' in fields else ''
-
-        stream = fields['_lockerfile'].file
-        content_type = fields['_lockerfile'].type
-
-        # use override name field if supplied, else use source filename
-        name = (fields['name'].value
-            if 'name' in fields else fields['_lockerfile'].filename)
+        prefix, stream, content_type, name = extract_fields(fields)
         # but always trust the original filename for the extension
         name = self._ensure_extension(name, fields['_lockerfile'].filename)
-        filepath = posixpath.join(prefix, name)
+        file_path = posixpath.join(prefix, name)
 
-        # metadata are all fields that don't begin with '_'
-        meta = dict(
-            (k, v) for k, v in items(fields)
-            if not k.startswith('_')
-        )
-        # Preserve original filename as a shortname
-        meta['shortname'] = fields['_lockerfile'].filename
+        meta = prepare_meta(fields)
 
-        oid = self.save(stream, filepath, content_type, meta)
+        oid = self.save(stream, file_path, content_type, meta)
         return success(oid)
+
 
 class UpdateResource(Resource, airportlocker.storage_class):
 
@@ -230,11 +238,7 @@ class UpdateResource(Resource, airportlocker.storage_class):
             content_type = file_ob.type,
         ) if file_ob else dict()
 
-        # metadata are all fields that don't begin with '_'
-        meta = dict(
-            (k, v) for k, v in items(fields)
-            if not k.startswith('_')
-        )
+        meta = prepare_meta(fields)
 
         try:
             new_doc = self.update(id, meta=meta, **params)
@@ -242,6 +246,7 @@ class UpdateResource(Resource, airportlocker.storage_class):
             raise cherrypy.NotFound()
 
         return success({'updated': json.dumps(new_doc)})
+
 
 class DeleteResource(Resource, airportlocker.storage_class):
     def DELETE(self, page, id):

@@ -1,6 +1,6 @@
-import os
 import importlib
 
+import os
 import pkg_resources
 import cherrypy
 import fab

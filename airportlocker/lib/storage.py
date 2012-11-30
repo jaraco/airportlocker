@@ -1,10 +1,11 @@
-import os
 import itertools
 import mimetypes
 
+import os
 import bson
 
 import airportlocker
+
 
 class NotFoundError(Exception): pass
 
