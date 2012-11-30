@@ -33,8 +33,9 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 		"""
 		return self.fs.exists(filename=filepath)
 
-	def save(self, stream, filepath, content_type, meta):
-		filepath = self.verified_filename(filepath)
+	def save(self, stream, filepath, content_type, meta, overwrite=False):
+		if not overwrite:
+			filepath = self.verified_filename(filepath)
 		return self.fs.put(stream, filename=filepath,
 			content_type=content_type, **meta)
 
@@ -44,7 +45,7 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 		# storage
 		return name
 
-	def update(self, id, meta, stream=None, content_type=None):
+	def update(self, id, meta, stream=None, content_type=None, overwrite=False):
 		"""
 		Update the document identified by id with the new metadata and file
 		stream (if supplied).
@@ -57,14 +58,14 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 			if not content_type:
 				raise ValueError("You can't update the stream without "
 					"specifying the content type.")
-			return self.replace_file(id, stream, content_type, meta)
+			return self.replace_file(id, stream, content_type, meta, overwrite)
 
 		spec = dict(_id=self.by_id(id))
 		self.coll.files.update(spec, {"$set": meta})
 		new_doc = self.find_one(self.by_id(id))
 		return new_doc
 
-	def replace_file(self, id, stream, content_type, meta):
+	def replace_file(self, id, stream, content_type, meta, overwrite=False):
 		"""
 		GridFS doesn't easily enable overriding an existing file, so do
 		the work here. id must exist.
@@ -79,7 +80,7 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 		"""
 		orig_meta = self.find_one(self.by_id(id))
 		filepath = orig_meta['filename']
-		new_id = self.save(stream, filepath, content_type, meta)
+		new_id = self.save(stream, filepath, content_type, meta, overwrite)
 		self.delete(id)
 		return self.fs.get(self.by_id(new_id))._file
 

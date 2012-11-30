@@ -13,8 +13,7 @@ from airportlocker.control.main import ViewResource
 
 api = FabDispatcher()
 api.add_route('cached', 'cached/*', CachedResource(), method='GET')
-api.add_route('create_or_replace', 'post', CreateOrReplaceResource(),
-    method='POST')
+
 api.add_route('read', 'static/*', ReadResource(), method='GET')
 api.add_route('head', 'static/*', ReadResource(), method='HEAD')
 api.add_route('view', 'view/:id', ViewResource(), method='GET')
@@ -27,6 +26,10 @@ api.add_route('delete', 'edit/:id', DeleteResource(), method='DELETE')
 api.add_route('index', '', ListResources(), method='GET')
 api.add_route('create', '', CreateResource(), method='POST')
 api.add_route('options', '', CreateResource(), method='OPTIONS')
+api.add_route('create_or_replace', 'post', CreateOrReplaceResource(),
+    method='POST')
+api.add_route('options_cor', 'post', CreateOrReplaceResource(),
+    method='OPTIONS')
 
 dev = FabDispatcher()
 dev.add_route('index', '_dev', BasicUpload(), method='GET')

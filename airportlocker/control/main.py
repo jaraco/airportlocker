@@ -198,10 +198,11 @@ class CreateOrReplaceResource(Resource, airportlocker.storage_class):
         current_files = self.find({'filename': file_path}).sort('date')
         if current_files.count():
             object_id = str(current_files[0]['_id'])
-            new_doc = self.update(object_id, meta, stream, content_type)
+            new_doc = self.update(object_id, meta, stream, content_type,
+                overwrite=True)
             return success({'updated': json.dumps(new_doc)})
 
-        oid = self.save(stream, file_path, content_type, meta)
+        oid = self.save(stream, file_path, content_type, meta, overwrite=True)
         new_doc = self.find_one(self.by_id(oid))
         return success({'created': json.dumps(new_doc)})
 
