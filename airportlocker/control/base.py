@@ -2,8 +2,6 @@ import cgi
 import fab
 import cherrypy
 
-import airportlocker
-
 class Resource(fab.FabPage):
 
 	def is_json(self):

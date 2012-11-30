@@ -16,13 +16,14 @@ mimetypes.add_type('audio/m4a', '.m4a')
 mimetypes.add_type('text/csv', '.csv')
 
 class FileStorage(storage.Storage):
-	'''
+	"""
 	A mix-in class to be used with Resource controller objects providing
 	filesystem-backed resource file storage.
-	'''
+	"""
 
+	# Characters that get replaced with underscores
 	bad_filename_chars = re.compile(r'[@\!\? \+\*\#]')
-	"Characters that get replaced with underscores"
+
 
 	@classmethod
 	def startup(cls):
@@ -34,10 +35,10 @@ class FileStorage(storage.Storage):
 		airportlocker.filestore = filestore
 
 	def verified_filename(self, fn):
-		'''
+		"""
 		Return a unique, human-readable filename that's safe to save to the
 		filesystem.
-		'''
+		"""
 		fn = self.bad_filename_chars.sub('_', fn)
 		return storage.unique_name(storage.numbered_files(fn), self.exists)
 
@@ -135,8 +136,8 @@ class FileStorage(storage.Storage):
 		return meta
 
 	def remove_file(self, fn):
-		'''We do not actually remove the file. We just add a "deleted"
-		extension. Clean up can be done via cron if necessary.'''
+		"""We do not actually remove the file. We just add a "deleted"
+		extension. Clean up can be done via cron if necessary."""
 		path = os.path.join(airportlocker.filestore, fn)
 		if os.path.isfile(path):
 			os.rename(path, '%s.deleted' % path)

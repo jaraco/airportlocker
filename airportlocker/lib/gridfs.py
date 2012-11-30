@@ -6,10 +6,10 @@ from . import storage
 from . import migration
 
 class GridFSStorage(storage.Storage, migration.FSMigration):
-	'''
+	"""
 	A mix-in class to be used with Resource controller objects providing
 	gridfs-backed resource file storage.
-	'''
+	"""
 
 	def find(self, *args, **kwargs):
 		return self.coll.files.find(*args, **kwargs)
@@ -22,9 +22,9 @@ class GridFSStorage(storage.Storage, migration.FSMigration):
 		return gridfs.GridFS(self.coll.database, self.coll.name)
 
 	def verified_filename(self, fn):
-		'''
+		"""
 		Return a unique, human-readable filename that's safe to save.
-		'''
+		"""
 		return storage.unique_name(storage.numbered_files(fn), self.exists)
 
 	def exists(self, filepath):

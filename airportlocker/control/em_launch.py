@@ -33,7 +33,7 @@ def load_config():
 	airportlocker.config.update(eggmonster.env)
 
 def run():
-	"simple eggmonster entry point"
+	"""simple eggmonster entry point"""
 	load_config()
 	importlib.import_module('airportlocker.etc.startup')
 	setup_logging()

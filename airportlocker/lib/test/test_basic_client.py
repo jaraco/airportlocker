@@ -30,7 +30,7 @@ def wait_for_http(url):
 			break
 		time.sleep(.5)
 	else:
-		raise RuntimeError("Unable to connect: %s" % resp)
+		raise RuntimeError("Unable to connect: %s" % url)
 
 class TestBasicClient(object):
 

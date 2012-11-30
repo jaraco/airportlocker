@@ -10,7 +10,7 @@ from bson import json_util as json
 from jaraco.util.dictlib import ItemsAsAttributes
 
 class ConfigDict(ItemsAsAttributes, dict):
-	"A dictionary that provides items as attributes"
+    """A dictionary that provides items as attributes"""
 
 # default config values
 config = ConfigDict(
