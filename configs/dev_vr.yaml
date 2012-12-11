@@ -1,3 +1,12 @@
 production : False
-mongo_host: localhost 
+mongo_host: localhost
 storage_class: airportlocker.lib.gridfs:GridFSStorage
+zencoder_api_key: c483f68abccbd8f3f96722f3bf7bd02a
+zencoder_outputs:
+- {label: HTML5/Flash/MP4/H.264, h264_profile: high, extension: mp4}
+- {label: HTML5/WebM, extension: webm}
+- {label: HTML5/Ogg, extension: ogg}
+- {label: Mobile/MP4/H.264 wide compatibility, size: 480x360, extension: mp4}
+- {label: Mobile/MP4/H.264 newer iOS, size: 1280x720, extension: mp4}
+- {label: Mobile/3GP/MPEG4 non-smartphones, size: 320x240, extension: 3gp}
+zencoder_s3_url: s3://AirportLockerTest/
