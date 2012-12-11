@@ -1,14 +1,19 @@
 from __future__ import with_statement
 
+import os
 import posixpath
 
-import fab
+from boto.s3.connection import S3Connection
+from boto.s3.key import Key
 import cherrypy
+import fab
+import zencoder
 
 import airportlocker
 from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.storage import NotFoundError
+
 
 def success(value):
     return json.dumps({'status': 'success', 'value': value})
@@ -75,12 +80,50 @@ def prepare_meta(fields):
     # Preserve original filename as a shortname
     if '_lockerfile' in fields:
         meta['shortname'] = fields['_lockerfile'].filename
+
     return meta
+
+
+def send_to_zencoder(s3filename):
+    zen = zencoder.Zencoder(airportlocker.config.get('zencoder_api_key'))
+    bucket = airportlocker.config.get('aws_s3_bucket')
+    outputs = []
+    for output in airportlocker.config.get('zencoder_outputs'):
+        extension = output['extension']
+        prefix = output['prefix']
+        filename, source_ext = os.path.splitext(s3filename)
+        output_filename = filename + '.' + extension
+        del output['extension']
+        del output['prefix']
+        output.update({'url': 's3://' + bucket + '/' + prefix + filename})
+        outputs.append(output)
+
+    job = zen.job.create('s3://' + airportlocker.config.get('aws_s3_bucket') + \
+                         '/' + s3filename, set(outputs))
+    if job.code == 201:
+        # Save the info about the outputs
+        print job.body
+
+    for output in job.body['outputs']:
+        progress = zen.output.progress(output['id'])
+        # How to plug the progress and update the final info to the outputs?
+        print progress.body
+
+def upload_to_s3(filename, content, content_type):
+    conn = S3Connection(airportlocker.config.get('aws_accesskey'),
+                        airportlocker.config.get('aws_secretkey'))
+    bucket = conn.get_bucket(airportlocker.config.get('aws_s3_bucket'))
+    k = Key(bucket)
+    k.key = filename.split('/')[::-1][0]
+    k.set_metadata("Content-Type", content_type)
+    k.set_contents_from_string(content)
+    return k.key
 
 
 class BasicUpload(HtmlResource):
     template = fab.template('base.tmpl')
     body = fab.template('basicform.tmpl')
+
     def GET(self, page, *args, **kw):
         cherrypy.response.headers['Content-Type'] = 'application/xhtml+xml'
         page.args = kw
@@ -176,10 +219,8 @@ class CachedResource(Resource, airportlocker.storage_class):
         raise cherrypy.NotFound()
 
 
-
 class CreateOrReplaceResource(Resource, airportlocker.storage_class):
-    """
-    New endpoint, determine if the incoming file already exists, if it does
+    """ New endpoint, determine if the incoming file already exists, if it does
     then replace it, if it doesn't then create a new one.
     """
     @post
