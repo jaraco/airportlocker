@@ -3,3 +3,4 @@
 fab>=2.4,<4.0dev
 pymongo>=2.3
 zencoder
+boto

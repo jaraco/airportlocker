@@ -30,7 +30,8 @@ setup_params = dict(
         server=[
             "fab>=2.4,<4.0dev",
             "pymongo>=2.3",
-            "zencoder"
+            "zencoder",
+            "boto"
         ],
         client=[
             "httplib2",
