@@ -90,24 +90,23 @@ def send_to_zencoder(s3filename):
     outputs = []
     for output in airportlocker.config.get('zencoder_outputs'):
         extension = output['extension']
-        prefix = output['prefix']
+        prefix = str(output['prefix'])
         filename, source_ext = os.path.splitext(s3filename)
         output_filename = filename + '.' + extension
         del output['extension']
         del output['prefix']
-        output.update({'url': 's3://' + bucket + '/' + prefix + filename})
+        output.update({'url': 's3://' + bucket + '/' + prefix + '_' + filename +
+                              '.' + extension})
         outputs.append(output)
 
-    job = zen.job.create('s3://' + airportlocker.config.get('aws_s3_bucket') + \
-                         '/' + s3filename, set(outputs))
+    job = zen.job.create('s3://' + airportlocker.config.get('aws_s3_bucket') +
+                         '/' + s3filename, outputs)
     if job.code == 201:
         # Save the info about the outputs
-        print job.body
+        return job.body
 
-    for output in job.body['outputs']:
-        progress = zen.output.progress(output['id'])
-        # How to plug the progress and update the final info to the outputs?
-        print progress.body
+    return None
+
 
 def upload_to_s3(filename, content, content_type):
     conn = S3Connection(airportlocker.config.get('aws_accesskey'),
@@ -116,7 +115,7 @@ def upload_to_s3(filename, content, content_type):
     k = Key(bucket)
     k.key = filename.split('/')[::-1][0]
     k.set_metadata("Content-Type", content_type)
-    k.set_contents_from_string(content)
+    k.set_contents_from_file(content)
     return k.key
 
 
@@ -241,10 +240,17 @@ class CreateOrReplaceResource(Resource, airportlocker.storage_class):
             object_id = str(current_files[0]['_id'])
             new_doc = self.update(object_id, meta, stream, content_type,
                 overwrite=True)
+            if 'video' in content_type:
+                resource, ct = self.get_resource(file_path)
+                s3_file = upload_to_s3(file_path, resource, ct)
+                job = send_to_zencoder(s3_file)
             return success({'updated': json.dumps(new_doc)})
 
         oid = self.save(stream, file_path, content_type, meta, overwrite=True)
         new_doc = self.find_one(self.by_id(oid))
+        resource, ct = self.get_resource(file_path)
+        s3_file = upload_to_s3(file_path, resource, ct)
+        job = send_to_zencoder(s3_file)
         return success({'created': json.dumps(new_doc)})
 
 
