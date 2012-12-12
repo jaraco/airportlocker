@@ -236,21 +236,30 @@ class CreateOrReplaceResource(Resource, airportlocker.storage_class):
         meta = prepare_meta(fields)
 
         current_files = self.find({'filename': file_path}).sort('date')
+        updated = False
+
         if current_files.count():
             object_id = str(current_files[0]['_id'])
             new_doc = self.update(object_id, meta, stream, content_type,
                 overwrite=True)
-            if 'video' in content_type:
-                resource, ct = self.get_resource(file_path)
-                s3_file = upload_to_s3(file_path, resource, ct)
-                job = send_to_zencoder(s3_file)
+            object_id = str(new_doc['_id'])
+            updated = True
+        else:
+            object_id = self.save(stream, file_path, content_type, meta,
+                            overwrite=True)
+            new_doc = self.find_one(self.by_id(object_id))
+
+        if 'video' in content_type:
+            resource, ct = self.get_resource(file_path)
+            s3_file = upload_to_s3(file_path, resource, ct)
+            job = send_to_zencoder(s3_file)
+            meta['zencoder_job_id'] = job['id']
+            meta['zencoder_outputs'] = job['outputs']
+            new_doc = self.update(object_id, meta)
+
+        if updated:
             return success({'updated': json.dumps(new_doc)})
 
-        oid = self.save(stream, file_path, content_type, meta, overwrite=True)
-        new_doc = self.find_one(self.by_id(oid))
-        resource, ct = self.get_resource(file_path)
-        s3_file = upload_to_s3(file_path, resource, ct)
-        job = send_to_zencoder(s3_file)
         return success({'created': json.dumps(new_doc)})
 
 
