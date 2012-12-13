@@ -130,11 +130,13 @@ def send_to_zencoder(s3filename):
 
 
 def upload_to_s3(filename, content, content_type):
+    """ Upload to s3. Beware of the leading / in the filename.
+    """
     conn = S3Connection(airportlocker.config.get('aws_accesskey'),
                         airportlocker.config.get('aws_secretkey'))
     bucket = conn.get_bucket(airportlocker.config.get('aws_s3_bucket'))
     k = Key(bucket)
-    k.key = filename
+    k.key = filename.lstrip('/')
     k.set_metadata("Content-Type", content_type)
     k.set_contents_from_file(content)
     k.set_acl('public-read')
