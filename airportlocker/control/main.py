@@ -87,6 +87,17 @@ def prepare_meta(fields):
 def send_to_zencoder(s3filename):
     zen = zencoder.Zencoder(airportlocker.config.get('zencoder_api_key'))
     bucket = airportlocker.config.get('aws_s3_bucket')
+
+    notification_url = airportlocker.config.get('zencoder_notification_url',
+                                                None)
+    if 'localhost' in notification_url or not notification_url:
+        # This is the test url that zencoder uses see, if not there will be no
+        # notifications for zencoder-fetcher. See readme.
+        notification_url = 'http://zencoderfetcher/'
+
+    notification = [{'format': 'json',
+                     'url': notification_url}]
+
     outputs = []
     for output in airportlocker.config.get('zencoder_outputs'):
         extension = output['extension']
@@ -95,12 +106,18 @@ def send_to_zencoder(s3filename):
         output_filename = filename + '.' + extension
         del output['extension']
         del output['prefix']
-        output.update({'url': 's3://' + bucket + '/' + prefix + '_' + filename +
-                              '.' + extension})
+        output_url = 's3://' + bucket + '/' + prefix + '_' + filename + '.' + \
+                     extension
+        output.update({'url': output_url})
+
+        if notification is not None:
+            output.update({'notifications': notification})
+
         outputs.append(output)
 
     job = zen.job.create('s3://' + airportlocker.config.get('aws_s3_bucket') +
                          '/' + s3filename, outputs)
+
     if job.code == 201:
         # Save the info about the outputs
         return job.body
@@ -190,6 +207,33 @@ class ReadResource(Resource, airportlocker.storage_class):
             'Content-Length': size,
         })
         return
+
+
+class ZencoderResource(Resource, airportlocker.storage_class):
+    """ Notification endpoint for Zencoder to post the results of a job and
+    output meta information.
+    """
+
+    def POST(self, page):
+        """ Zencoder POSTs data here.
+        """
+        if self.is_json():
+            cherrypy.request.body.process()
+            rawbody = cherrypy.request.body.read()
+            body = json.loads(rawbody)
+            job_id = body['job']['id']
+            file_meta = self.find_one({'zencoder_job_id': job_id})
+            if not file_meta:
+                raise cherrypy.NotFound()
+            for output in file_meta['zencoder_outputs']:
+                if output['id'] == body['output']['id']:
+                    output.update(body['output'])
+                    result = self.coll.files.update({'_id': file_meta['_id'],
+                        'zencoder_outputs.id': output['id']},
+                        {'$set': {"zencoder_outputs.$": output}})
+                    return success('Updated')
+
+        raise cherrypy.NotFound()
 
 
 class CachedResource(Resource, airportlocker.storage_class):

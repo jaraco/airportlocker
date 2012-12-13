@@ -9,10 +9,12 @@ from airportlocker.control.main import ListResources
 from airportlocker.control.main import ReadResource
 from airportlocker.control.main import UpdateResource
 from airportlocker.control.main import ViewResource
+from airportlocker.control.main import ZencoderResource
 
 
 api = FabDispatcher()
 api.add_route('cached', 'cached/*', CachedResource(), method='GET')
+api.add_route('zencoder', '_zencoder', ZencoderResource(), method='POST')
 
 api.add_route('read', 'static/*', ReadResource(), method='GET')
 api.add_route('head', 'static/*', ReadResource(), method='HEAD')
