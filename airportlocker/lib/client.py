@@ -47,9 +47,9 @@ class AirportLockerClient(object):
             return self.new_api('/' + survey_name + filename, survey_name)
 
         if len(filejson):
-            return filejson[0]
+            return json.dumps({'found': True, 'meta': filejson[0]})
 
-        return '/404/'
+        return json.dumps({"found": False, "meta": {}})
 
 
     def create(self, fn, fields=None):

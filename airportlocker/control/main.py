@@ -137,6 +137,7 @@ def upload_to_s3(filename, content, content_type):
     k.key = filename
     k.set_metadata("Content-Type", content_type)
     k.set_contents_from_file(content)
+    k.set_acl('public-read')
     return k.key
 
 
