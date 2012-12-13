@@ -47,7 +47,7 @@ class AirportLockerClient(object):
             return self.new_api('/' + survey_name + filename, survey_name)
 
         if len(filejson):
-            return urlparse.urljoin(self.base, filejson[0]['cached_url'])
+            return filejson[0]
 
         return '/404/'
 
