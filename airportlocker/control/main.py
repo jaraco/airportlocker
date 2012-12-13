@@ -75,7 +75,7 @@ def extract_fields(fields):
 def prepare_meta(fields):
     meta = dict(
         (k, v) for k, v in items(fields)
-            if not k.startswith('_')
+        if not k.startswith('_')
     )
     # Preserve original filename as a shortname
     if '_lockerfile' in fields:
@@ -85,6 +85,9 @@ def prepare_meta(fields):
 
 
 def send_to_zencoder(s3filename):
+    """ Prepare the job input and send it out to zencoder for the
+    transcoding magic.
+    """
     zen = zencoder.Zencoder(airportlocker.config.get('zencoder_api_key'))
     bucket = airportlocker.config.get('aws_s3_bucket')
 
@@ -103,12 +106,13 @@ def send_to_zencoder(s3filename):
         extension = output['extension']
         prefix = str(output['prefix'])
         filename, source_ext = os.path.splitext(s3filename)
-        output_filename = filename + '.' + extension
-        del output['extension']
-        del output['prefix']
         output_url = 's3://' + bucket + '/' + prefix + '_' + filename + '.' + \
                      extension
         output.update({'url': output_url})
+        # We don't want to pass this params to zencoder since they are internal
+        # only.
+        del output['extension']
+        del output['prefix']
 
         if notification is not None:
             output.update({'notifications': notification})
@@ -126,6 +130,9 @@ def send_to_zencoder(s3filename):
 
 
 def upload_to_s3(filename, content, content_type):
+    """ Take the filename, strip it from the survey/region prefix and
+    upload it to the configured bucket.
+    """
     conn = S3Connection(airportlocker.config.get('aws_accesskey'),
                         airportlocker.config.get('aws_secretkey'))
     bucket = conn.get_bucket(airportlocker.config.get('aws_s3_bucket'))
