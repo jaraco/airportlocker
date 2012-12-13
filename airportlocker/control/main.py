@@ -104,15 +104,15 @@ def send_to_zencoder(s3filename):
     outputs = []
     for output in airportlocker.config.get('zencoder_outputs'):
         extension = output['extension']
-        prefix = str(output['prefix'])
+        suffix = str(output['suffix'])
         filename, source_ext = os.path.splitext(s3filename)
-        output_url = 's3://' + bucket + '/' + prefix + '_' + filename + '.' + \
+        output_url = 's3://' + bucket + '/' + filename + '_' + suffix + '.' + \
                      extension
-        output.update({'url': output_url})
+        output.update({'url': output_url, "public": True})
         # We don't want to pass this params to zencoder since they are internal
         # only.
         del output['extension']
-        del output['prefix']
+        del output['suffix']
 
         if notification is not None:
             output.update({'notifications': notification})
@@ -130,14 +130,11 @@ def send_to_zencoder(s3filename):
 
 
 def upload_to_s3(filename, content, content_type):
-    """ Take the filename, strip it from the survey/region prefix and
-    upload it to the configured bucket.
-    """
     conn = S3Connection(airportlocker.config.get('aws_accesskey'),
                         airportlocker.config.get('aws_secretkey'))
     bucket = conn.get_bucket(airportlocker.config.get('aws_s3_bucket'))
     k = Key(bucket)
-    k.key = filename.split('/')[::-1][0]
+    k.key = filename
     k.set_metadata("Content-Type", content_type)
     k.set_contents_from_file(content)
     return k.key

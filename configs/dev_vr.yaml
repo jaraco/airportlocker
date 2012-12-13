@@ -4,10 +4,10 @@ storage_class: airportlocker.lib.gridfs:GridFSStorage
 # Integration only zencoder api key. You'll need a production one for long videos.
 zencoder_api_key: 06f15509882cc8afb0565af79a9206e1
 zencoder_outputs:
-- {label: HTML5/Flash/MP4/H.264, h264_profile: high, extension: mp4, prefix: html5_mp4}
-- {label: HTML5/WebM, extension: webm, prefix: html5_webm}
-- {label: HTML5/Ogg, extension: ogg, prefix: html5_ogg}
-- {label: Mobile/3GP/MPEG4 non-smartphones, size: 320x240, extension: 3gp, prefix: mov_3gp}
+- {label: HTML5/Flash/MP4/H.264, h264_profile: high, extension: mp4, suffix: html5_mp4}
+- {label: HTML5/WebM, extension: webm, suffix: html5_webm}
+- {label: HTML5/Ogg, extension: ogg, suffix: html5_ogg}
+- {label: Mobile/3GP/MPEG4 non-smartphones, size: 320x240, extension: 3gp, suffix: mov_3gp}
 aws_s3_bucket: yg-zencoder-test
 aws_accesskey: AKIAIZBD3TBZU4GRD23A
 aws_secretkey: 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

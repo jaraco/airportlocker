@@ -46,12 +46,12 @@ gem install zencoder-fetcher
 
 To run it you should use:
 
-zencoder_fetcher -u http://localhost:5600/_zencoder/ -l -m 1 c483f68abccbd8f3f96722f3bf7bd02a
+zencoder_fetcher -u http://localhost:5600/_zencoder/ -l -m 1 06f15509882cc8afb0565af79a9206e1
 
 
 The -u points to the url where the fetcher will post the information. Note that
 needs to change when running on a different machine like a dev-vm.
 The -l option tells the fetcher to run in a loop.
-The -m 1 telss the fetcher to ignore notifications older than 1 minute ago.
+The -m 1 tells the fetcher to ignore notifications older than 1 minute ago.
 The last parameter is the zencoder API key, it must be the same as your
 airportlocker deployment is using.
