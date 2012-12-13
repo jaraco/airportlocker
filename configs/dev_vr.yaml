@@ -3,12 +3,11 @@ mongo_host: localhost
 storage_class: airportlocker.lib.gridfs:GridFSStorage
 zencoder_api_key: c483f68abccbd8f3f96722f3bf7bd02a
 zencoder_outputs:
-- {label: HTML5/Flash/MP4/H.264, h264_profile: high, extension: mp4, prefix: html5_high}
+- {label: HTML5/Flash/MP4/H.264, h264_profile: high, extension: mp4, prefix: html5_mp4}
 - {label: HTML5/WebM, extension: webm, prefix: html5_webm}
 - {label: HTML5/Ogg, extension: ogg, prefix: html5_ogg}
-- {label: Mobile/MP4/H.264 wide compatibility, size: 480x360, extension: mp4, prefix: mob_baseline}
-- {label: Mobile/MP4/H.264 newer iOS, size: 1280x720, extension: mp4, prefix: mob_main}
-- {label: Mobile/3GP/MPEG4 non-smartphones, size: 320x240, extension: 3gp, prefix: mov_nonsmart}
+- {label: Mobile/3GP/MPEG4 non-smartphones, size: 320x240, extension: 3gp, prefix: mov_3gp}
 aws_s3_bucket: airportlockertest
 aws_accesskey: AKIAJU2MNQIAWRRTJ4CQ
 aws_secretkey: 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
+zencoder_notification_url: http://localhost:5600
