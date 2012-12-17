@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 import os
 import posixpath
+from urlparse import urljoin
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
@@ -33,13 +34,18 @@ def items(field_storage):
 
 def add_extra_metadata(row):
     row['url'] = '/static/%(_id)s' % row
+    apl_public_url = airportlocker.config.get('public_url', '')
 
     if row['filename'].startswith('/'):
-        row['name_url'] = '/static%(filename)s' % row
-        row['cached_url'] = '/cached/%(md5)s%(filename)s' % row
+        row['name_url'] = urljoin(apl_public_url,
+                                  '/static%(filename)s' % row)
+        row['cached_url'] = urljoin(apl_public_url,
+                                    '/cached/%(md5)s%(filename)s' % row)
     else:
-        row['name_url'] = '/static/%(filename)s' % row
-        row['cached_url'] = '/cached/%(md5)s/%(filename)s' % row
+        row['name_url'] = urljoin(apl_public_url,
+                                  '/static/%(filename)s' % row)
+        row['cached_url'] = urljoin(apl_public_url,
+                                    '/cached/%(md5)s/%(filename)s' % row)
 
     if 'shortname' not in row:
         row['shortname'] = row['filename'].split('/')[-1]

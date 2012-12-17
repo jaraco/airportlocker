@@ -11,4 +11,5 @@ zencoder_outputs:
 aws_s3_bucket: yg-zencoder-test
 aws_accesskey: AKIAIZBD3TBZU4GRD23A
 aws_secretkey: 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
-zencoder_notification_url: http://localhost:5600
+zencoder_notification_url: http://localhost:5600/_zencoder/
+public_url: http://localhost:5600/
