@@ -52,8 +52,6 @@ def run():
     if len(args) < 1:
         parser.error('You must provide at least one file to upload')
 
-    # base_url = 'http://elarson.polimetrix.com:8090'
-    # base_url = 'http://gryphonfiles.pollingpoint.com'
     base_url = 'https://surveyfiles.yougov.com/'
     client = GryphonAPLClient(base_url, options.survey)
     for fname in args:
