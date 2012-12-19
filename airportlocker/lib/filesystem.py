@@ -24,7 +24,6 @@ class FileStorage(storage.Storage):
     # Characters that get replaced with underscores
     bad_filename_chars = re.compile(r'[@\!\? \+\*\#]')
 
-
     @classmethod
     def startup(cls):
         filestore = airportlocker.config.filestore
