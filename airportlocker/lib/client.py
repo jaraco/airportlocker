@@ -51,7 +51,6 @@ class AirportLockerClient(object):
 
         return json.dumps({"found": False, "meta": {}})
 
-
     def create(self, fn, fields=None):
         fields = fields or {}
         fields.update({'_new': 'True'})
