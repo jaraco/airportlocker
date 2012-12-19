@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 
 from pprint import pformat
@@ -30,13 +32,13 @@ class GryphonAPLClient(object):
             meta['title'] = ''
             result = self.api.create(f, meta)
             if result['status'] == 'success':
-                print '%s created' % filename
+                print('%s created' % filename)
             else:
-                print 'Error: %s' % pformat(result)
-                print 'Skipped:'
-                print ' '.join(self.files[i - 1:])
+                print('Error: %s' % pformat(result))
+                print('Skipped:')
+                print(' '.join(self.files[i - 1:]))
                 break
-        print 'Done!'
+        print('Done!')
 
 def run():
     usage = 'usage: %prog [-v | --verbose] [-s surveyname] file1 file2 file3 ...'
