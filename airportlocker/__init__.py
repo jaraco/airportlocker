@@ -1,9 +1,9 @@
 
 # prefer simplejson to json, but fallback to json
 #try:
-#	import simplejson as json
+#       import simplejson as json
 #except ImportError:
-#	import json
+#       import json
 
 from bson import json_util as json
 
@@ -14,34 +14,34 @@ class ConfigDict(ItemsAsAttributes, dict):
 
 # default config values
 config = ConfigDict(
-	airportlocker_port = 8090,
-	production = False,
-	docset = 'luggage',
+    airportlocker_port = 8090,
+    production = False,
+    docset = 'luggage',
 
-	# file storage
-	storage_class = 'airportlocker.lib.filesystem:FileStorage',
-	filestore = 'file_storage',
+    # file storage
+    storage_class = 'airportlocker.lib.filesystem:FileStorage',
+    filestore = 'file_storage',
 
-	# mongodb store
-	mongo_host = 'localhost',
-	mongo_port = 27017,
-	mongo_db_name = 'airportlocker',
+    # mongodb store
+    mongo_host = 'localhost',
+    mongo_port = 27017,
+    mongo_db_name = 'airportlocker',
 
-	# performance tweaks (necessary for static file serving)
-	threads = 30,
+    # performance tweaks (necessary for static file serving)
+    threads = 30,
 
-	# error emails
-	email_error = False,
-	email_list = [],
-	email_server = 'vemail1',
+    # error emails
+    email_error = False,
+    email_list = [],
+    email_server = 'vemail1',
 
-	# Logging to eggmonster
-	eggmonster_error = False,
-	eggmonster_access = False,
+    # Logging to eggmonster
+    eggmonster_error = False,
+    eggmonster_access = False,
 
-	log_host = "vesyslogd",
-	log_port = 13000,
-	log_facility = "airportlocker",
+    log_host = "vesyslogd",
+    log_port = 13000,
+    log_facility = "airportlocker",
 )
 
 _default_config = ConfigDict(config)

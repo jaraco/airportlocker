@@ -18,158 +18,158 @@ import airportlocker.lib.filesystem
 log = logging.getLogger(__name__)
 
 class FSMigration(object):
-	def migrate(self, retrieve_base, bad_ids=()):
-		"""
-		Migrate data from a previous filesystem-backed instance. Skip any
-		documents identified by bad_ids.
-		"""
-		self.base = retrieve_base
-		self.bad_ids = set(bad_ids)
-		# first validate the source
-		source = airportlocker.lib.filesystem.FileStorage()
-		docs = self.__new_docs(source)
-		log.info("Migrating %s records", len(docs))
-		if not self.__validate(docs, source):
-			log.info("validation failed; no migration attempted")
-			return
-		watch = Stopwatch()
-		for doc in docs:
-			filename = self.__full_path(doc)
-			content_type = doc['_mime']
-			meta = dict(
-				(k,v) for k,v in doc.items()
-				if not k.startswith('_') and k != 'name'
-			)
-			url = urlparse.urljoin(self.base, doc['_id'])
-			stream = urllib2.urlopen(url)
-			self._save(stream, filename, content_type, meta)
-			log.info("Migrated %s", filename)
-		log.info("Migration completed in %s", watch.split())
+    def migrate(self, retrieve_base, bad_ids=()):
+        """
+        Migrate data from a previous filesystem-backed instance. Skip any
+        documents identified by bad_ids.
+        """
+        self.base = retrieve_base
+        self.bad_ids = set(bad_ids)
+        # first validate the source
+        source = airportlocker.lib.filesystem.FileStorage()
+        docs = self.__new_docs(source)
+        log.info("Migrating %s records", len(docs))
+        if not self.__validate(docs, source):
+            log.info("validation failed; no migration attempted")
+            return
+        watch = Stopwatch()
+        for doc in docs:
+            filename = self.__full_path(doc)
+            content_type = doc['_mime']
+            meta = dict(
+                (k,v) for k,v in doc.items()
+                if not k.startswith('_') and k != 'name'
+            )
+            url = urlparse.urljoin(self.base, doc['_id'])
+            stream = urllib2.urlopen(url)
+            self._save(stream, filename, content_type, meta)
+            log.info("Migrated %s", filename)
+        log.info("Migration completed in %s", watch.split())
 
-	def __full_path(self, doc):
-		return posixpath.join(doc.get('_prefix', ''), doc['_filename'])
+    def __full_path(self, doc):
+        return posixpath.join(doc.get('_prefix', ''), doc['_filename'])
 
-	def __new_docs(self, source):
-		existing = set(doc['filename'] for doc in
-			self.coll.files.find(fields=['filename']))
-		return tuple(
-			doc for doc in source.coll.find()
-			if self.__full_path(doc) not in existing
-			and doc['_id'] not in self.bad_ids
-		)
+    def __new_docs(self, source):
+        existing = set(doc['filename'] for doc in
+            self.coll.files.find(fields=['filename']))
+        return tuple(
+            doc for doc in source.coll.find()
+            if self.__full_path(doc) not in existing
+            and doc['_id'] not in self.bad_ids
+        )
 
-	def __validate(self, docs, source):
-		"""
-		Validate each of the records in the database (in advance)
-		"""
-		valid = True
-		watch = Stopwatch()
-		for doc in docs:
-			if not '_mime' in doc:
-				log.info("%s: no content type", doc['_id'])
-				valid = False
-			try:
-				url = urlparse.urljoin(self.base, doc['_id'])
-				req = MethodRequest(url, method='HEAD')
-				urllib2.urlopen(req)
-			except Exception:
-				mongs_url = urllib2.quote('http://mongs.yougov.net/{server}/'
-					'{database}/{collection}/{query}/1/'.format(
-						server=source.coll.database.connection.host,
-						database=source.coll.database.name,
-						collection=source.coll.name,
-						query='{"_id": "%s"}' % doc['_id'],
-					), safe='/:',
-				)
-				log.info("error retrieving %s. check document at %s", url,
-					mongs_url)
-				valid = False
-		log.info("Validation completed in %s", watch.split())
-		return valid
+    def __validate(self, docs, source):
+        """
+        Validate each of the records in the database (in advance)
+        """
+        valid = True
+        watch = Stopwatch()
+        for doc in docs:
+            if not '_mime' in doc:
+                log.info("%s: no content type", doc['_id'])
+                valid = False
+            try:
+                url = urlparse.urljoin(self.base, doc['_id'])
+                req = MethodRequest(url, method='HEAD')
+                urllib2.urlopen(req)
+            except Exception:
+                mongs_url = urllib2.quote('http://mongs.yougov.net/{server}/'
+                    '{database}/{collection}/{query}/1/'.format(
+                        server=source.coll.database.connection.host,
+                        database=source.coll.database.name,
+                        collection=source.coll.name,
+                        query='{"_id": "%s"}' % doc['_id'],
+                    ), safe='/:',
+                )
+                log.info("error retrieving %s. check document at %s", url,
+                    mongs_url)
+                valid = False
+        log.info("Validation completed in %s", watch.split())
+        return valid
 
 # copied from jaraco.net
 class MethodRequest(urllib2.Request):
-	def __init__(self, *args, **kwargs):
-		"""
-		Construct a MethodRequest. Usage is the same as for
-		`urllib2.Request` except it also takes an optional `method`
-		keyword argument. If supplied, `method` will be used instead of
-		the default.
-		"""
-		if 'method' in kwargs:
-			self.method = kwargs.pop('method')
-		return urllib2.Request.__init__(self, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        """
+        Construct a MethodRequest. Usage is the same as for
+        `urllib2.Request` except it also takes an optional `method`
+        keyword argument. If supplied, `method` will be used instead of
+        the default.
+        """
+        if 'method' in kwargs:
+            self.method = kwargs.pop('method')
+        return urllib2.Request.__init__(self, *args, **kwargs)
 
-	def get_method(self):
-		return getattr(self, 'method', urllib2.Request.get_method(self))
+    def get_method(self):
+        return getattr(self, 'method', urllib2.Request.get_method(self))
 
 class CatalogMissingMigration(object):
-	"""
-	During the last attempted migration, we found that many of the resources
-	on the filesystem are being referenced by at least some surveys. This
-	migration script should be run on the filesystem-based airportlocker host.
-	It will run through the filesystem and identify any resources that are
-	not in the catalog and add them.
-	"""
-	@classmethod
-	def get_args(cls):
-		parser = argparse.ArgumentParser()
-		parser.add_argument('--mongo-host',
-			default=airportlocker.config.mongo_host)
-		parser.add_argument('--filestore',
-			default=airportlocker.config.filestore)
-		args = parser.parse_args()
-		airportlocker.config.update(vars(args))
+    """
+    During the last attempted migration, we found that many of the resources
+    on the filesystem are being referenced by at least some surveys. This
+    migration script should be run on the filesystem-based airportlocker host.
+    It will run through the filesystem and identify any resources that are
+    not in the catalog and add them.
+    """
+    @classmethod
+    def get_args(cls):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--mongo-host',
+            default=airportlocker.config.mongo_host)
+        parser.add_argument('--filestore',
+            default=airportlocker.config.filestore)
+        args = parser.parse_args()
+        airportlocker.config.update(vars(args))
 
-	@classmethod
-	def run(cls):
-		"""
-		Launch this migration from the command-line. Set config parameters
-		using command-line options.
-		"""
-		cls.get_args()
-		logging.basicConfig(level=logging.INFO)
-		importlib.import_module('airportlocker.etc.startup')
-		cls().backfill()
+    @classmethod
+    def run(cls):
+        """
+        Launch this migration from the command-line. Set config parameters
+        using command-line options.
+        """
+        cls.get_args()
+        logging.basicConfig(level=logging.INFO)
+        importlib.import_module('airportlocker.etc.startup')
+        cls().backfill()
 
-	def __init__(self):
-		gridfs = importlib.import_module('airportlocker.lib.gridfs')
-		self.target = gridfs.GridFSStorage()
+    def __init__(self):
+        gridfs = importlib.import_module('airportlocker.lib.gridfs')
+        self.target = gridfs.GridFSStorage()
 
-	def backfill(self):
-		log.info('Walking %s for uncatalogged files.',
-			airportlocker.config.filestore)
-		deleted = []
-		exists = []
-		queued = []
-		for filepath in airportlocker.config.filestore.walkfiles():
-			if filepath.endswith('.deleted'):
-				deleted.append(filepath)
-				continue
-			relpath = airportlocker.config.filestore.relpathto(filepath)
-			if self.catalog_exists(relpath):
-				exists.append(relpath)
-				continue
-			queued.append(filepath)
-		log.info("Found %d missing files", len(queued))
-		map(self.add_file, queued)
+    def backfill(self):
+        log.info('Walking %s for uncatalogged files.',
+                airportlocker.config.filestore)
+        deleted = []
+        exists = []
+        queued = []
+        for filepath in airportlocker.config.filestore.walkfiles():
+            if filepath.endswith('.deleted'):
+                deleted.append(filepath)
+                continue
+            relpath = airportlocker.config.filestore.relpathto(filepath)
+            if self.catalog_exists(relpath):
+                exists.append(relpath)
+                continue
+            queued.append(filepath)
+        log.info("Found %d missing files", len(queued))
+        map(self.add_file, queued)
 
-	def catalog_exists(self, relpath):
-		query = dict(
-			_filename = relpath.basename(),
-			_prefix = relpath.dirname() or None,
-		)
-		store = airportlocker.lib.filesystem.FileStorage()
-		return bool(store.coll.find(query).count())
+    def catalog_exists(self, relpath):
+        query = dict(
+            _filename = relpath.basename(),
+            _prefix = relpath.dirname() or None,
+        )
+        store = airportlocker.lib.filesystem.FileStorage()
+        return bool(store.coll.find(query).count())
 
-	def add_file(self, filepath):
-		target_path = airportlocker.config.filestore.relpathto(filepath)
-		if self.target.exists(target_path):
-			log.debug("%s already exists", target_path)
-			return
-		log.info("Adding missing file %s", target_path)
-		type_, encoding = mimetypes.guess_type(filepath)
-		if not type_:
-			raise ValueError("Couldn't guess type of {0}".format(filepath))
-		with filepath.open() as stream:
-			self.target._save(stream, target_path, type_, meta={})
+    def add_file(self, filepath):
+        target_path = airportlocker.config.filestore.relpathto(filepath)
+        if self.target.exists(target_path):
+            log.debug("%s already exists", target_path)
+            return
+        log.info("Adding missing file %s", target_path)
+        type_, encoding = mimetypes.guess_type(filepath)
+        if not type_:
+            raise ValueError("Couldn't guess type of {0}".format(filepath))
+        with filepath.open() as stream:
+            self.target._save(stream, target_path, type_, meta={})
