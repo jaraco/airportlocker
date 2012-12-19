@@ -130,8 +130,9 @@ class FileStorage(storage.Storage):
         """
         meta = self.coll.find_one(self.by_id(id)) or {}
         if meta:
-            # TODO - what about the prefix?
-            self.remove_file(meta['name'])
+            fullpath = os.path.join(airportlocker.filestore,
+                meta.get('_prefix', ''), meta['name'])
+            self.remove_file(fullpath)
             self.coll.remove(id)
         return meta
 
