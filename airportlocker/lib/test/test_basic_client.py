@@ -1,12 +1,12 @@
 import os
 import time
-import yaml
 import importlib
 
 import httplib2
 import pkg_resources
 import cherrypy._cpserver
 from fab.testing import FabBrowser
+import yg.launch.config
 
 import airportlocker.control.root
 from airportlocker.lib.client import AirportLockerClient
@@ -14,11 +14,10 @@ from airportlocker.lib.client import AirportLockerClient
 here = os.path.abspath(os.path.dirname(__file__))
 
 def embed_server():
-    config_file = pkg_resources.resource_filename(
+    config_stream = pkg_resources.resource_stream(
         'airportlocker.lib', 'test/config.yaml')
-    config_file = os.path.normpath(config_file)
-    with open(config_file) as config_stream:
-        airportlocker.config.update(yaml.load(config_stream))
+    airportlocker.config.update(
+        yg.launch.config.ConfigDict.from_yaml_stream(config_stream))
     importlib.import_module('airportlocker.etc.startup')
     airportlocker.control.root.start()
 

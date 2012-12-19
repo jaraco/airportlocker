@@ -7,13 +7,10 @@
 
 from bson import json_util as json
 
-from jaraco.util.dictlib import ItemsAsAttributes
-
-class ConfigDict(ItemsAsAttributes, dict):
-    """A dictionary that provides items as attributes"""
+import yg.launch.config
 
 # default config values
-config = ConfigDict(
+config = yg.launch.config.ConfigDict(
     airportlocker_port = 8090,
     production = False,
     docset = 'luggage',
@@ -44,5 +41,5 @@ config = ConfigDict(
     log_facility = "airportlocker",
 )
 
-_default_config = ConfigDict(config)
+_default_config = yg.launch.config.ConfigDict(config)
 "A copy of the default config"
