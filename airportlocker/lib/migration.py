@@ -42,7 +42,7 @@ class FSMigration(object):
             )
             url = urlparse.urljoin(self.base, doc['_id'])
             stream = urllib2.urlopen(url)
-            self._save(stream, filename, content_type, meta)
+            self.save(stream, filename, content_type, meta)
             log.info("Migrated %s", filename)
         log.info("Migration completed in %s", watch.split())
 
@@ -172,4 +172,4 @@ class CatalogMissingMigration(object):
         if not type_:
             raise ValueError("Couldn't guess type of {0}".format(filepath))
         with filepath.open() as stream:
-            self.target._save(stream, target_path, type_, meta={})
+            self.target.save(stream, target_path, type_, meta={})
