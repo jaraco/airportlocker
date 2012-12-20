@@ -2,5 +2,6 @@
 # In addition to airportlocker dependencies, we also need airportlocker[server] reqs
 fab>=2.4,<4.0dev
 pymongo>=2.3
+yg.mongodb>=2.0,<3.0dev
 zencoder
 boto
