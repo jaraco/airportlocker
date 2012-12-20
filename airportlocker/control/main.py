@@ -174,7 +174,9 @@ class ListResources(Resource, airportlocker.storage_class):
         return map(add_extra_metadata, self.find())
 
     def _query(self, **kw):
-        """ Return all records that match the query. """
+        """ Return all records that match the query. We remove """
+        if '_prefix' in kw:
+            kw.pop('_prefix', '')
         return map(add_extra_metadata, self.find(kw))
 
 
