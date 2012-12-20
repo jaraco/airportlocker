@@ -29,7 +29,7 @@ setup_params = dict(
         server=[
             "fab>=2.4,<4.0dev",
             "pymongo>=2.3",
-            "yg.mongo>=1.0,<2.0dev",
+            "yg.mongodb>=2.0,<3.0dev",
             "zencoder",
             "boto"
         ],

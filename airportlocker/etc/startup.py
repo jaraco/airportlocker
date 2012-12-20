@@ -63,6 +63,6 @@ if airportlocker.config.get('filestore', None):
 airportlocker.storage_class = _get_storage_class()
 airportlocker.storage_class.startup()
 _build_uri_from_legacy_config()
-airportlocker.store = yg.mongodb.connect(airportlocker.config.storage_uri)
+airportlocker.store = yg.mongodb.connect_db(airportlocker.config.storage_uri)
 
 _do_migration()
