@@ -8,7 +8,7 @@ setup_params = dict(
     name='airportlocker',
     use_hg_version=dict(increment='0.0.1'),
     author="Eric Larson/Jason R. Coombs/Fernando Gutierrez",
-    author_email="Eric.Larson@YouGov.com",
+    author_email="dev@YouGov.com",
     url="http://dev.yougov.com/",
     packages=setuptools.find_packages(),
     include_package_data=True,
