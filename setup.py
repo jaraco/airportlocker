@@ -2,7 +2,6 @@ import sys
 
 import setuptools
 
-py25reqs = ['simplejson'] if sys.version_info < (2, 6) else []
 py26reqs = ['importlib'] if sys.version_info < (2, 7) else []
 
 setup_params = dict(
@@ -23,7 +22,7 @@ setup_params = dict(
         'yg.launch>=1.1,<2.0dev',
         'jaraco.util',
         'path.py',
-    ] + py25reqs + py26reqs,
+    ] + py26reqs,
     extras_require=dict(
         # note, if you change the server requirements, you must also update
         #  the requirements.txt (because pip doesn't support extras)
