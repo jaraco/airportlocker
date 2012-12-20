@@ -13,9 +13,7 @@ config = yg.launch.config.ConfigDict(
     filestore = 'file_storage',
 
     # mongodb store
-    mongo_host = 'localhost',
-    mongo_port = 27017,
-    mongo_db_name = 'airportlocker',
+    storage_uri = 'mongodb://localhost/airportlocker',
 
     # performance tweaks (necessary for static file serving)
     threads = 30,
