@@ -114,8 +114,8 @@ class CatalogMissingMigration(object):
     @classmethod
     def get_args(cls):
         parser = argparse.ArgumentParser()
-        parser.add_argument('--mongo-host',
-            default=airportlocker.config.mongo_host)
+        parser.add_argument('--storage-uri',
+            default=airportlocker.config.storage_uri)
         parser.add_argument('--filestore',
             default=airportlocker.config.filestore)
         args = parser.parse_args()
