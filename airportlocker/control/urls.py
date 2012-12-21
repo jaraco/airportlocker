@@ -6,6 +6,7 @@ from airportlocker.control.main import CreateResource
 from airportlocker.control.main import CreateOrReplaceResource
 from airportlocker.control.main import DeleteResource
 from airportlocker.control.main import ListResources
+from airportlocker.control.main import ListSignedResources
 from airportlocker.control.main import ReadResource
 from airportlocker.control.main import UpdateResource
 from airportlocker.control.main import ViewResource
@@ -13,6 +14,7 @@ from airportlocker.control.main import ZencoderResource
 
 
 api = FabDispatcher()
+api.add_route('signed', 'signed/*', ListSignedResources(), method='GET')
 api.add_route('cached', 'cached/*', CachedResource(), method='GET')
 api.add_route('zencoder', '_zencoder', ZencoderResource(), method='POST')
 

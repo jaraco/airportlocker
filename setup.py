@@ -31,7 +31,8 @@ setup_params = dict(
             "pymongo>=2.3",
             "yg.mongodb>=2.0,<3.0dev",
             "zencoder",
-            "boto"
+            "boto",
+            "M2Crypto"
         ],
         client=[
             "httplib2",

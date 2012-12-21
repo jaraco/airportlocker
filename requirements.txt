@@ -5,3 +5,4 @@ pymongo>=2.3
 yg.mongodb>=2.0,<3.0dev
 zencoder
 boto
+M2Crypto

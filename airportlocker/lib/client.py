@@ -20,6 +20,7 @@ class AirportLockerClient(object):
             'read': '/static',
             'view': '/view',
             'delete': '/edit',
+            'signed': '/signed',
         }
 
     def api(self, action, tail=None, prefix=None, use_host=True):

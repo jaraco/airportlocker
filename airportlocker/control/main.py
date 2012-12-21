@@ -2,8 +2,11 @@ from __future__ import with_statement
 
 import os
 import posixpath
+import time
 from urlparse import urljoin
 
+from boto.cloudfront import CloudFrontConnection
+from boto.cloudfront.origin import CustomOrigin, S3Origin
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 import cherrypy
@@ -51,6 +54,78 @@ def add_extra_metadata(row):
         row['shortname'] = row['filename'].split('/')[-1]
 
     row['_id'] = str(row['_id'])
+    return row
+
+
+def get_cloudfront_distribution(public_url=None, s3_bucket=None):
+    if s3_bucket is not None:
+        public_url = "%s.s3.amazonaws.com" % s3_bucket
+
+    distribution = None
+    cf = CloudFrontConnection(airportlocker.config.get('aws_accesskey'),
+                              airportlocker.config.get('aws_secretkey'))
+
+    for ds in cf.get_all_distributions():
+        if ds.origin.dns_name == public_url:
+            distribution = ds.get_distribution()
+            break
+
+    if distribution is None:
+        if s3_bucket:
+            origin = S3Origin(public_url)
+        else:
+            origin = CustomOrigin(public_url)
+        distribution = cf.create_distribution(origin=origin, enabled=True,
+                                              trusted_signers=["Self"],
+                                              comment='Airportlocker')
+
+    return distribution
+
+
+def sign_url(unsigned_url, distribution, keypair_id, private_key):
+    """ Make a expire time and build the cloudfront url. Finally sign it.
+    """
+    expire = int(time.time()) + 600 # 10 minutes
+    unsigned_url = unsigned_url.replace(distribution.config.origin.dns_name,
+                                        distribution.domain_name)
+    return distribution.create_signed_url(url=unsigned_url,
+                                          keypair_id=keypair_id,
+                                          expire_time=expire,
+                                          private_key_string=private_key)
+
+
+def is_public(url):
+    for elem in ['localhost', '127.0.0.1']:
+        if elem in url:
+            return False
+    return url.endswith('.local')
+
+
+def add_extra_signed_metadata(row):
+    row = add_extra_metadata(row)
+
+    # Check if we have the configs to produce signed urls, if not return the
+    # data as it is.
+    private_key = airportlocker.config.get('aws_privatekey', '')
+    keypair_id = airportlocker.config.get('aws_keypairid', '')
+    if not private_key or not keypair_id:
+        return row
+
+    public_url = airportlocker.config.get('public_url', '')
+
+    if is_public(public_url):
+        distribution = get_cloudfront_distribution(public_url)
+        row['signed_url'] = sign_url(row['cached_url'], distribution,
+                                     keypair_id, private_key)
+
+    # Check if the file is a video and has zencoder s3 files to sign.
+    s3_bucket = airportlocker.config.get('aws_s3_bucket', '')
+    if 'zencoder_outputs' in row and s3_bucket:
+        distribution = get_cloudfront_distribution(s3_bucket=s3_bucket)
+        for output in row['zencoder_outputs']:
+            output['signed_url'] = sign_url(output['url'], distribution,
+                                            keypair_id, private_key)
+
     return row
 
 
@@ -178,6 +253,26 @@ class ListResources(Resource, airportlocker.storage_class):
         if '_prefix' in kw:
             kw.pop('_prefix', '')
         return map(add_extra_metadata, self.find(kw))
+
+
+class ListSignedResources(Resource, airportlocker.storage_class):
+    def GET(self, page, **kw):
+        cherrypy.response.headers['Cache-Control'] = 'no-cache'
+        # traditionally, q must be __all to query all. Now that's the default
+        #  behavior if no kw is passed... but support it for compatibility.
+        kw.pop('q', None)
+        if kw:
+            res = self._query(**kw)
+        else:
+            res = self._list()
+        return json.dumps(res)
+
+    def _list(self):
+        return map(add_extra_signed_metadata, self.find())
+
+    def _query(self, **kw):
+        """ Return all records that match the query. """
+        return map(add_extra_signed_metadata, self.find(kw))
 
 
 class ViewResource(Resource, airportlocker.storage_class):
