@@ -100,10 +100,7 @@ def add_extra_metadata(row):
     return row
 
 
-def get_cloudfront_distribution(public_url=None, s3_bucket=None):
-    if s3_bucket is not None:
-        public_url = "%s.s3.amazonaws.com" % s3_bucket
-
+def get_cloudfront_distribution(public_url, is_s3=False):
     distribution = None
     cf = CloudFrontConnection(airportlocker.config.get('aws_accesskey'),
                               airportlocker.config.get('aws_secretkey'))
@@ -115,7 +112,7 @@ def get_cloudfront_distribution(public_url=None, s3_bucket=None):
             break
 
     if distribution is None:
-        if s3_bucket:
+        if is_s3:
             origin = S3Origin(public_url)
         else:
             origin = CustomOrigin(public_url)
@@ -127,6 +124,11 @@ def get_cloudfront_distribution(public_url=None, s3_bucket=None):
                                     CustomDistribution)
 
     return distribution
+
+def get_cloudfront_s3_distribution(s3_bucket):
+    public_url = "%s.s3.amazonaws.com" % s3_bucket
+    return get_cloudfront_distribution(public_url, is_s3=True)
+
 
 
 def sign_url(unsigned_url, distribution, keypair_id, private_key):
@@ -169,7 +171,7 @@ def add_extra_signed_metadata(row):
     # Check if the file is a video and has zencoder s3 files to sign.
     s3_bucket = airportlocker.config.get('aws_s3_bucket', '')
     if 'zencoder_outputs' in row and s3_bucket:
-        distribution = get_cloudfront_distribution(s3_bucket=s3_bucket)
+        distribution = get_cloudfront_s3_distribution(s3_bucket)
         for output in row['zencoder_outputs']:
             output['signed_url'] = sign_url(output['url'], distribution,
                                             keypair_id, private_key)
