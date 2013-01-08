@@ -32,7 +32,7 @@ setup_params = dict(
             "yg.mongodb>=2.0,<3.0dev",
             "zencoder",
             "boto",
-            "M2Crypto"
+            "rsa"
         ],
         client=[
             "httplib2",

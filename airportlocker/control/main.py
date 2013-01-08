@@ -6,6 +6,7 @@ import time
 from urlparse import urljoin
 
 from boto.cloudfront import CloudFrontConnection
+from boto.cloudfront.distribution import Distribution
 from boto.cloudfront.origin import CustomOrigin, S3Origin
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
@@ -17,6 +18,48 @@ import airportlocker
 from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.storage import NotFoundError
+
+
+class CustomDistribution(Distribution):
+    """ Override a Distribution staticmethod to define a signing method that
+    doesn't involve M2Crypto. Taken from:
+
+    https://github.com/boto/boto/pull/1214/files
+
+    """
+
+    @staticmethod
+    def _sign_string(message, private_key_file=None, private_key_string=None):
+        """ Signs a string for use with Amazon CloudFront.
+        Requires the rsa library be installed.
+        """
+        try:
+            import rsa
+        except ImportError:
+            raise NotImplementedError("Boto depends on the python rsa "
+                                      "library to generate signed URLs for "
+                                      "CloudFront")
+            # Make sure only one of private_key_file and private_key_string is
+            # set
+        if private_key_file and private_key_string:
+            raise ValueError("Only specify the private_key_file or the "
+                             "private_key_string not both")
+        if not private_key_file and not private_key_string:
+            raise ValueError("You must specify one of private_key_file or "
+                             "private_key_string")
+            # if private_key_file is a file object read the key string from
+            # there.
+        if isinstance(private_key_file, file):
+            private_key_file.seek(0)
+            private_key_string = private_key_file.read()
+        elif private_key_file:
+            with open(private_key_file, 'r') as file_handle:
+                private_key_string = file_handle.read()
+
+        # Sign it!
+        private_key = rsa.PrivateKey.load_pkcs1(private_key_string)
+        signature = rsa.sign(str(message), private_key, 'SHA-1')
+        return signature
 
 
 def success(value):
@@ -67,7 +110,8 @@ def get_cloudfront_distribution(public_url=None, s3_bucket=None):
 
     for ds in cf.get_all_distributions():
         if ds.origin.dns_name == public_url:
-            distribution = ds.get_distribution()
+            distribution = cf._get_info(ds.id, 'distribution',
+                                        CustomDistribution)
             break
 
     if distribution is None:
@@ -78,6 +122,9 @@ def get_cloudfront_distribution(public_url=None, s3_bucket=None):
         distribution = cf.create_distribution(origin=origin, enabled=True,
                                               trusted_signers=["Self"],
                                               comment='Airportlocker')
+        # Get the CustomDistribution object instead of the Distribution.
+        distribution = cf._get_info(distribution.id, 'distribution',
+                                    CustomDistribution)
 
     return distribution
 
@@ -156,7 +203,7 @@ def extract_fields(fields):
 def prepare_meta(fields):
     meta = dict(
         (k, v) for k, v in items(fields)
-        if not k.startswith('_')
+            if not k.startswith('_')
     )
     # Preserve original filename as a shortname
     if '_lockerfile' in fields:
@@ -187,7 +234,7 @@ def send_to_zencoder(s3filename):
         extension = output['extension']
         suffix = str(output['suffix'])
         filename, source_ext = os.path.splitext(s3filename)
-        output_url = 's3://' + bucket + '/' + filename + '_' + suffix + '.' + \
+        output_url = 's3://' + bucket + '/' + filename + '_' + suffix + '.' +\
                      extension
         output.update({'url': output_url, "public": True})
         # We don't want to pass this params to zencoder since they are internal
@@ -339,8 +386,10 @@ class ZencoderResource(Resource, airportlocker.storage_class):
                 if output['id'] == body['output']['id']:
                     output.update(body['output'])
                     result = self.coll.files.update({'_id': file_meta['_id'],
-                        'zencoder_outputs.id': output['id']},
-                        {'$set': {"zencoder_outputs.$": output}})
+                                                     'zencoder_outputs.id':
+                                                         output['id']},
+                                                    {'$set': {
+                                                        "zencoder_outputs.$": output}})
                     return success('Updated')
 
         raise cherrypy.NotFound()
@@ -350,6 +399,7 @@ class CachedResource(Resource, airportlocker.storage_class):
     """ Expose for CDNed MD5 version, we use /MD5/Filename as url,
     Filename can be /SurveyName/Filename
     """
+
     def GET(self, page, *args, **kw):
         if not args:
             raise cherrypy.NotFound()
@@ -367,7 +417,7 @@ class CachedResource(Resource, airportlocker.storage_class):
                 resource, ct = self.get_resource(path)
                 cherrypy.response.headers.update({
                     'Content-Type': ct or 'text/plain',
-                    })
+                })
                 return resource
         raise cherrypy.NotFound()
 
@@ -376,6 +426,7 @@ class CreateOrReplaceResource(Resource, airportlocker.storage_class):
     """ New endpoint, determine if the incoming file already exists, if it does
     then replace it, if it doesn't then create a new one.
     """
+
     @post
     def POST(self, page, fields):
         if not validate_fields(fields, ["_lockerfile", ]):
@@ -395,12 +446,12 @@ class CreateOrReplaceResource(Resource, airportlocker.storage_class):
         if current_files.count():
             object_id = str(current_files[0]['_id'])
             new_doc = self.update(object_id, meta, stream, content_type,
-                overwrite=True)
+                                  overwrite=True)
             object_id = str(new_doc['_id'])
             updated = True
         else:
             object_id = self.save(stream, file_path, content_type, meta,
-                            overwrite=True)
+                                  overwrite=True)
             new_doc = self.find_one(self.by_id(object_id))
 
         if 'video' in content_type:
@@ -422,11 +473,12 @@ class CreateResource(Resource, airportlocker.storage_class):
     Save the file and make sure the filename is as close as possible to the
     original while still being unique.
     """
+
     @post
     def POST(self, page, fields):
         if not validate_fields(fields):
             return failure('A "_new" and "_lockerfile" are required to '
-                'create a new document.')
+                           'create a new document.')
 
         prefix, stream, content_type, name = extract_fields(fields)
         # but always trust the original filename for the extension
@@ -440,13 +492,12 @@ class CreateResource(Resource, airportlocker.storage_class):
 
 
 class UpdateResource(Resource, airportlocker.storage_class):
-
     @post
     def PUT(self, page, fields, id):
         file_ob = fields.get('_lockerfile', None)
         params = dict(
-            stream = file_ob.file,
-            content_type = file_ob.type,
+            stream=file_ob.file,
+            content_type=file_ob.type,
         ) if file_ob else dict()
 
         meta = prepare_meta(fields)
