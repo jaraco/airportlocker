@@ -20,7 +20,7 @@ class AirportLockerClient(object):
             'read': '/static',
             'view': '/view',
             'delete': '/edit',
-            'signed': '/signed',
+            'signed': '/signed/',
         }
 
     def api(self, action, tail=None, prefix=None, use_host=True):
@@ -39,7 +39,7 @@ class AirportLockerClient(object):
         if not filename.startswith('/'):
             filename = '/' + filename
 
-        url = urlparse.urljoin(self.base, self.api('query')) + '?' + \
+        url = urlparse.urljoin(self.base, self.api('signed')) + '?' + \
               urllib.urlencode({'filename': filename})
         response, content = self.h.request(url, method='GET')
         filejson = json.loads(content)
