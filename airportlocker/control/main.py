@@ -132,7 +132,8 @@ def get_cloudfront_distribution(public_url=None, s3_bucket=None):
 def sign_url(unsigned_url, distribution, keypair_id, private_key):
     """ Make a expire time and build the cloudfront url. Finally sign it.
     """
-    expire = int(time.time()) + 600 # 10 minutes
+    signature_ttl = int(airportlocker.config.get('aws_signature_ttl', 600))
+    expire = int(time.time()) + signature_ttl
     unsigned_url = unsigned_url.replace(distribution.config.origin.dns_name,
                                         distribution.domain_name)
     return distribution.create_signed_url(url=unsigned_url,
@@ -305,8 +306,6 @@ class ListResources(Resource, airportlocker.storage_class):
 class ListSignedResources(Resource, airportlocker.storage_class):
     def GET(self, page, **kw):
         cherrypy.response.headers['Cache-Control'] = 'no-cache'
-        # traditionally, q must be __all to query all. Now that's the default
-        #  behavior if no kw is passed... but support it for compatibility.
         kw.pop('q', None)
         if kw:
             res = self._query(**kw)
@@ -389,7 +388,8 @@ class ZencoderResource(Resource, airportlocker.storage_class):
                                                      'zencoder_outputs.id':
                                                          output['id']},
                                                     {'$set': {
-                                                        "zencoder_outputs.$": output}})
+                                                        "zencoder_outputs.$":
+                                                            output}})
                     return success('Updated')
 
         raise cherrypy.NotFound()
