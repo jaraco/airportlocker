@@ -22,13 +22,13 @@ setup_params = dict(
         'yg.launch>=1.1,<2.0dev',
         'jaraco.util',
         'path.py',
+        "pymongo>=2.3",
     ] + py26reqs,
     extras_require=dict(
         # note, if you change the server requirements, you must also update
         #  the requirements.txt (because pip doesn't support extras)
         server=[
             "fab>=2.4,<4.0dev",
-            "pymongo>=2.3",
             "yg.mongodb>=2.0,<3.0dev",
             "zencoder",
             "boto",
