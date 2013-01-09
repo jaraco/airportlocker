@@ -25,7 +25,8 @@ class CustomDistribution(Distribution):
     doesn't involve M2Crypto. Taken from:
 
     https://github.com/boto/boto/pull/1214/files
-
+    (Already merged, boto > 2.6 will get this one and this CustomDistribution
+    will not be needed)
     """
 
     @staticmethod
