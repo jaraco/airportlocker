@@ -1,3 +1,10 @@
+2.0
+===
+
+The upload module has been revamped to provide a much simpler interface for
+uploading multiple files to airportlocker (for Gryphon-specific usage).
+Otherwise, the library remains completely backwards-compatible.
+
 1.0
 ===
 
