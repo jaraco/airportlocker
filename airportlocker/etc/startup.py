@@ -1,5 +1,4 @@
 import logging
-import importlib
 
 import yg.mongodb
 
@@ -11,14 +10,7 @@ def setup_logging():
     logging.root.level = logging.DEBUG
     logging.getLogger('airportlocker').info('starting')
 
-def _get_storage_class():
-    """
-    """
-    importlib.import_module('airportlocker.lib.gridfs')
-    return airportlocker.lib.gridfs.GridFSStorage
-
 def setup_storage():
-    airportlocker.storage_class = _get_storage_class()
     airportlocker.database = yg.mongodb.connect_db(
         airportlocker.config.storage_uri, default_db_name='airportlocker')
 

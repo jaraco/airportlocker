@@ -18,6 +18,7 @@ import airportlocker
 from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.storage import NotFoundError
+from airportlocker.lib.gridfs import GridFSStorage
 
 
 class CustomDistribution(Distribution):
@@ -284,7 +285,7 @@ class BasicUpload(HtmlResource):
         page.args = kw
 
 
-class ListResources(Resource, airportlocker.storage_class):
+class ListResources(Resource, GridFSStorage):
     def GET(self, page, **kw):
         cherrypy.response.headers['Cache-Control'] = 'no-cache'
         # traditionally, q must be __all to query all. Now that's the default
@@ -306,7 +307,7 @@ class ListResources(Resource, airportlocker.storage_class):
         return map(add_extra_metadata, self.find(kw))
 
 
-class ListSignedResources(Resource, airportlocker.storage_class):
+class ListSignedResources(Resource, GridFSStorage):
     def GET(self, page, **kw):
         cherrypy.response.headers['Cache-Control'] = 'no-cache'
         kw.pop('q', None)
@@ -324,7 +325,7 @@ class ListSignedResources(Resource, airportlocker.storage_class):
         return map(add_extra_signed_metadata, self.find(kw))
 
 
-class ViewResource(Resource, airportlocker.storage_class):
+class ViewResource(Resource, GridFSStorage):
     def GET(self, page, id):
         results = self.find_one(self.by_id(id))
         if not results:
@@ -332,7 +333,7 @@ class ViewResource(Resource, airportlocker.storage_class):
         return json.dumps(results)
 
 
-class ReadResource(Resource, airportlocker.storage_class):
+class ReadResource(Resource, GridFSStorage):
     def GET(self, page, *args, **kw):
         if not args:
             raise cherrypy.NotFound()
@@ -368,7 +369,7 @@ class ReadResource(Resource, airportlocker.storage_class):
         return
 
 
-class ZencoderResource(Resource, airportlocker.storage_class):
+class ZencoderResource(Resource, GridFSStorage):
     """ Notification endpoint for Zencoder to post the results of a job and
     output meta information.
     """
@@ -398,7 +399,7 @@ class ZencoderResource(Resource, airportlocker.storage_class):
         raise cherrypy.NotFound()
 
 
-class CachedResource(Resource, airportlocker.storage_class):
+class CachedResource(Resource, GridFSStorage):
     """ Expose for CDNed MD5 version, we use /MD5/Filename as url,
     Filename can be /SurveyName/Filename
     """
@@ -425,7 +426,7 @@ class CachedResource(Resource, airportlocker.storage_class):
         raise cherrypy.NotFound()
 
 
-class CreateOrReplaceResource(Resource, airportlocker.storage_class):
+class CreateOrReplaceResource(Resource, GridFSStorage):
     """ New endpoint, determine if the incoming file already exists, if it does
     then replace it, if it doesn't then create a new one.
     """
@@ -471,7 +472,7 @@ class CreateOrReplaceResource(Resource, airportlocker.storage_class):
         return success({'created': json.dumps(new_doc)})
 
 
-class CreateResource(Resource, airportlocker.storage_class):
+class CreateResource(Resource, GridFSStorage):
     """
     Save the file and make sure the filename is as close as possible to the
     original while still being unique.
@@ -494,7 +495,7 @@ class CreateResource(Resource, airportlocker.storage_class):
         return success(oid)
 
 
-class UpdateResource(Resource, airportlocker.storage_class):
+class UpdateResource(Resource, GridFSStorage):
     @post
     def PUT(self, page, fields, id):
         file_ob = fields.get('_lockerfile', None)
@@ -513,6 +514,6 @@ class UpdateResource(Resource, airportlocker.storage_class):
         return success({'updated': json.dumps(new_doc)})
 
 
-class DeleteResource(Resource, airportlocker.storage_class):
+class DeleteResource(Resource, GridFSStorage):
     def DELETE(self, page, id):
         return success({'deleted': self.delete(id)})
