@@ -8,10 +8,6 @@ config = yg.launch.config.ConfigDict(
     production = False,
     docset = 'luggage',
 
-    # file storage
-    storage_class = 'airportlocker.lib.filesystem:FileStorage',
-    filestore = 'file_storage',
-
     # mongodb store
     storage_uri = 'mongodb://localhost/airportlocker',
 

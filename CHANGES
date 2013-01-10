@@ -4,7 +4,7 @@
 Config no longer accepts mongo_* keys. Use `storage_uri` to indicate the
 storage database.
 
-Removed migration from file system support.
+Removed file system support, including migration support.
 
 2.0
 ===
