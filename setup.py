@@ -6,6 +6,8 @@ py26reqs = ['importlib'] if sys.version_info < (2, 7) else []
 
 with open('README.rst') as readme:
     long_description = readme.read()
+with open('CHANGES.rst') as changes:
+    long_description += '\n\n' + changes.read()
 
 setup_params = dict(
     name='airportlocker',
