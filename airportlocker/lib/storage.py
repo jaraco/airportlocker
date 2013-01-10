@@ -39,7 +39,7 @@ class Storage(object):
 
     @property
     def coll(self):
-        return airportlocker.store[airportlocker.config.docset]
+        return airportlocker.database[airportlocker.config.docset]
 
     @staticmethod
     def _ensure_extension(filename, source_filename):

@@ -6,6 +6,8 @@ storage database.
 
 Removed file system support, including migration support.
 
+Renamed `airportlocker.store` to `airportlocker.database`.
+
 2.0
 ===
 
