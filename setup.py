@@ -4,6 +4,9 @@ import setuptools
 
 py26reqs = ['importlib'] if sys.version_info < (2, 7) else []
 
+with open('README.rst') as readme:
+    long_description = readme.read()
+
 setup_params = dict(
     name='airportlocker',
     use_hg_version=dict(increment='0.0.1'),
@@ -12,6 +15,7 @@ setup_params = dict(
     url="http://dev.yougov.com/",
     packages=setuptools.find_packages(),
     include_package_data=True,
+    long_description=long_description,
     entry_points={
         'eggmonster.applications': [
             'main = airportlocker.control.em_launch:run',
