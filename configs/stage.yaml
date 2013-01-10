@@ -1,8 +1,0 @@
-airportlocker[server]:
-    Environment:
-        production : False
-        fs_host : localhost
-        fs_port : 10110
-
-    Applications:
-        - Name: main
