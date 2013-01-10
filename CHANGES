@@ -1,3 +1,9 @@
+3.0
+===
+
+Config no longer accepts mongo_* keys. Use `storage_uri` to indicate the
+storage database.
+
 2.0
 ===
 
