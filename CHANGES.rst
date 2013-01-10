@@ -18,6 +18,18 @@ The upload module has been revamped to provide a much simpler interface for
 uploading multiple files to airportlocker (for Gryphon-specific usage).
 Otherwise, the library remains completely backwards-compatible.
 
+1.9
+---
+
+Added three new config options needed to sign public urls using an amazon 
+cloudfront instance (which is automatically created):
+
+aws_keypairid
+aws_privatekey
+aws_signature_ttl
+
+Check dev_vr.yaml for the default values.
+
 1.0
 ---
 
