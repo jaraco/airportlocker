@@ -53,6 +53,6 @@ class TestBasicClient(object):
         result = client.create(test_file, {'foo': 'bar'})
         print result
         assert result
-        remote_file = client.read(result['value'])
+        remote_file = client.read(unicode(result['value']))
         assert remote_file
-        assert remote_file == open(test_file, 'r').read()
+        assert remote_file == open(test_file, 'rb').read()
