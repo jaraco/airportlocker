@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
+import os
 import argparse
+import glob
 from pprint import pprint
 
 from airportlocker.lib.client import AirportLockerClient
@@ -23,24 +25,26 @@ class UpdateDict(argparse.Action):
 
 def get_args(*args, **kwargs):
     parser = argparse.ArgumentParser()
-    parser.add_argument('filename')
+    parser.add_argument('files', type=glob.glob)
     parser.add_argument('url', help="Airportlocker URL")
-    parser.add_argument('-j', '--json', dest='meta', type=json_read_file,
-        help='A JSON metadata file', default={}, action=UpdateDict)
-    parser.add_argument('-s', '--json-string', dest='meta', type=json_string,
-        help='JSON dict string for meta data.', action=UpdateDict)
-    parser.add_argument('-n', '--name', action=AddMetadata,
-        help='The explicit name you want for the file.')
-
+    parser.add_argument('qx_name', help="questionnaire name")
     return parser.parse_args(*args, **kwargs)
+
+def create_meta(filename, args):
+    return dict(
+        name=os.path.basename(filename),
+        survey=args.qx_name,
+        _prefix=args.qx_name,
+    )
 
 def main():
     args = get_args()
 
     client = AirportLockerClient(args.url)
-    result = client.create(args.filename, args.meta)
-    pprint(result)
-    pprint(client.view(result['value']))
+    for filename in args.files:
+        result = client.create(filename, create_meta(filename, args))
+        print("Added", filename)
+        print client.view(unicode(result['value']))
 
 if __name__ == '__main__':
     main()
