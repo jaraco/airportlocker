@@ -74,7 +74,7 @@ class MultiPart(object):
             yield self._line(self.field_header % k)
             yield self._line(self.lbreak)
             yield self._line(v)
-        with open(self.fn, 'r') as fh:
+        with open(self.fn, 'rb') as fh:
             # browsers normally just pass the filename and not the local path
             # so do the same here.
             filename = os.path.basename(self.fn)
