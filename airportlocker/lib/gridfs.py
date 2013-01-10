@@ -3,9 +3,8 @@ from __future__ import absolute_import, unicode_literals
 import gridfs
 
 from . import storage
-from . import migration
 
-class GridFSStorage(storage.Storage, migration.FSMigration):
+class GridFSStorage(storage.Storage):
     """
     A mix-in class to be used with Resource controller objects providing
     gridfs-backed resource file storage.

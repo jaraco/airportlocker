@@ -25,13 +25,6 @@ def _get_storage_class():
     factory = eval(factory_exp, module.__dict__)
     return factory
 
-def _do_migration():
-    storage = airportlocker.storage_class()
-    if hasattr(storage, 'migrate'):
-        params = airportlocker.config.get('migrate_params', {})
-        threading.Thread(name='migration', target=storage.migrate,
-            kwargs=params).start()
-
 def _build_uri_from_legacy_config():
     """
     Prior to airportlocker 1.8, config could be specified using these keys:
@@ -65,5 +58,3 @@ airportlocker.storage_class.startup()
 _build_uri_from_legacy_config()
 airportlocker.store = yg.mongodb.connect_db(airportlocker.config.storage_uri,
     default_db_name='airportlocker')
-
-_do_migration()
