@@ -1,4 +1,4 @@
-production : False
+production: False
 # Integration only zencoder api key. You'll need a production one for long videos.
 zencoder_api_key: 06f15509882cc8afb0565af79a9206e1
 zencoder_outputs:
