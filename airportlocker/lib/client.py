@@ -13,6 +13,8 @@ class AirportLockerClient(object):
     def __init__(self, url, h=None):
         self.base = url
         self.h = h or httplib2.Http('.ap_cache')
+        # For #20148 we disable ssl certification validations
+        self.h.disable_ssl_certificate_validation = True
         self._api = {
             'query': '',
             'create': '',
