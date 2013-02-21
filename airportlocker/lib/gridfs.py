@@ -50,7 +50,7 @@ class GridFSStorage(storage.Storage):
         stream (if supplied).
         Return the updated metadata.
         """
-        if not self.coll.files.find_one(id):
+        if not self.fs.exists(self.by_id(id)):
             raise storage.NotFoundError(id)
 
         if stream:
