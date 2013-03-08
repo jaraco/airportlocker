@@ -2,7 +2,7 @@ import os
 import time
 import importlib
 
-import httplib2
+import requests
 import pkg_resources
 import cherrypy._cpserver
 from fab.testing import FabBrowser
@@ -22,14 +22,14 @@ def embed_server():
     airportlocker.control.root.start()
 
 def wait_for_http(url):
-    h = httplib2.Http()
     for t in range(50):
-        resp, content = h.request(url)
-        if resp.status == 200:
-            break
+        try:
+            requests.get(url)
+            return
+        except Exception:
+            pass
         time.sleep(.5)
-    else:
-        raise RuntimeError("Unable to connect: %s" % url)
+    raise RuntimeError("Unable to connect: %s" % url)
 
 class TestBasicClient(object):
 
@@ -48,7 +48,7 @@ class TestBasicClient(object):
         cherrypy.engine.exit()
 
     def test_upload_file(self):
-        client = AirportLockerClient(self.base_url, httplib2.Http())
+        client = AirportLockerClient(self.base_url)
         test_file = os.path.join(here, 'upload_test_file.txt')
         result = client.create(test_file, {'foo': 'bar'})
         print result

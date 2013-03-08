@@ -1,6 +1,23 @@
 Changes
 =======
 
+4.0
+---
+
+Airportlocker client now uses requests instead of httplib2. Clients must
+account for the following changes:
+
+ - AirportLockerClient no longer takes an 'h' parameter in the constructor,
+   though it does take an optional 'session' parameter, which should be a
+   requests.Session instance.
+ - AirportLockerClient.create no longer return raw error responses, but
+   instead allows request Exceptions to be raised for error responses.
+ - AirportLockerClient.exists no longer accepts `None` as a parameter for
+   `prefix`.
+ - The default behavior is now not to cache locally on disk. If a local,
+   disk-based cache is desired, one should pass a suitably-configured
+   `session`.
+
 3.0
 ---
 
@@ -21,7 +38,7 @@ Otherwise, the library remains completely backwards-compatible.
 1.9
 ---
 
-Added three new config options needed to sign public urls using an amazon 
+Added three new config options needed to sign public urls using an amazon
 cloudfront instance (which is automatically created):
 
 aws_keypairid

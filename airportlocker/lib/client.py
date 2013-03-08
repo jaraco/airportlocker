@@ -1,20 +1,40 @@
 import posixpath
-import httplib2
 import urllib
 import urlparse
+import functools
 
+from bson import json_util
+import requests
 
 from airportlocker.lib.utils import MultiPart
 from airportlocker import json
 pjoin = posixpath.join
 
+
+def build_session():
+    session = requests.Session()
+    # For #20148 we disable ssl certification validations
+    session.verify=False
+    return session
+
+def decode_json(result):
+    """
+    Decode a requests result object using its .json() method. Use
+    the pymongo object decoder to decode object IDs.
+    """
+    return result.json(object_hook=json_util.object_hook)
+
+def json_result(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return decode_json(func(*args, **kwargs))
+    return wrapper
+
 class AirportLockerClient(object):
 
-    def __init__(self, url, h=None):
+    def __init__(self, url, session=build_session()):
         self.base = url
-        self.h = h or httplib2.Http('.ap_cache')
-        # For #20148 we disable ssl certification validations
-        self.h.disable_ssl_certificate_validation = True
+        self.session = session
         self._api = {
             'query': '',
             'create': '',
@@ -43,8 +63,7 @@ class AirportLockerClient(object):
 
         url = urlparse.urljoin(self.base, self.api('signed')) + '?' + \
               urllib.urlencode({'filename': filename})
-        response, content = self.h.request(url, method='GET')
-        filejson = json.loads(content)
+        filejson = decode_json(self.session.get(url))
         if not len(filejson) and not filename.startswith('/' + survey_name):
             # Try to find the file with the survey_name as prefix
             return self.new_api('/' + survey_name + filename, survey_name)
@@ -54,51 +73,43 @@ class AirportLockerClient(object):
 
         return json.dumps({"found": False, "meta": {}})
 
+    @json_result
     def create(self, fn, fields=None):
         fields = fields or {}
         fields.update({'_new': 'True'})
         data = MultiPart(fn, fields)
-        res, c = self.h.request(self.api('create'),
-                                method='POST',
-                                body=data.body,
+        return self.session.post(self.api('create'),
+                                data=data.body,
                                 headers=data.headers)
-        if res.status < 300:
-            response = json.loads(c)
-        else:
-            res['content'] = c
-            return res
-        return response
 
+    @json_result
     def update(self, id, fn, fields=None):
         fields = fields or {}
         data = MultiPart(fn, fields)
-        res, c = self.h.request(self.api('update', id),
-                                method='PUT',
-                                body=data.body,
+        return self.session.put(self.api('update', id),
+                                data=data.body,
                                 headers=data.headers)
-        response = json.loads(c)
-        return response
 
+    @json_result
     def view(self, id):
-        res, c = self.h.request(self.api('view', id))
-        return json.loads(c)
+        return self.session.get(self.api('view', id))
 
     def read(self, path, prefix=''):
-        res, c = self.h.request(self.api('read', path))
-        return c
+        return self.session.get(self.api('read', path)).content
 
+    @json_result
     def delete(self, id):
-        res, c = self.h.request(self.api('delete', id), method='DELETE')
-        response = json.loads(c)
-        return response
+        return self.session.delete(self.api('delete', id))
 
-    def exists(self, id, prefix=None):
-        prefix = prefix or ''
-        res, c = self.h.request(self.api('read', id, prefix=prefix),
-            method='HEAD')
-        return res['status'].startswith('20')
+    def exists(self, id, prefix=''):
+        res = None
+        try:
+            res = self.session.head(self.api('read', id, prefix=prefix))
+        except Exception:
+            pass
+        return bool(res)
 
+    @json_result
     def query(self, qs):
         qs = '?q=%s' % qs
-        res, c = self.h.request(self.api('query', qs))
-        return json.loads(c)
+        return self.session.get(self.api('query', qs))

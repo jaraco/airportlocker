@@ -41,7 +41,7 @@ setup_params = dict(
             "rsa"
         ],
         client=[
-            "httplib2",
+            "requests>=1.1.0yg1",
         ],
     ),
     setup_requires = [
