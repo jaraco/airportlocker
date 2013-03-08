@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 import os
 import argparse
 import glob
-from pprint import pprint
 
 from airportlocker.lib.client import AirportLockerClient
 from airportlocker import json
