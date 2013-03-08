@@ -32,9 +32,9 @@ def json_result(func):
 
 class AirportLockerClient(object):
 
-    def __init__(self, url, session=build_session()):
+    def __init__(self, url, session=None):
         self.base = url
-        self.session = session
+        self.session = session or build_session()
         self._api = {
             'query': '',
             'create': '',
