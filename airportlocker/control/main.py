@@ -151,7 +151,7 @@ def is_public(url):
     for elem in ['localhost', '127.0.0.1']:
         if elem in url:
             return False
-    return url.endswith('.local')
+    return not url.endswith('.local')
 
 
 def add_extra_signed_metadata(row):
