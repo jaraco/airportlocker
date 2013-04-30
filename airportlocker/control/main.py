@@ -4,7 +4,7 @@ from copy import deepcopy
 import os
 import posixpath
 import time
-from urlparse import urljoin
+from urlparse import urljoin, urlparse
 
 from boto.cloudfront import CloudFrontConnection
 from boto.cloudfront.distribution import Distribution
@@ -107,6 +107,10 @@ def get_cloudfront_distribution(public_url, is_s3=False):
     distribution = None
     cf = CloudFrontConnection(airportlocker.config.get('aws_accesskey'),
                               airportlocker.config.get('aws_secretkey'))
+
+    if not is_s3 and (public_url.startswith('http://') or
+        public_url.startswith('https://')):
+        public_url = urlparse(public_url).netloc
 
     for ds in cf.get_all_distributions():
         if ds.origin.dns_name == public_url:
