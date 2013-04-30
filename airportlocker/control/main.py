@@ -119,6 +119,7 @@ def get_cloudfront_distribution(public_url, is_s3=False):
             origin = S3Origin(public_url)
         else:
             origin = CustomOrigin(public_url)
+            origin.origin_protocol_policy = 'match-viewer'
         distribution = cf.create_distribution(origin=origin, enabled=True,
                                               trusted_signers=["Self"],
                                               comment='Airportlocker')
