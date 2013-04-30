@@ -1,5 +1,6 @@
 from __future__ import with_statement
 
+from copy import deepcopy
 import os
 import posixpath
 import time
@@ -127,10 +128,10 @@ def get_cloudfront_distribution(public_url, is_s3=False):
 
     return distribution
 
+
 def get_cloudfront_s3_distribution(s3_bucket):
     public_url = "%s.s3.amazonaws.com" % s3_bucket
     return get_cloudfront_distribution(public_url, is_s3=True)
-
 
 
 def sign_url(unsigned_url, distribution, keypair_id, private_key):
@@ -217,44 +218,48 @@ def prepare_meta(fields):
     return meta
 
 
+def get_notification_url():
+    notification_url = deepcopy(
+        airportlocker.config.get('zencoder_notification_url', None))
+    if 'localhost' in notification_url or not notification_url:
+        # This is the test url that zencoder uses see, if not there will be no
+        # notifications for zencoder-fetcher. See readme.
+        notification_url = 'http://zencoderfetcher/'
+    return notification_url
+
+
+def get_output_url(bucket, output, s3filename):
+    extension = output['extension']
+    suffix = str(output['suffix'])
+    filename, source_ext = os.path.splitext(s3filename)
+    output_url = 's3://' + bucket + '/' + filename + '_' + suffix + '.' + \
+                 extension
+    return output_url
+
+
+def get_outputs(bucket, notification, s3filename):
+    outputs = []
+    for output in deepcopy(airportlocker.config.get('zencoder_outputs')):
+        output.update({'url': get_output_url(bucket, output, s3filename),
+                       "public": True, 'notifications': notification})
+        # We don't want to pass this params to zencoder since they are internal
+        # only.
+        del output['extension']
+        del output['suffix']
+        outputs.append(output)
+    return outputs
+
+
 def send_to_zencoder(s3filename):
     """ Prepare the job input and send it out to zencoder for the
     transcoding magic.
     """
     zen = zencoder.Zencoder(airportlocker.config.get('zencoder_api_key'))
     bucket = airportlocker.config.get('aws_s3_bucket')
-
-    notification_url = airportlocker.config.get('zencoder_notification_url',
-                                                None)
-    if 'localhost' in notification_url or not notification_url:
-        # This is the test url that zencoder uses see, if not there will be no
-        # notifications for zencoder-fetcher. See readme.
-        notification_url = 'http://zencoderfetcher/'
-
-    notification = [{'format': 'json',
-                     'url': notification_url}]
-
-    outputs = []
-    for output in airportlocker.config.get('zencoder_outputs'):
-        extension = output['extension']
-        suffix = str(output['suffix'])
-        filename, source_ext = os.path.splitext(s3filename)
-        output_url = 's3://' + bucket + '/' + filename + '_' + suffix + '.' +\
-                     extension
-        output.update({'url': output_url, "public": True})
-        # We don't want to pass this params to zencoder since they are internal
-        # only.
-        del output['extension']
-        del output['suffix']
-
-        if notification is not None:
-            output.update({'notifications': notification})
-
-        outputs.append(output)
-
+    notification = [{'format': 'json', 'url': get_notification_url()}]
+    outputs = get_outputs(bucket, notification, s3filename)
     job = zen.job.create('s3://' + airportlocker.config.get('aws_s3_bucket') +
                          '/' + s3filename, outputs)
-
     if job.code == 201:
         # Save the info about the outputs
         return job.body
