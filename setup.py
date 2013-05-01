@@ -26,6 +26,7 @@ setup_params = dict(
     install_requires=[
         "yg.process>=1.0.2,<2.0dev",
         'yg.launch>=1.1,<2.0dev',
+        'yg.performance>=1.2.2,<2dev',
         'jaraco.util',
         'path.py',
         "pymongo>=2.3",

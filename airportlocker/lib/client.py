@@ -5,6 +5,7 @@ import functools
 
 from bson import json_util
 import requests
+from yg.performance import metrics
 
 from airportlocker.lib.utils import MultiPart
 from airportlocker import json
@@ -57,7 +58,8 @@ class AirportLockerClient(object):
 
         qs = urllib.urlencode({'filename': filename})
         url = urlparse.urljoin(self.base, self.api('signed')) + '?' + qs
-        filejson = self.session.get(url).json(**self._json_params)
+        with metrics.Timing('airportlocker.client.request'):
+            filejson = self.session.get(url).json(**self._json_params)
         if not len(filejson) and not filename.startswith('/' + survey_name):
             # Try to find the file with the survey_name as prefix
             return self.new_api('/' + survey_name + filename, survey_name)
