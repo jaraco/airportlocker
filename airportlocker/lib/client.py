@@ -13,24 +13,21 @@ pjoin = posixpath.join
 
 def build_session():
     session = requests.Session()
-    # For #20148 we disable ssl certification validations
+    # Disable ssl certification validation (#20148)
     session.verify=False
     return session
 
-def decode_json(result):
-    """
-    Decode a requests result object using its .json() method. Use
-    the pymongo object decoder to decode object IDs.
-    """
-    return result.json(object_hook=json_util.object_hook)
-
-def json_result(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        return decode_json(func(*args, **kwargs))
-    return wrapper
-
 class AirportLockerClient(object):
+    _json_params = dict(
+        # Use the pymongo object decoder to decode object IDs.
+        object_hook=json_util.object_hook,
+    )
+
+    def json_result(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            return func(self, *args, **kwargs).json(**self._json_params)
+        return wrapper
 
     def __init__(self, url, session=None):
         self.base = url
@@ -61,9 +58,9 @@ class AirportLockerClient(object):
         if not filename.startswith('/'):
             filename = '/' + filename
 
-        url = urlparse.urljoin(self.base, self.api('signed')) + '?' + \
-              urllib.urlencode({'filename': filename})
-        filejson = decode_json(self.session.get(url))
+        qs = urllib.urlencode({'filename': filename})
+        url = urlparse.urljoin(self.base, self.api('signed')) + '?' + qs
+        filejson = self.session.get(url).json(**self._json_params)
         if not len(filejson) and not filename.startswith('/' + survey_name):
             # Try to find the file with the survey_name as prefix
             return self.new_api('/' + survey_name + filename, survey_name)
