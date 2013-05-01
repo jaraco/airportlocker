@@ -11,12 +11,6 @@ from airportlocker import json
 pjoin = posixpath.join
 
 
-def build_session():
-    session = requests.Session()
-    # Disable ssl certification validation (#20148)
-    session.verify=False
-    return session
-
 class AirportLockerClient(object):
     _json_params = dict(
         # Use the pymongo object decoder to decode object IDs.
@@ -29,9 +23,12 @@ class AirportLockerClient(object):
             return func(self, *args, **kwargs).json(**self._json_params)
         return wrapper
 
-    def __init__(self, url, session=None):
+    session = requests.Session()
+    # Disable ssl certification validation (#20148)
+    session.verify=False
+
+    def __init__(self, url):
         self.base = url
-        self.session = session or build_session()
         self._api = {
             'query': '',
             'create': '',

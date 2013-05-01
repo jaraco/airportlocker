@@ -1,6 +1,11 @@
 Changes
 =======
 
+5.0
+---
+
+Airportlocker client no longer accepts a custom session object.
+
 4.0
 ---
 
