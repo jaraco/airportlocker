@@ -39,7 +39,8 @@ setup_params = dict(
             "yg.mongodb>=2.0,<3.0dev",
             "boto>=2.7,<3dev",
             "zencoder",
-            "rsa"
+            "rsa",
+            "jaraco.compat<2dev",
         ],
         client=[
             "requests>=1.1.0yg1",
