@@ -1,6 +1,11 @@
 Changes
 =======
 
+5.2
+---
+
+Cache resolved CloudFront distributions.
+
 5.0
 ---
 
