@@ -73,7 +73,7 @@ def get_cloudfront_distribution(public_url, is_s3=False):
 
     for ds in cf.get_all_distributions():
         if ds.origin.dns_name == public_url:
-            distribution = ds
+            distribution = ds.get_distribution()
             break
 
     if distribution is None:
