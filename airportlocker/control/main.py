@@ -6,6 +6,8 @@ import posixpath
 import time
 from urlparse import urljoin, urlparse
 
+from py31compat import functools as functools32
+
 from boto.cloudfront import CloudFrontConnection
 from boto.cloudfront.distribution import Distribution
 from boto.cloudfront.origin import CustomOrigin, S3Origin
@@ -103,6 +105,7 @@ def add_extra_metadata(row):
     return row
 
 
+@functools32.lru_cache()
 def get_cloudfront_distribution(public_url, is_s3=False):
     distribution = None
     cf = CloudFrontConnection(airportlocker.config.get('aws_accesskey'),
