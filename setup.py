@@ -37,8 +37,8 @@ setup_params = dict(
         server=[
             "fab>=2.4,<4.0dev",
             "yg.mongodb>=2.0,<3.0dev",
+            "boto>=2.7,<3dev",
             "zencoder",
-            "boto",
             "rsa"
         ],
         client=[

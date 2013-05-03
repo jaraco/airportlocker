@@ -7,7 +7,6 @@ import time
 from urlparse import urljoin, urlparse
 
 from boto.cloudfront import CloudFrontConnection
-from boto.cloudfront.distribution import Distribution
 from boto.cloudfront.origin import CustomOrigin, S3Origin
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
@@ -20,49 +19,6 @@ from airportlocker import json
 from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.storage import NotFoundError
 from airportlocker.lib.gridfs import GridFSStorage
-
-
-class CustomDistribution(Distribution):
-    """ Override a Distribution staticmethod to define a signing method that
-    doesn't involve M2Crypto. Taken from:
-
-    https://github.com/boto/boto/pull/1214/files
-    (Already merged, boto > 2.6 will get this one and this CustomDistribution
-    will not be needed)
-    """
-
-    @staticmethod
-    def _sign_string(message, private_key_file=None, private_key_string=None):
-        """ Signs a string for use with Amazon CloudFront.
-        Requires the rsa library be installed.
-        """
-        try:
-            import rsa
-        except ImportError:
-            raise NotImplementedError("Boto depends on the python rsa "
-                                      "library to generate signed URLs for "
-                                      "CloudFront")
-            # Make sure only one of private_key_file and private_key_string is
-            # set
-        if private_key_file and private_key_string:
-            raise ValueError("Only specify the private_key_file or the "
-                             "private_key_string not both")
-        if not private_key_file and not private_key_string:
-            raise ValueError("You must specify one of private_key_file or "
-                             "private_key_string")
-            # if private_key_file is a file object read the key string from
-            # there.
-        if isinstance(private_key_file, file):
-            private_key_file.seek(0)
-            private_key_string = private_key_file.read()
-        elif private_key_file:
-            with open(private_key_file, 'r') as file_handle:
-                private_key_string = file_handle.read()
-
-        # Sign it!
-        private_key = rsa.PrivateKey.load_pkcs1(private_key_string)
-        signature = rsa.sign(str(message), private_key, 'SHA-1')
-        return signature
 
 
 def success(value):
@@ -114,8 +70,7 @@ def get_cloudfront_distribution(public_url, is_s3=False):
 
     for ds in cf.get_all_distributions():
         if ds.origin.dns_name == public_url:
-            distribution = cf._get_info(ds.id, 'distribution',
-                                        CustomDistribution)
+            distribution = ds
             break
 
     if distribution is None:
@@ -127,9 +82,6 @@ def get_cloudfront_distribution(public_url, is_s3=False):
         distribution = cf.create_distribution(origin=origin, enabled=True,
                                               trusted_signers=["Self"],
                                               comment='Airportlocker')
-        # Get the CustomDistribution object instead of the Distribution.
-        distribution = cf._get_info(distribution.id, 'distribution',
-                                    CustomDistribution)
 
     return distribution
 
