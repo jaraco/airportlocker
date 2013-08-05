@@ -311,27 +311,42 @@ class ReadResource(Resource, GridFSStorage):
         cherrypy.response.headers['Connection'] = 'close'
         return self.head_file(path)
 
+    def find_file(self, path):
+        found_file = None
+        if self.fs.exists(filename=path):
+            found_file = self.fs.get_last_version(path)
+        elif not path.startswith('/') and self.fs.exists(filename='/' + path):
+            path = '/' + path
+            found_file = self.fs.get_last_version(path)
+        return found_file, path
+
     def return_file(self, path):
-        try:
-            resource, ct = self.get_resource(path)
-        except NotFoundError:
-            raise cherrypy.NotFound()
-        cherrypy.response.headers.update({
-            'Content-Type': ct or 'text/plain',
-        })
-        return resource
+        found_file, path = self.find_file(path)
+        if found_file is not None:
+            try:
+                resource, ct = self.get_resource(path)
+            except NotFoundError:
+                raise cherrypy.NotFound()
+            cherrypy.response.headers.update({
+                'Content-Type': ct or 'text/plain',
+            })
+            return resource
+        raise cherrypy.NotFound()
 
     def head_file(self, path):
-        try:
-            resource, ct = self.get_resource(path)
-        except NotFoundError:
-            raise cherrypy.NotFound()
-        size = sum([len(l) for l in resource])
-        cherrypy.response.headers.update({
-            'Content-Type': ct or 'text/plain',
-            'Content-Length': size,
-        })
-        return
+        found_file, path = self.find_file(path)
+        if found_file is not None:
+            try:
+                resource, ct = self.get_resource(path)
+            except NotFoundError:
+                raise cherrypy.NotFound()
+            size = sum([len(l) for l in resource])
+            cherrypy.response.headers.update({
+                'Content-Type': ct or 'text/plain',
+                'Content-Length': size,
+            })
+            return
+        raise cherrypy.NotFound()
 
 
 class ZencoderResource(Resource, GridFSStorage):
