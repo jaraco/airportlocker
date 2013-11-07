@@ -11,5 +11,4 @@ def build():
     # 'airportlocker' is still here, and causes warnings on startup, so
     # remove it.
     shutil.rmtree('airportlocker')
-    sh('dependency-tree --python env/bin/python airportlocker > '
-        '"dependency tree.txt"')
+    sh('env/bin/python setup.py dependency_tree > "dependency tree.txt"')

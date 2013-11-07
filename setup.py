@@ -49,6 +49,7 @@ setup_params = dict(
     setup_requires = [
         'hgtools',
         'pytest-runner',
+        'jaraco.packaging',
     ],
     tests_require = [
         'pytest',
