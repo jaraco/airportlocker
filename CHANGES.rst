@@ -1,6 +1,12 @@
 Changes
 =======
 
+5.3
+---
+
+Make max upload size configurable though ``upload_limit`` config parameter.
+Default remains 100MB.
+
 5.2
 ---
 

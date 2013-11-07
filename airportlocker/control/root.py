@@ -44,11 +44,15 @@ def setupapp():
             'request.dispatch': urls.dev,
         }
 
+    upload_limit = airportlocker.config.get('upload_limit', 100)
+    max_request_body_size = upload_limit * 2**20 # MB
+
     cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
     cherrypy.config.update({
         'server.socket_port': airportlocker.config.airportlocker_port,
         'server.socket_host': '0.0.0.0',
         'server.thread_pool': airportlocker.config.threads,
+        'server.max_request_body_size': max_request_body_size,
         'log.screen': True,
         'autoreload_on': True,
         'tools.CORS.on': True
