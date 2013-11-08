@@ -30,6 +30,7 @@ setup_params = dict(
         'jaraco.util',
         'path.py',
         "pymongo>=2.3",
+        "six",
     ] + py26reqs,
     extras_require=dict(
         # note, if you change the server requirements, you must also update

@@ -4,6 +4,8 @@ import os
 import argparse
 import glob
 
+import six
+
 from airportlocker.lib.client import AirportLockerClient
 from airportlocker import json
 
@@ -43,7 +45,7 @@ def main():
     for filename in args.files:
         result = client.create(filename, create_meta(filename, args))
         print("Added", filename)
-        print client.view(unicode(result['value']))
+        print(client.view(six.text_type(result['value'])))
 
 if __name__ == '__main__':
     main()

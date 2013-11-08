@@ -2,6 +2,7 @@ import os
 import time
 import importlib
 
+import six
 import requests
 import pkg_resources
 import cherrypy._cpserver
@@ -51,8 +52,8 @@ class TestBasicClient(object):
         client = AirportLockerClient(self.base_url)
         test_file = os.path.join(here, 'upload_test_file.txt')
         result = client.create(test_file, {'foo': 'bar'})
-        print result
+        print(result)
         assert result
-        remote_file = client.read(unicode(result['value']))
+        remote_file = client.read(six.text_type(result['value']))
         assert remote_file
         assert remote_file == open(test_file, 'rb').read()
