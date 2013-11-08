@@ -1,5 +1,6 @@
+-i http://cheese.yougov.net
 .
-# In addition to airportlocker dependencies, we also need airportlocker[server] reqs
+# Include airportlocker[server] reqs
 fab>=2.4,<4.0dev
 yg.mongodb>=2.0,<3.0dev
 zencoder
