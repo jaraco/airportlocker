@@ -1,0 +1,17 @@
+.hg
+airportlocker
+bin
+configs
+doc
+jenkins
+test
+.gitignore
+.hgignore
+.hgtags
+.slugignore
+*.egg
+fabfile.py
+Makefile
+README.rst
+setup.cfg
+setup.py
