@@ -1,8 +1,4 @@
-import sys
-
 import setuptools
-
-py26reqs = ['importlib'] if sys.version_info < (2, 7) else []
 
 with open('README.rst') as readme:
     long_description = readme.read()
@@ -31,7 +27,7 @@ setup_params = dict(
         'path.py',
         "pymongo>=2.3",
         "six",
-    ] + py26reqs,
+    ],
     extras_require=dict(
         # note, if you change the server requirements, you must also update
         #  the requirements.txt (because pip doesn't support extras)
