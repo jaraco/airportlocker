@@ -43,7 +43,7 @@ setup_params = dict(
             "jaraco.compat<2dev",
         ],
         client=[
-            "requests>=1.1.0yg1",
+            "requests>=1.2",
         ],
     ),
     setup_requires = [
