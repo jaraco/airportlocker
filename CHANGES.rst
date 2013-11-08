@@ -1,6 +1,11 @@
 Changes
 =======
 
+6.0
+---
+
+Dropped support for VR1. Now uses heroku build pack on VR2.
+
 5.3
 ---
 
