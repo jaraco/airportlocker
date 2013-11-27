@@ -1,9 +1,10 @@
 -i http://cheese.yougov.net
 .
 # Include airportlocker[server] reqs
-fab>=2.4,<4.0dev
-yg.mongodb>=2.0,<3.0dev
-zencoder
-boto
-rsa
+fab==3.3
+yg.mongodb==2.8
+boto==2.19.0
+zencoder==0.5
+rsa==3.1.1yg3
+jaraco.compat==1.1
 yg.newrelic>=1.2.4
