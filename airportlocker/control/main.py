@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 from copy import deepcopy
+import gc
 import os
 import posixpath
 import time
@@ -260,7 +261,11 @@ class ListResources(Resource, GridFSStorage):
             res = self._query(**kw)
         else:
             res = self._list()
-        return json.dumps(res)
+
+        json_string = json.dumps(res)
+        del res
+        gc.collect()
+        return json_string
 
     def _list(self):
         return map(add_extra_metadata, self.find())
