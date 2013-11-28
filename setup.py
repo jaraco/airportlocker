@@ -24,23 +24,23 @@ setup_params = dict(
         ],
     },
     install_requires=[
-        "yg.process==1.0.3",
-        'yg.launch==1.1',
-        'yg.performance==2.3',
+        "yg.process>=1.0.2,<2.0dev",
+        'yg.launch>=1.1,<2.0dev',
+        'yg.performance>=1.2.2,<3dev',
         'jaraco.util',
-        'path.py==3.1',
-        "pymongo==2.5.2",
+        'path.py',
+        "pymongo>=2.3",
     ] + py26reqs,
     extras_require=dict(
         # note, if you change the server requirements, you must also update
         #  the requirements.txt (because pip doesn't support extras)
         server=[
-            "fab==3.3",
-            "yg.mongodb==2.8",
-            "boto==2.19.0",
-            "zencoder==0.5",
-            "rsa==3.1.1yg3",
-            "jaraco.compat==1.1",
+            "fab>=2.4,<4.0dev",
+            "yg.mongodb>=2.0,<3.0dev",
+            "boto>=2.7,<3dev",
+            "zencoder",
+            "rsa",
+            "jaraco.compat<2dev",
         ],
         client=[
             "requests>=1.2",
