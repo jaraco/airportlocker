@@ -35,7 +35,7 @@ setup_params = dict(
             "fab>=2.4,<4.0dev",
             "yg.mongodb>=2.0,<3.0dev",
             "boto>=2.7,<3dev",
-            "zencoder",
+            "zencoder==0.6.5",
             "rsa",
             "jaraco.compat<2dev",
         ],

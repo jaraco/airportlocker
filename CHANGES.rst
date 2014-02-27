@@ -1,6 +1,13 @@
 Changes
 =======
 
+6.1
+---
+
+#34626: Use keyword arguments, rather than positional, to avoid problems
+when the developers decide it's a good idea to switch the kwarg positions.
+Oh, and pin the zencoder version.
+
 6.0
 ---
 
