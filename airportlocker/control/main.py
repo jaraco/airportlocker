@@ -375,18 +375,21 @@ class ZencoderResource(Resource, GridFSStorage):
         file_meta = self.find_one({'zencoder_job_id': job_id})
         if not file_meta:
             raise cherrypy.NotFound()
-        for output in file_meta['zencoder_outputs']:
-            if output['id'] == body['output']['id']:
-                output.update(body['output'])
-                spec = {
-                    '_id': file_meta['_id'],
-                    'zencoder_outputs.id': output['id'],
-                }
-                doc = {
-                    '$set': {"zencoder_outputs.$": output}
-                }
-                self.coll.files.update(spec, doc)
-                return success('Updated')
+        matching_outputs = (
+            output for output in file_meta['zencoder_outputs']
+            if output['id'] == body['output']['id']
+        )
+        for output in matching_outputs:
+            output.update(body['output'])
+            spec = {
+                '_id': file_meta['_id'],
+                'zencoder_outputs.id': output['id'],
+            }
+            doc = {
+                '$set': {"zencoder_outputs.$": output}
+            }
+            self.coll.files.update(spec, doc)
+            return success('Updated')
 
 
 class CachedResource(Resource, GridFSStorage):
