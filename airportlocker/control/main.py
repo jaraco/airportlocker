@@ -68,8 +68,11 @@ def get_cloudfront_distribution(public_url, is_s3=False):
     cf = CloudFrontConnection(airportlocker.config.get('aws_accesskey'),
                               airportlocker.config.get('aws_secretkey'))
 
-    if not is_s3 and (public_url.startswith('http://') or
-        public_url.startswith('https://')):
+    rewrite_url = (
+        not is_s3 and
+        (public_url.startswith('http://') or public_url.startswith('https://'))
+    )
+    if rewrite_url:
         public_url = urlparse(public_url).netloc
 
     for ds in cf.get_all_distributions():
