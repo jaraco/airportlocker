@@ -365,28 +365,28 @@ class ZencoderResource(Resource, GridFSStorage):
     def POST(self, page):
         """ Zencoder POSTs data here.
         """
-        if self.is_json():
-            cherrypy.request.body.process()
-            rawbody = cherrypy.request.body.read()
-            body = json.loads(rawbody)
-            job_id = body['job']['id']
-            file_meta = self.find_one({'zencoder_job_id': job_id})
-            if not file_meta:
-                raise cherrypy.NotFound()
-            for output in file_meta['zencoder_outputs']:
-                if output['id'] == body['output']['id']:
-                    output.update(body['output'])
-                    spec = {
-                        '_id': file_meta['_id'],
-                        'zencoder_outputs.id': output['id'],
-                    }
-                    doc = {
-                        '$set': {"zencoder_outputs.$": output}
-                    }
-                    self.coll.files.update(spec, doc)
-                    return success('Updated')
+        if not self.is_json():
+            raise cherrypy.NotFound()
 
-        raise cherrypy.NotFound()
+        cherrypy.request.body.process()
+        rawbody = cherrypy.request.body.read()
+        body = json.loads(rawbody)
+        job_id = body['job']['id']
+        file_meta = self.find_one({'zencoder_job_id': job_id})
+        if not file_meta:
+            raise cherrypy.NotFound()
+        for output in file_meta['zencoder_outputs']:
+            if output['id'] == body['output']['id']:
+                output.update(body['output'])
+                spec = {
+                    '_id': file_meta['_id'],
+                    'zencoder_outputs.id': output['id'],
+                }
+                doc = {
+                    '$set': {"zencoder_outputs.$": output}
+                }
+                self.coll.files.update(spec, doc)
+                return success('Updated')
 
 
 class CachedResource(Resource, GridFSStorage):
