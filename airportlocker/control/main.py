@@ -383,7 +383,7 @@ class ZencoderResource(Resource, GridFSStorage):
                     doc = {
                         '$set': {"zencoder_outputs.$": output}
                     }
-                    result = self.coll.files.update(spec, doc)
+                    self.coll.files.update(spec, doc)
                     return success('Updated')
 
         raise cherrypy.NotFound()
