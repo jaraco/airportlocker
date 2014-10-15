@@ -376,12 +376,14 @@ class ZencoderResource(Resource, GridFSStorage):
             for output in file_meta['zencoder_outputs']:
                 if output['id'] == body['output']['id']:
                     output.update(body['output'])
-                    result = self.coll.files.update({'_id': file_meta['_id'],
-                                                     'zencoder_outputs.id':
-                                                         output['id']},
-                                                    {'$set': {
-                                                        "zencoder_outputs.$":
-                                                            output}})
+                    spec = {
+                        '_id': file_meta['_id'],
+                        'zencoder_outputs.id': output['id'],
+                    }
+                    doc = {
+                        '$set': {"zencoder_outputs.$": output}
+                    }
+                    result = self.coll.files.update(spec, doc)
                     return success('Updated')
 
         raise cherrypy.NotFound()
