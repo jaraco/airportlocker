@@ -169,10 +169,10 @@ def add_extra_signed_metadata(row):
         distribution = get_cloudfront_distribution(public_url)
 
         uri = get_resource_uri(row)
-        if row.get['class'] == 'asset':
+        if row.get('class') == 'asset':
             row['url'] = urljoin(distribution.domain_name,
                                  '/assets/{}'.format(uri))
-        elif row.get['class'] == 'media':
+        elif row.get('class') == 'media':
             url = urljoin(public_url, '/media/{}'.format(uri))
             row['url'] = sign_url(url, distribution, keypair_id, private_key)
 
