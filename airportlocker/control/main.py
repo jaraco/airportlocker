@@ -23,6 +23,14 @@ from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.storage import NotFoundError
 from airportlocker.lib.gridfs import GridFSStorage
 
+CSV_MIME_TYPES = ['text/csv', 'application/csv']
+CSS_MIME_TYPES = ['text/css']
+JAVASCRIPT_MIME_TYPES = [
+    'application/javascript',
+    'application/x-javascript',
+    'text/javascript',
+]
+
 
 def success(value):
     return json.dumps({'status': 'success', 'value': value})
@@ -41,25 +49,33 @@ def items(field_storage):
 
 
 def add_extra_metadata(row):
-    row['url'] = '/static/%(_id)s' % row
     apl_public_url = airportlocker.config.get('public_url', '')
+    uri = get_resource_uri(row)
+    row['url'] = urljoin(apl_public_url, '/resources/{}'.format(uri))
 
-    if row['filename'].startswith('/'):
-        row['name_url'] = urljoin(apl_public_url,
-                                  '/static%(filename)s' % row)
-        row['cached_url'] = urljoin(apl_public_url,
-                                    '/cached/%(md5)s%(filename)s' % row)
-    else:
-        row['name_url'] = urljoin(apl_public_url,
-                                  '/static/%(filename)s' % row)
-        row['cached_url'] = urljoin(apl_public_url,
-                                    '/cached/%(md5)s/%(filename)s' % row)
+    # old-style URLs (should eventually be deprecated)
+    filename = row['filename']
+    if not filename.startswith('/'):
+        filename = '/' + filename
+    row['name_url'] = urljoin(apl_public_url, '/static{}'.format(filename))
+    row['cached_url'] = urljoin(apl_public_url,
+                                '/cached/{}{}'.format(row['md5'], filename))
 
     if 'shortname' not in row:
         row['shortname'] = row['filename'].split('/')[-1]
 
     row['_id'] = str(row['_id'])
     return row
+
+
+def get_resource_uri(row):
+    """
+    Return the URI for the given GridFS resource.
+
+    Resource URIs have the form: '<file md5>/<oid>.<file extension>'
+    """
+    extension = os.path.splitext(row['filename'])[1]
+    return '{}/{}{}'.format(row['md5'], row['_id'], extension)
 
 
 @functools32.lru_cache()
@@ -115,6 +131,14 @@ def is_public(url):
     return not url.endswith('.local')
 
 
+def is_internal_resource(content_type):
+    return content_type in CSV_MIME_TYPES
+
+
+def is_web_ui_asset(content_type):
+    return content_type in (CSS_MIME_TYPES + JAVASCRIPT_MIME_TYPES)
+
+
 def add_extra_signed_metadata(row):
     row = add_extra_metadata(row)
 
@@ -127,8 +151,18 @@ def add_extra_signed_metadata(row):
 
     public_url = airportlocker.config.get('public_url', '')
 
-    if is_public(public_url):
+    if is_public(public_url) and not is_internal_resource(row['contentType']):
         distribution = get_cloudfront_distribution(public_url)
+
+        uri = get_resource_uri(row)
+        if is_web_ui_asset(row['contentType']):
+            row['url'] = urljoin(distribution.domain_name,
+                                 '/assets/{}'.format(uri))
+        else:
+            url = urljoin(public_url, '/media/{}'.format(uri))
+            row['url'] = sign_url(url, distribution, keypair_id, private_key)
+
+        # old-style URL (should eventually be deprecated)
         row['signed_url'] = sign_url(row['cached_url'], distribution,
                                      keypair_id, private_key)
 
@@ -510,3 +544,21 @@ class UpdateResource(Resource, GridFSStorage):
 class DeleteResource(Resource, GridFSStorage):
     def DELETE(self, page, id):
         return success({'deleted': self.delete(id)})
+
+
+class GetResource(Resource, GridFSStorage):
+    def GET(self, page, prefix, md5, file):
+        id = os.path.splitext(file)[0]
+        try:
+            resource, ct = self.get_resource(id)
+        except NotFoundError:
+            raise cherrypy.NotFound()
+
+        # only web UI assets (js/css) are accessible via /assets/... URLs
+        if prefix == 'assets' and not is_web_ui_asset(ct):
+            raise cherrypy.NotFound()
+
+        cherrypy.response.headers.update({
+            'Content-Type': ct or 'text/plain',
+        })
+        return resource
