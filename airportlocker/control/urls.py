@@ -8,6 +8,8 @@ from airportlocker.control.main import DeleteResource
 from airportlocker.control.main import ListResources
 from airportlocker.control.main import ListSignedResources
 from airportlocker.control.main import ReadResource
+from airportlocker.control.main import GetMedia
+from airportlocker.control.main import GetAsset
 from airportlocker.control.main import GetResource
 from airportlocker.control.main import UpdateResource
 from airportlocker.control.main import ViewResource
@@ -22,7 +24,9 @@ api.add_route('zencoder', '_zencoder', ZencoderResource(), method='POST')
 api.add_route('read', 'static/*', ReadResource(), method='GET')
 api.add_route('head', 'static/*', ReadResource(), method='HEAD')
 api.add_route('view', 'view/:id', ViewResource(), method='GET')
-api.add_route('resources', ':prefix/:md5/:file', GetResource(), method='GET')
+api.add_route('media', 'media/:md5/:file', GetMedia(), method='GET')
+api.add_route('assets', 'assets/:md5/:file', GetAsset(), method='GET')
+api.add_route('resources', 'resources/:md5/:file', GetResource(), method='GET')
 api.add_route('view-options', 'view/:id', ViewResource(), method='OPTIONS')
 # overloaded POST for browsers
 # TODO: make _method tool

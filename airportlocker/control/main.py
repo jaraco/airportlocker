@@ -23,8 +23,13 @@ from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.storage import NotFoundError
 from airportlocker.lib.gridfs import GridFSStorage
 
-CSV_MIME_TYPES = ['text/csv', 'application/csv']
 CSS_MIME_TYPES = ['text/css']
+CSV_MIME_TYPES = [
+    'application/csv',
+    'application/x-csv',
+    'text/csv',
+    'text/x-comma-separated-values',
+]
 JAVASCRIPT_MIME_TYPES = [
     'application/javascript',
     'application/x-javascript',
@@ -139,6 +144,15 @@ def is_web_ui_asset(content_type):
     return content_type in (CSS_MIME_TYPES + JAVASCRIPT_MIME_TYPES)
 
 
+def get_default_resource_class(content_type):
+    class_ = 'media'
+    if is_internal_resource(content_type):
+        class_ = 'resource'
+    elif is_web_ui_asset(content_type):
+        class_ = 'asset'
+    return class_
+
+
 def add_extra_signed_metadata(row):
     row = add_extra_metadata(row)
 
@@ -151,14 +165,14 @@ def add_extra_signed_metadata(row):
 
     public_url = airportlocker.config.get('public_url', '')
 
-    if is_public(public_url) and not is_internal_resource(row['contentType']):
+    if is_public(public_url):
         distribution = get_cloudfront_distribution(public_url)
 
         uri = get_resource_uri(row)
-        if is_web_ui_asset(row['contentType']):
+        if row.get['class'] == 'asset':
             row['url'] = urljoin(distribution.domain_name,
                                  '/assets/{}'.format(uri))
-        else:
+        elif row.get['class'] == 'media':
             url = urljoin(public_url, '/media/{}'.format(uri))
             row['url'] = sign_url(url, distribution, keypair_id, private_key)
 
@@ -206,6 +220,7 @@ def prepare_meta(fields):
         (k, v) for k, v in items(fields)
             if not k.startswith('_')
     )
+
     # Preserve original filename as a shortname
     if '_lockerfile' in fields:
         meta['shortname'] = fields['_lockerfile'].filename
@@ -481,6 +496,8 @@ class CreateOrReplaceResource(Resource, GridFSStorage):
             object_id = str(new_doc['_id'])
             updated = True
         else:
+            if 'class' not in meta:
+                meta['class'] = get_default_resource_class(content_type)
             object_id = self.save(stream, file_path, content_type, meta,
                                   overwrite=True)
             new_doc = self.find_one(self.by_id(object_id))
@@ -517,6 +534,9 @@ class CreateResource(Resource, GridFSStorage):
         file_path = posixpath.join(prefix, name)
 
         meta = prepare_meta(fields)
+        if 'class' not in meta:
+            meta['class'] = get_default_resource_class(content_type)
+        import pdb; pdb.set_trace()
 
         oid = self.save(stream, file_path, content_type, meta)
         return success(oid)
@@ -546,19 +566,34 @@ class DeleteResource(Resource, GridFSStorage):
         return success({'deleted': self.delete(id)})
 
 
-class GetResource(Resource, GridFSStorage):
-    def GET(self, page, prefix, md5, file):
+class GetMedia(Resource, GridFSStorage):
+    resource_class = 'media'
+
+    def GET(self, page, md5, file):
         id = os.path.splitext(file)[0]
         try:
             resource, ct = self.get_resource(id)
         except NotFoundError:
             raise cherrypy.NotFound()
 
-        # only web UI assets (js/css) are accessible via /assets/... URLs
-        if prefix == 'assets' and not is_web_ui_asset(ct):
+        if resource.md5 != md5:
+            raise cherrypy.NotFound()
+
+        if not self._validate(resource):
             raise cherrypy.NotFound()
 
         cherrypy.response.headers.update({
             'Content-Type': ct or 'text/plain',
         })
         return resource
+
+    def _validate(self, resource):
+        return resource._file.get('class') == self.resource_class
+
+
+class GetAsset(GetMedia):
+    resource_class = 'asset'
+
+
+class GetResource(GetMedia):
+    resource_class = 'resource'
