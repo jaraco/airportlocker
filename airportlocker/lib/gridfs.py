@@ -4,6 +4,7 @@ import gridfs
 
 from . import storage
 
+
 class GridFSStorage(storage.Storage):
     """
     A mix-in class to be used with Resource controller objects providing
