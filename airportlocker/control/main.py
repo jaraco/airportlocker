@@ -23,6 +23,19 @@ from airportlocker.control.base import Resource, HtmlResource, post
 from airportlocker.lib.storage import NotFoundError
 from airportlocker.lib.gridfs import GridFSStorage
 
+CSS_MIME_TYPES = ['text/css']
+CSV_MIME_TYPES = [
+    'application/csv',
+    'application/x-csv',
+    'text/csv',
+    'text/x-comma-separated-values',
+]
+JAVASCRIPT_MIME_TYPES = [
+    'application/javascript',
+    'application/x-javascript',
+    'text/javascript',
+]
+
 
 def success(value):
     return json.dumps({'status': 'success', 'value': value})
@@ -41,25 +54,33 @@ def items(field_storage):
 
 
 def add_extra_metadata(row):
-    row['url'] = '/static/%(_id)s' % row
     apl_public_url = airportlocker.config.get('public_url', '')
+    uri = get_resource_uri(row)
+    row['url'] = urljoin(apl_public_url, '/internal/{}'.format(uri))
 
-    if row['filename'].startswith('/'):
-        row['name_url'] = urljoin(apl_public_url,
-                                  '/static%(filename)s' % row)
-        row['cached_url'] = urljoin(apl_public_url,
-                                    '/cached/%(md5)s%(filename)s' % row)
-    else:
-        row['name_url'] = urljoin(apl_public_url,
-                                  '/static/%(filename)s' % row)
-        row['cached_url'] = urljoin(apl_public_url,
-                                    '/cached/%(md5)s/%(filename)s' % row)
+    # old-style URLs (should eventually be deprecated)
+    filename = row['filename']
+    if not filename.startswith('/'):
+        filename = '/' + filename
+    row['name_url'] = urljoin(apl_public_url, '/static{}'.format(filename))
+    row['cached_url'] = urljoin(apl_public_url,
+                                '/cached/{}{}'.format(row['md5'], filename))
 
     if 'shortname' not in row:
         row['shortname'] = row['filename'].split('/')[-1]
 
     row['_id'] = str(row['_id'])
     return row
+
+
+def get_resource_uri(row):
+    """
+    Return the URI for the given GridFS resource.
+
+    Resource URIs have the form: '<file md5>/<oid>.<file extension>'
+    """
+    extension = os.path.splitext(row['filename'])[1]
+    return '{}/{}{}'.format(row['md5'], row['_id'], extension)
 
 
 @functools32.lru_cache()
@@ -118,6 +139,15 @@ def is_public(url):
     return not url.endswith('.local')
 
 
+def get_default_resource_class(content_type):
+    class_ = 'private'
+    if content_type in CSV_MIME_TYPES:
+        class_ = 'internal'
+    elif content_type in (CSS_MIME_TYPES + JAVASCRIPT_MIME_TYPES):
+        class_ = 'public'
+    return class_
+
+
 def add_extra_signed_metadata(row):
     row = add_extra_metadata(row)
 
@@ -132,6 +162,16 @@ def add_extra_signed_metadata(row):
 
     if is_public(public_url):
         distribution = get_cloudfront_distribution(public_url)
+
+        uri = get_resource_uri(row)
+        if row.get('class') == 'public':
+            row['url'] = urljoin(distribution.domain_name,
+                                 '/public/{}'.format(uri))
+        elif row.get('class') == 'private':
+            url = urljoin(public_url, '/private/{}'.format(uri))
+            row['url'] = sign_url(url, distribution, keypair_id, private_key)
+
+        # old-style URL (should eventually be deprecated)
         row['signed_url'] = sign_url(row['cached_url'], distribution,
                                      keypair_id, private_key)
 
@@ -175,6 +215,7 @@ def prepare_meta(fields):
         (k, v) for k, v in items(fields)
             if not k.startswith('_')
     )
+
     # Preserve original filename as a shortname
     if '_lockerfile' in fields:
         meta['shortname'] = fields['_lockerfile'].filename
@@ -450,6 +491,8 @@ class CreateOrReplaceResource(Resource, GridFSStorage):
             object_id = str(new_doc['_id'])
             updated = True
         else:
+            if 'class' not in meta:
+                meta['class'] = get_default_resource_class(content_type)
             object_id = self.save(stream, file_path, content_type, meta,
                                   overwrite=True)
             new_doc = self.find_one(self.by_id(object_id))
@@ -486,6 +529,9 @@ class CreateResource(Resource, GridFSStorage):
         file_path = posixpath.join(prefix, name)
 
         meta = prepare_meta(fields)
+        if 'class' not in meta:
+            meta['class'] = get_default_resource_class(content_type)
+        import pdb; pdb.set_trace()
 
         oid = self.save(stream, file_path, content_type, meta)
         return success(oid)
@@ -513,3 +559,38 @@ class UpdateResource(Resource, GridFSStorage):
 class DeleteResource(Resource, GridFSStorage):
     def DELETE(self, page, id):
         return success({'deleted': self.delete(id)})
+
+
+class GetResource(Resource, GridFSStorage):
+    def GET(self, page, md5, file):
+        id = os.path.splitext(file)[0]
+        try:
+            resource, ct = self.get_resource(id)
+        except NotFoundError:
+            raise cherrypy.NotFound()
+
+        if resource.md5 != md5:
+            raise cherrypy.NotFound()
+
+        if not self._validate(resource):
+            raise cherrypy.NotFound()
+
+        cherrypy.response.headers.update({
+            'Content-Type': ct or 'text/plain',
+        })
+        return resource
+
+    def _validate(self, resource):
+        return resource._file.get('class') == self.resource_class
+
+
+class GetInternalResource(GetResource):
+    resource_class = 'internal'
+
+
+class GetPrivateResource(GetResource):
+    resource_class = 'private'
+
+
+class GetPublicResource(GetResource):
+    resource_class = 'public'
