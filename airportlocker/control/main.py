@@ -165,8 +165,9 @@ def add_extra_signed_metadata(row):
 
         uri = get_resource_uri(row)
         if row.get('class') == 'public':
-            row['url'] = urljoin(distribution.domain_name,
-                                 '/public/{}'.format(uri))
+            url = urljoin(public_url, '/public/{}'.format(uri))
+            row['url'] = url.replace(distribution.config.origin.dns_name,
+                                     distribution.domain_name)
         elif row.get('class') == 'private':
             url = urljoin(public_url, '/private/{}'.format(uri))
             row['url'] = sign_url(url, distribution, keypair_id, private_key)
