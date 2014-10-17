@@ -56,7 +56,7 @@ def items(field_storage):
 def add_extra_metadata(row):
     apl_public_url = airportlocker.config.get('public_url', '')
     uri = get_resource_uri(row)
-    row['url'] = urljoin(apl_public_url, '/resources/{}'.format(uri))
+    row['url'] = urljoin(apl_public_url, '/internal/{}'.format(uri))
 
     # old-style URLs (should eventually be deprecated)
     filename = row['filename']
@@ -136,20 +136,12 @@ def is_public(url):
     return not url.endswith('.local')
 
 
-def is_internal_resource(content_type):
-    return content_type in CSV_MIME_TYPES
-
-
-def is_web_ui_asset(content_type):
-    return content_type in (CSS_MIME_TYPES + JAVASCRIPT_MIME_TYPES)
-
-
 def get_default_resource_class(content_type):
-    class_ = 'media'
-    if is_internal_resource(content_type):
-        class_ = 'resource'
-    elif is_web_ui_asset(content_type):
-        class_ = 'asset'
+    class_ = 'private'
+    if content_type in CSV_MIME_TYPES:
+        class_ = 'internal'
+    elif content_type in (CSS_MIME_TYPES + JAVASCRIPT_MIME_TYPES):
+        class_ = 'public'
     return class_
 
 
@@ -169,11 +161,11 @@ def add_extra_signed_metadata(row):
         distribution = get_cloudfront_distribution(public_url)
 
         uri = get_resource_uri(row)
-        if row.get('class') == 'asset':
+        if row.get('class') == 'public':
             row['url'] = urljoin(distribution.domain_name,
-                                 '/assets/{}'.format(uri))
-        elif row.get('class') == 'media':
-            url = urljoin(public_url, '/media/{}'.format(uri))
+                                 '/public/{}'.format(uri))
+        elif row.get('class') == 'private':
+            url = urljoin(public_url, '/private/{}'.format(uri))
             row['url'] = sign_url(url, distribution, keypair_id, private_key)
 
         # old-style URL (should eventually be deprecated)
@@ -566,9 +558,7 @@ class DeleteResource(Resource, GridFSStorage):
         return success({'deleted': self.delete(id)})
 
 
-class GetMedia(Resource, GridFSStorage):
-    resource_class = 'media'
-
+class GetResource(Resource, GridFSStorage):
     def GET(self, page, md5, file):
         id = os.path.splitext(file)[0]
         try:
@@ -591,9 +581,13 @@ class GetMedia(Resource, GridFSStorage):
         return resource._file.get('class') == self.resource_class
 
 
-class GetAsset(GetMedia):
-    resource_class = 'asset'
+class GetInternalResource(GetResource):
+    resource_class = 'internal'
 
 
-class GetResource(GetMedia):
-    resource_class = 'resource'
+class GetPrivateResource(GetResource):
+    resource_class = 'private'
+
+
+class GetPublicResource(GetResource):
+    resource_class = 'public'
