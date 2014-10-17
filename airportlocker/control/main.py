@@ -531,7 +531,6 @@ class CreateResource(Resource, GridFSStorage):
         meta = prepare_meta(fields)
         if 'class' not in meta:
             meta['class'] = get_default_resource_class(content_type)
-        import pdb; pdb.set_trace()
 
         oid = self.save(stream, file_path, content_type, meta)
         return success(oid)
