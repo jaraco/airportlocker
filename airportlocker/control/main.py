@@ -511,7 +511,8 @@ class CreateOrReplaceResource(Resource, GridFSStorage):
 
         if 'video' in content_type:
             resource, ct = self.get_resource(file_path)
-            s3_file = upload_to_s3(file_path, resource, ct)
+            filename = get_resource_uri(resource._file)
+            s3_file = upload_to_s3(filename, resource, ct)
             job = send_to_zencoder(s3_file)
             meta['zencoder_job_id'] = job['id']
             meta['zencoder_outputs'] = job['outputs']
