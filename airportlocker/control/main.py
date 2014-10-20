@@ -183,6 +183,8 @@ def add_extra_signed_metadata(row):
         for output in row['zencoder_outputs']:
             output['signed_url'] = sign_url(output['url'], distribution,
                                             keypair_id, private_key)
+            if row.get('class') == 'private':
+                output['url'] = output['signed_url']
 
     return row
 
