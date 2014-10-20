@@ -427,6 +427,9 @@ class ZencoderResource(Resource, GridFSStorage):
             if output['id'] == body['output']['id']
         )
         for output in matching_outputs:
+            if 'url' in body['output']:
+                body['output']['contentType'] = \
+                    self.get_video_content_type(body['output']['url'])
             output.update(body['output'])
             spec = {
                 '_id': file_meta['_id'],
@@ -437,6 +440,12 @@ class ZencoderResource(Resource, GridFSStorage):
             }
             self.coll.files.update(spec, doc)
             return success('Updated')
+
+    def get_video_content_type(self, url):
+        """Return the content type for a video file based on its extension."""
+        path = urlparse(url).path
+        extension = os.path.splitext(path)[1].lstrip('.')
+        return 'video/{}'.format(extension)
 
 
 class CachedResource(Resource, GridFSStorage):
