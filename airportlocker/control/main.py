@@ -428,6 +428,7 @@ class ZencoderResource(Resource, GridFSStorage):
         )
         for output in matching_outputs:
             if 'url' in body['output']:
+                body['output']['url'] = self.force_https(body['output']['url'])
                 body['output']['contentType'] = \
                     self.get_video_content_type(body['output']['url'])
             output.update(body['output'])
@@ -448,6 +449,12 @@ class ZencoderResource(Resource, GridFSStorage):
         extension = os.path.splitext(path)[1].lstrip('.')
         return 'video/{}'.format(extension)
 
+    @staticmethod
+    def force_https(url):
+        """Return an HTTPS version of the given URL."""
+        if url.startswith('http:'):
+            url = url.replace('http:', 'https:', 1)
+        return url
 
 class CachedResource(Resource, GridFSStorage):
     """ Expose for CDNed MD5 version, we use /MD5/Filename as url,
