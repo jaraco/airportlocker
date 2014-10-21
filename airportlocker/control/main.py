@@ -503,8 +503,7 @@ class CreateOrReplaceResource(Resource, GridFSStorage):
             object_id = str(new_doc['_id'])
             updated = True
         else:
-            if 'class' not in meta:
-                meta['class'] = get_default_resource_class(content_type)
+            meta.setdefault('class', get_default_resource_class(content_type))
             object_id = self.save(stream, file_path, content_type, meta,
                                   overwrite=True)
             new_doc = self.find_one(self.by_id(object_id))
