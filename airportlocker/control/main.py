@@ -441,7 +441,8 @@ class ZencoderResource(Resource, GridFSStorage):
             self.coll.files.update(spec, doc)
             return success('Updated')
 
-    def get_video_content_type(self, url):
+    @staticmethod
+    def get_video_content_type(url):
         """Return the content type for a video file based on its extension."""
         path = urlparse(url).path
         extension = os.path.splitext(path)[1].lstrip('.')
