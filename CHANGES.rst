@@ -1,6 +1,13 @@
 Changes
 =======
 
+7.1
+---
+
+#37610: If set in MongoDB, use a resource's custom ttl when signing URLs.
+#37664: Enable updating a resource's properties via a PUT to the /edit/:id
+        endpoint.
+
 7.0
 ---
 
