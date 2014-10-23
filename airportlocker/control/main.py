@@ -183,6 +183,8 @@ def add_extra_signed_metadata(row):
         for output in row['zencoder_outputs']:
             output['signed_url'] = sign_url(output['url'], distribution,
                                             keypair_id, private_key)
+            if row.get('class') == 'private':
+                output['url'] = output['signed_url']
 
     return row
 
@@ -425,6 +427,10 @@ class ZencoderResource(Resource, GridFSStorage):
             if output['id'] == body['output']['id']
         )
         for output in matching_outputs:
+            if 'url' in body['output']:
+                body['output']['url'] = self.force_https(body['output']['url'])
+                body['output']['contentType'] = \
+                    self.get_video_content_type(body['output']['url'])
             output.update(body['output'])
             spec = {
                 '_id': file_meta['_id'],
@@ -436,6 +442,19 @@ class ZencoderResource(Resource, GridFSStorage):
             self.coll.files.update(spec, doc)
             return success('Updated')
 
+    @staticmethod
+    def get_video_content_type(url):
+        """Return the content type for a video file based on its extension."""
+        path = urlparse(url).path
+        extension = os.path.splitext(path)[1].lstrip('.')
+        return 'video/{}'.format(extension)
+
+    @staticmethod
+    def force_https(url):
+        """Return an HTTPS version of the given URL."""
+        if url.startswith('http:'):
+            url = url.replace('http:', 'https:', 1)
+        return url
 
 class CachedResource(Resource, GridFSStorage):
     """ Expose for CDNed MD5 version, we use /MD5/Filename as url,
@@ -492,15 +511,15 @@ class CreateOrReplaceResource(Resource, GridFSStorage):
             object_id = str(new_doc['_id'])
             updated = True
         else:
-            if 'class' not in meta:
-                meta['class'] = get_default_resource_class(content_type)
+            meta.setdefault('class', get_default_resource_class(content_type))
             object_id = self.save(stream, file_path, content_type, meta,
                                   overwrite=True)
             new_doc = self.find_one(self.by_id(object_id))
 
         if 'video' in content_type:
             resource, ct = self.get_resource(file_path)
-            s3_file = upload_to_s3(file_path, resource, ct)
+            filename = get_resource_uri(resource._file)
+            s3_file = upload_to_s3(filename, resource, ct)
             job = send_to_zencoder(s3_file)
             meta['zencoder_job_id'] = job['id']
             meta['zencoder_outputs'] = job['outputs']
