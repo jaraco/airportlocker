@@ -559,7 +559,7 @@ class CreateResource(Resource, GridFSStorage):
 class UpdateResource(Resource, GridFSStorage):
     @post
     def PUT(self, page, fields, id):
-        file_ob = fields.get('_lockerfile', None)
+        file_ob = fields.getvalue('_lockerfile', None)
         params = dict(
             stream=file_ob.file,
             content_type=file_ob.type,
