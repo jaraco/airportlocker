@@ -1,6 +1,13 @@
 Changes
 =======
 
+7.0
+---
+
+#33901: Obfuscate resource URLs, removing survey name and file name.  Add
+new endpoints to support serving resources differently based on the class
+of resource (public, private, internal).
+
 6.1
 ---
 
