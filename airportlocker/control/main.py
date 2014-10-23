@@ -119,11 +119,12 @@ def get_cloudfront_s3_distribution(s3_bucket):
     return get_cloudfront_distribution(public_url, is_s3=True)
 
 
-def sign_url(unsigned_url, distribution, keypair_id, private_key):
+def sign_url(unsigned_url, distribution, keypair_id, private_key, ttl=None):
     """ Make a expire time and build the cloudfront url. Finally sign it.
     """
-    signature_ttl = int(airportlocker.config.get('aws_signature_ttl', 600))
-    expire = int(time.time()) + signature_ttl
+    default_signature_ttl = airportlocker.config.get('aws_signature_ttl', 600)
+    signature_ttl = ttl if ttl is not None else default_signature_ttl
+    expire = int(time.time()) + int(signature_ttl)
     unsigned_url = unsigned_url.replace(distribution.config.origin.dns_name,
                                         distribution.domain_name)
     return distribution.create_signed_url(url=unsigned_url,
@@ -157,6 +158,7 @@ def add_extra_signed_metadata(row):
     keypair_id = airportlocker.config.get('aws_keypairid', '')
     if not private_key or not keypair_id:
         return row
+    ttl = row.get('ttl')
 
     public_url = airportlocker.config.get('public_url', '')
 
@@ -170,11 +172,12 @@ def add_extra_signed_metadata(row):
                                      distribution.domain_name)
         elif row.get('class') == 'private':
             url = urljoin(public_url, '/private/{}'.format(uri))
-            row['url'] = sign_url(url, distribution, keypair_id, private_key)
+            row['url'] = sign_url(url, distribution, keypair_id, private_key,
+                                  ttl)
 
         # old-style URL (should eventually be deprecated)
         row['signed_url'] = sign_url(row['cached_url'], distribution,
-                                     keypair_id, private_key)
+                                     keypair_id, private_key, ttl)
 
     # Check if the file is a video and has zencoder s3 files to sign.
     s3_bucket = airportlocker.config.get('aws_s3_bucket', '')
@@ -182,7 +185,7 @@ def add_extra_signed_metadata(row):
         distribution = get_cloudfront_s3_distribution(s3_bucket)
         for output in row['zencoder_outputs']:
             output['signed_url'] = sign_url(output['url'], distribution,
-                                            keypair_id, private_key)
+                                            keypair_id, private_key, ttl)
             if row.get('class') == 'private':
                 output['url'] = output['signed_url']
 
