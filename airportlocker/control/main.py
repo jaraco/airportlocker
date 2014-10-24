@@ -119,12 +119,10 @@ def get_cloudfront_s3_distribution(s3_bucket):
     return get_cloudfront_distribution(public_url, is_s3=True)
 
 
-def sign_url(unsigned_url, distribution, keypair_id, private_key, ttl=None):
+def sign_url(unsigned_url, distribution, keypair_id, private_key, ttl):
     """ Make a expire time and build the cloudfront url. Finally sign it.
     """
-    default_signature_ttl = airportlocker.config.get('aws_signature_ttl', 600)
-    signature_ttl = ttl if ttl is not None else default_signature_ttl
-    expire = int(time.time()) + int(signature_ttl)
+    expire = int(time.time()) + int(ttl)
     unsigned_url = unsigned_url.replace(distribution.config.origin.dns_name,
                                         distribution.domain_name)
     return distribution.create_signed_url(url=unsigned_url,
@@ -158,7 +156,8 @@ def add_extra_signed_metadata(row):
     keypair_id = airportlocker.config.get('aws_keypairid', '')
     if not private_key or not keypair_id:
         return row
-    ttl = row.get('ttl')
+    default_signature_ttl = airportlocker.config.get('aws_signature_ttl', 600)
+    ttl = row.setdefault('ttl', default_signature_ttl)
 
     public_url = airportlocker.config.get('public_url', '')
 
@@ -458,6 +457,7 @@ class ZencoderResource(Resource, GridFSStorage):
         if url.startswith('http:'):
             url = url.replace('http:', 'https:', 1)
         return url
+
 
 class CachedResource(Resource, GridFSStorage):
     """ Expose for CDNed MD5 version, we use /MD5/Filename as url,
