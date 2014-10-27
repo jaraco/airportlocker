@@ -1,6 +1,12 @@
 Changes
 =======
 
+7.2
+---
+
+#37610: Return a URL signature ttl for all resources.  If a custom URL
+signature ttl is not set on a particular resource, return the default ttl.
+
 7.1
 ---
 
