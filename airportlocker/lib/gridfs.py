@@ -80,6 +80,13 @@ class GridFSStorage(storage.Storage):
         """
         orig_meta = self.find_one(self.by_id(id))
         filepath = orig_meta['filename']
+
+        # preserve original resource class and signature ttl, if not overridden
+        if 'class' in orig_meta:
+            meta.setdefault('class', orig_meta['class'])
+        if 'ttl' in orig_meta:
+            meta.setdefault('ttl', orig_meta['ttl'])
+
         new_id = self.save(stream, filepath, content_type, meta, overwrite)
         self.delete(id)
         return self.fs.get(self.by_id(new_id))._file
