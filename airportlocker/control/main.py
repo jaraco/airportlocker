@@ -552,8 +552,7 @@ class CreateResource(Resource, GridFSStorage):
         file_path = posixpath.join(prefix, name)
 
         meta = prepare_meta(fields)
-        if 'class' not in meta:
-            meta['class'] = get_default_resource_class(content_type)
+        meta.setdefault('class', get_default_resource_class(content_type))
 
         oid = self.save(stream, file_path, content_type, meta)
         return success(oid)
