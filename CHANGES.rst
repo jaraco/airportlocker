@@ -1,6 +1,12 @@
 Changes
 =======
 
+7.2.1
+-----
+
+#37739: Preserve existing resource class and URL signature ttl when updating
+resources.
+
 7.2
 ---
 
