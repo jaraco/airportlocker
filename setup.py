@@ -25,7 +25,7 @@ setup_params = dict(
         'yg.performance>=1.2.2,<3dev',
         'jaraco.util',
         'path.py',
-        "pymongo>=2.3",
+        "pymongo>=2.3,<3dev",
         "six",
     ],
     extras_require=dict(
