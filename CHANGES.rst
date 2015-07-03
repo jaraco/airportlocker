@@ -1,6 +1,11 @@
 Changes
 =======
 
+7.2.2
+-----
+
+Pin pymongo to avoid breaking changes from 3.0.
+
 7.2.1
 -----
 
