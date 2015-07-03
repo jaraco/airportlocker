@@ -1,5 +1,7 @@
 syntax:glob
 devel.yaml
+.eggs
+*.egg
 *.egg-info
 *.pyc
 build
@@ -8,3 +10,4 @@ temp
 filestore
 file_metadata
 env
+test results.xml
