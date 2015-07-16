@@ -1,6 +1,11 @@
 Changes
 =======
 
+7.4
+---
+
+Dependency cleanup.
+
 7.3
 ---
 

@@ -23,7 +23,6 @@ setup_params = dict(
         "yg.process>=1.0.2,<2.0dev",
         'yg.launch>=1.1,<2.0dev',
         'yg.performance>=1.2.2,<3dev',
-        'jaraco.util',
         'path.py',
         "six",
     ],
