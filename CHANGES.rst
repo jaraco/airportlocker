@@ -1,6 +1,14 @@
 Changes
 =======
 
+7.3
+---
+
+Bump to yg.mongodb 4.0 to use late MongoDB client.
+Remove dependency on pymongo in non-server. Rely on yg.mongodb to require
+pymongo.
+Use devpi for dependencies.
+
 7.2.2
 -----
 
