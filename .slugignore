@@ -15,3 +15,8 @@ Makefile
 README.rst
 setup.cfg
 setup.py
+pytest.ini
+CHANGES.rst
+build deps.txt
+build-exe.py
+scripts
