@@ -25,7 +25,6 @@ setup_params = dict(
         'yg.performance>=1.2.2,<3dev',
         'jaraco.util',
         'path.py',
-        "pymongo>=2.3,<3dev",
         "six",
     ],
     extras_require=dict(
@@ -33,7 +32,7 @@ setup_params = dict(
         #  the requirements.txt (because pip doesn't support extras)
         server=[
             "fab>=2.4,<4.0dev",
-            "yg.mongodb>=2.0,<3.0dev",
+            "yg.mongodb>=4.0,<5dev",
             "boto>=2.7,<3dev",
             "zencoder==0.6.5",
             "rsa",

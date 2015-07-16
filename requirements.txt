@@ -2,7 +2,7 @@
 .
 # Include airportlocker[server] reqs
 fab>=2.4,<4.0dev
-yg.mongodb>=2.0,<3.0dev
+yg.mongodb>=4.0,<5dev
 zencoder==0.6.5
 boto
 rsa
