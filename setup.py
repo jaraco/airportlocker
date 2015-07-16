@@ -7,7 +7,7 @@ with open('CHANGES.rst') as changes:
 
 setup_params = dict(
     name='airportlocker',
-    use_hg_version=dict(increment='0.0.1'),
+    use_scm_version=True,
     author="Eric Larson/Jason R. Coombs/Fernando Gutierrez",
     author_email="dev@YouGov.com",
     url="http://dev.yougov.com/",
@@ -43,7 +43,7 @@ setup_params = dict(
         ],
     ),
     setup_requires = [
-        'hgtools',
+        'setuptools_scm',
         'pytest-runner>=2.1',
         'jaraco.packaging',
     ],
