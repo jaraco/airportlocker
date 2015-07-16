@@ -7,7 +7,7 @@ import posixpath
 import time
 from urlparse import urljoin, urlparse
 
-from py31compat import functools as functools32
+from backports.functools_lru_cache import lru_cache
 
 from boto.cloudfront import CloudFrontConnection
 from boto.cloudfront.origin import CustomOrigin, S3Origin
@@ -83,7 +83,7 @@ def get_resource_uri(row):
     return '{}/{}{}'.format(row['md5'], row['_id'], extension)
 
 
-@functools32.lru_cache()
+@lru_cache()
 def get_cloudfront_distribution(public_url, is_s3=False):
     distribution = None
     cf = CloudFrontConnection(airportlocker.config.get('aws_accesskey'),

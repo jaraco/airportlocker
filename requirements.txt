@@ -6,4 +6,5 @@ yg.mongodb>=4.0,<5dev
 zencoder==0.6.5
 boto
 rsa
+backports.functools_lru_cache
 yg.newrelic>=1.2.4

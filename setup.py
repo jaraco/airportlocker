@@ -36,7 +36,7 @@ setup_params = dict(
             "boto>=2.7,<3dev",
             "zencoder==0.6.5",
             "rsa",
-            "jaraco.compat<2dev",
+            "backports.functools_lru_cache",
         ],
         client=[
             "requests>=1.2",
