@@ -49,7 +49,7 @@ setup_params = dict(
     ],
     tests_require = [
         'pytest',
-        'mock',
+        'backports.unittest_mock',
     ],
 )
 

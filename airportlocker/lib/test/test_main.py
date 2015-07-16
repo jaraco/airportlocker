@@ -1,9 +1,9 @@
 import importlib
+from unittest import mock
 
 import fab
 import cherrypy
 import py.test
-import mock
 import pkg_resources
 
 from airportlocker.lib import storage
