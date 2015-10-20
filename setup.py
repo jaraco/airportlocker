@@ -41,12 +41,12 @@ setup_params = dict(
             "requests>=1.2",
         ],
     ),
-    setup_requires = [
+    setup_requires=[
         'setuptools_scm',
         'pytest-runner>=2.1',
         'jaraco.packaging',
     ],
-    tests_require = [
+    tests_require=[
         'pytest',
         'backports.unittest_mock',
     ],
