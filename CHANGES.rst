@@ -1,6 +1,11 @@
 Changes
 =======
 
+7.4.1
+-----
+
+Fix various build failures.
+
 7.4
 ---
 
