@@ -36,6 +36,7 @@ setup_params = dict(
             "zencoder==0.6.5",
             "rsa",
             "backports.functools_lru_cache",
+            "yg.newrelic>=1.2.4",
         ],
         client=[
             "requests>=1.2",
