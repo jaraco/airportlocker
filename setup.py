@@ -48,6 +48,7 @@ setup_params = dict(
         'jaraco.packaging',
     ],
     tests_require=[
+        'pbr<1.7.0',  # https://bugs.launchpad.net/pbr/+bug/1493735
         'pytest',
         'backports.unittest_mock',
     ],
