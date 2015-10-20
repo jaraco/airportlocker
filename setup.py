@@ -44,7 +44,7 @@ setup_params = dict(
     ),
     setup_requires=[
         'setuptools_scm',
-        'pytest-runner>=2.1',
+        'pytest-runner>=2.6.2',
         'jaraco.packaging',
     ],
     tests_require=[
