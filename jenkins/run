@@ -1,2 +1,5 @@
 #!/bin/bash
-python2.7 setup.py test --extras --addopts='--junitxml="test results.xml"'
+rm -rf env
+virtualenv env
+env/bin/easy_install -U setuptools
+env/bin/python2.7 setup.py test --extras --addopts='--junitxml="test results.xml"'
