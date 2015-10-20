@@ -11,3 +11,4 @@ filestore
 file_metadata
 env
 test results.xml
+.cache
