@@ -18,11 +18,16 @@ def initialize_newrelic():
     if not key:
         return
 
-    app_name = airportlocker.config.get('newrelic_app_name',
-                                        'Airportlocker')
-    yg.newrelic.initialize(app_name, key,
-                           airportlocker.config.get('newrelic', {}),
-                           environment="Production")
+    app_name = airportlocker.config.get(
+        'newrelic_app_name',
+        'Airportlocker',
+    )
+    yg.newrelic.initialize(
+        app_name,
+        key,
+        airportlocker.config.get('newrelic', {}),
+        environment="Production",
+    )
 
 
 def run():
