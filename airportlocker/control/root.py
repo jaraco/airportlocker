@@ -45,7 +45,8 @@ def setupapp():
         }
 
     upload_limit = airportlocker.config.get('upload_limit', 100)
-    max_request_body_size = upload_limit * 2**20 # MB
+    MB = 2**20
+    max_request_body_size = upload_limit * MB
 
     cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
     cherrypy.config.update({
