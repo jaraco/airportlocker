@@ -1,10 +1,9 @@
 import os
 import urlparse
+import argparse
+from pprint import pprint
 
 import httplib2
-
-from optparse import OptionParser
-from pprint import pprint
 
 from airportlocker.lib.utils import MultiPart
 from airportlocker import json
@@ -47,7 +46,7 @@ class AirportLockerClient(object):
             response = json.loads(c)
         except ValueError:
             pprint(res)
-            print c
+            print(c)
             raise
         return response
 
@@ -63,7 +62,7 @@ class AirportLockerClient(object):
             response = json.loads(c)
         except ValueError:
             pprint(res)
-            print c
+            print(c)
             raise
         return response
 
@@ -81,55 +80,56 @@ class AirportLockerClient(object):
         return response
 
 def test_create(exc):
-    print 'Create'
+    print('Create')
     create_sample_file(sample_fn)
     sample = exc.create(sample_fn, {'yeah': 'this field'})
     pprint(sample)
-    print 'Done'
-    print
+    print('Done')
+    print()
     return sample['value']
 
 def test_update(exc, id):
-    print 'Update'
+    print('Update')
     update_sample_file(sample_fn)
     sample = exerciser.update(id, sample_fn, {'whoa': 'new field', 'yeah': 'updated'})
     pprint(sample)
-    print 'Done'
-    print
+    print('Done')
+    print()
 
 def test_read(exc, id):
-    print 'Read'
+    print('Read')
     doc = exc.read(id)
-    print doc
-    print 'Done'
-    print
+    print(doc)
+    print('Done')
+    print()
 
 
 def test_view(exc, id):
-    print 'View'
+    print('View')
     doc = exc.view(id)
     pprint(doc)
-    print 'Done'
-    print
+    print('Done')
+    print()
 
 def test_delete(exc, id):
-    print 'Delete'
+    print('Delete')
     result = exc.delete(id)
     pprint(result)
-    print 'Done'
-    print
+    print('Done')
+    print()
 
 
-if __name__=='__main__':
-    usage = 'usage: %prog [options] url'
-    parser = OptionParser(usage)
-    (options, args) = parser.parse_args()
-    if len(args) < 1:
-        parser.error('Need an airportlocker url')
-    url = args[0]
-    exerciser = AirportLockerClient(url)
+def run():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('url')
+    args = parser.parse_args()
+    exerciser = AirportLockerClient(args.url)
     id = test_create(exerciser)
     test_view(exerciser, id)
     test_read(exerciser, id)
     test_update(exerciser, id)
     test_delete(exerciser, id)
+
+
+if __name__=='__main__':
+    run()
