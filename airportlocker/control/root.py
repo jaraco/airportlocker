@@ -56,7 +56,7 @@ def setupapp():
         'server.max_request_body_size': max_request_body_size,
         'log.screen': True,
         'autoreload_on': True,
-        'tools.CORS.on': True
+        'tools.CORS.on': True,
     })
 
 def run():
