@@ -24,8 +24,8 @@ def initialize_newrelic():
 
 
 def run():
-    airportlocker.config.update(
-        yg.launch.cmdline.get_parser().parse_args().config)
+    conf = yg.launch.cmdline.get_parser().parse_args().config
+    airportlocker.config.update(conf)
     airportlocker.config['airportlocker_port'] = int(os.environ['PORT'])
     initialize_newrelic()
     setup_logging()
