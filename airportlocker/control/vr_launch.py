@@ -22,12 +22,8 @@ def initialize_newrelic():
         'newrelic_app_name',
         'Airportlocker',
     )
-    yg.newrelic.initialize(
-        app_name,
-        key,
-        airportlocker.config.get('newrelic', {}),
-        environment="Production",
-    )
+    conf = airportlocker.config.get('newrelic', {})
+    yg.newrelic.initialize(app_name, key, conf, environment="Production")
 
 
 def run():
