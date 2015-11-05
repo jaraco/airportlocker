@@ -50,7 +50,7 @@ def setupapp():
     cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
     cherrypy.config.update({
         'server.socket_port': airportlocker.config.airportlocker_port,
-        'server.socket_host': '0.0.0.0',
+        'server.socket_host': '::0',
         'server.thread_pool': airportlocker.config.threads,
         'server.max_request_body_size': max_request_body_size,
         'log.screen': True,
