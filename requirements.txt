@@ -1,4 +1,4 @@
--i https://devpi.wild.yougov.net/root/yg
+-i https://devpi.yougov.net/root/yg
 .
 # Include airportlocker[server] reqs
 fab>=2.4,<4.0dev
