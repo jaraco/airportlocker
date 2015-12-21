@@ -3,7 +3,9 @@ import os
 import time
 
 import cherrypy._cpserver
+import gridfs
 import pkg_resources
+import pytest
 import requests
 import yg.launch.config
 from fab.testing import FabBrowser
@@ -37,6 +39,18 @@ def wait_for_http(url):
 class AirportlockerTest(object):
     test_filename = 'upload_test_file.txt'
     test_file = os.path.join(here, test_filename)
+
+    @pytest.fixture
+    def internal_file(self):
+        fs = gridfs.GridFS(airportlocker.database, airportlocker.config.docset)
+        kwargs = {
+            'filename': '/' + self.test_filename,
+            'class': 'internal',
+            'contentType': 'text/plain',
+
+        }
+        _id = fs.put(open(self.test_file).read(), **kwargs)
+        return fs.get(_id)
 
     def setup_class(self):
         embed_server()

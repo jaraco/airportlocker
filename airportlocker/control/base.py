@@ -1,6 +1,10 @@
 import cgi
+import datetime
+
 import fab
 import cherrypy
+from cherrypy.lib import httputil
+
 
 class Resource(fab.FabPage):
 
@@ -41,6 +45,10 @@ class Resource(fab.FabPage):
         asks for it before a POST """
         cherrypy.response.status = 201
         return
+
+    def _format_datetime(self, dt):
+        epoch = (dt - datetime.datetime(1970, 1, 1)).total_seconds()
+        return httputil.HTTPDate(epoch)
 
 
 class HtmlResource(Resource):
