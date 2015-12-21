@@ -2,7 +2,6 @@ import os
 import time
 import importlib
 
-import six
 import requests
 import pkg_resources
 import pytest
