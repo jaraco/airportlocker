@@ -30,6 +30,7 @@ setup_params = dict(
         # note, if you change the server requirements, you must also update
         #  the requirements.txt (because pip doesn't support extras)
         server=[
+            "CherryPy>=3.5,<3.6dev",
             "fab>=2.4,<4.0dev",
             "yg.mongodb>=4.0,<5dev",
             "boto>=2.7,<3dev",

@@ -1,6 +1,7 @@
 -i https://devpi.yougov.net/root/yg
 .
 # Include airportlocker[server] reqs
+CherryPy>=3.5,<3.6dev
 fab>=2.4,<4.0dev
 yg.mongodb>=4.0,<5dev
 zencoder==0.6.5
