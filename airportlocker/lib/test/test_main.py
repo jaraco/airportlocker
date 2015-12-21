@@ -40,7 +40,7 @@ class TestReadResource(AirportlockerTest):
         with pytest.raises(cherrypy.NotFound):
             res.GET(None, 'foo', 'bar')
 
-    def test_last_modified_header(self, internal_file):
+    def test_GET_returns_last_modified_header(self, internal_file):
         url = urljoin(self.base_url, 'static/{}'.format(self.test_filename))
         resp = requests.get(url)
         resp.raise_for_status()
@@ -58,7 +58,7 @@ class TestGetResource(AirportlockerTest):
         uri = '/{file.class}/{file.md5}/{file._id}.txt'.format(file=file)
         return urljoin(self.base_url, uri)
 
-    def test_last_modified_header(self, internal_file):
+    def test_GET_returns_last_modified_header(self, internal_file):
         resp = requests.get(self.build_resource_url(internal_file))
         resp.raise_for_status()
         last_modified = resp.headers.get('Last-Modified')
