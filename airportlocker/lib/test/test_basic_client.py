@@ -4,7 +4,6 @@ import importlib
 
 import requests
 import pkg_resources
-import pytest
 import cherrypy._cpserver
 from fab.testing import FabBrowser
 import yg.launch.config
@@ -50,12 +49,12 @@ class TestBasicClient(object):
     def teardown_class(self):
         cherrypy.engine.exit()
 
-    @pytest.mark.xfail()
     def test_upload_file(self):
         client = AirportLockerClient(self.base_url)
-        test_file = os.path.join(here, 'upload_test_file.txt')
+        filename = 'upload_test_file.txt'
+        test_file = os.path.join(here, filename)
         result = client.create(test_file, {'foo': 'bar'})
         assert result
-        remote_file = client.read(six.text_type(result['value']))
-        assert remote_file
+
+        remote_file = client.read(filename)
         assert remote_file == open(test_file, 'rb').read()
