@@ -55,7 +55,6 @@ class TestBasicClient(object):
         client = AirportLockerClient(self.base_url)
         test_file = os.path.join(here, 'upload_test_file.txt')
         result = client.create(test_file, {'foo': 'bar'})
-        print(result)
         assert result
         remote_file = client.read(six.text_type(result['value']))
         assert remote_file
