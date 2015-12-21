@@ -6,7 +6,7 @@ from urlparse import urljoin
 
 import fab
 import cherrypy
-import py.test
+import pytest
 import pkg_resources
 import requests
 
@@ -26,7 +26,7 @@ class TestReadResource(AirportlockerTest):
 
     def test_no_args_returns_404(self):
         res = main.ReadResource()
-        with py.test.raises(cherrypy.NotFound):
+        with pytest.raises(cherrypy.NotFound):
             res.GET(None)
 
     def test_not_found_returns_404(self):
@@ -37,7 +37,7 @@ class TestReadResource(AirportlockerTest):
         res = main.ReadResource()
         never_found = mock.Mock(side_effect=storage.NotFoundError)
         res.get_resource = never_found
-        with py.test.raises(cherrypy.NotFound):
+        with pytest.raises(cherrypy.NotFound):
             res.GET(None, 'foo', 'bar')
 
     def test_last_modified_header(self, internal_file):
