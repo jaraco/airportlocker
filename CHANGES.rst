@@ -1,6 +1,11 @@
 Changes
 =======
 
+7.5.1
+-----
+
+#42531: Set 'Last-Modified' header on HTTP HEAD responses.
+
 7.5
 ---
 
