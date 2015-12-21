@@ -9,13 +9,13 @@ from urlparse import urljoin, urlparse
 
 from backports.functools_lru_cache import lru_cache
 
+import cherrypy
+import fab
+import zencoder
 from boto.cloudfront import CloudFrontConnection
 from boto.cloudfront.origin import CustomOrigin, S3Origin
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-import cherrypy
-import fab
-import zencoder
 
 import airportlocker
 from airportlocker import json
