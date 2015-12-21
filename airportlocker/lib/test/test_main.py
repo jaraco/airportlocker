@@ -40,9 +40,12 @@ class TestReadResource(AirportlockerTest):
         with pytest.raises(cherrypy.NotFound):
             res.GET(None, 'foo', 'bar')
 
+    @property
+    def static_url(self):
+        return urljoin(self.base_url, 'static/{}'.format(self.test_filename))
+
     def test_GET_returns_last_modified_header(self, internal_file):
-        url = urljoin(self.base_url, 'static/{}'.format(self.test_filename))
-        resp = requests.get(url)
+        resp = requests.get(self.static_url)
         resp.raise_for_status()
         last_modified = resp.headers.get('Last-Modified')
         assert last_modified is not None
@@ -51,6 +54,15 @@ class TestReadResource(AirportlockerTest):
         expected = time.mktime(internal_file.upload_date.timetuple())
         assert got == expected
 
+    def test_HEAD_returns_last_modified_header(self, internal_file):
+        resp = requests.head(self.static_url)
+        resp.raise_for_status()
+        last_modified = resp.headers.get('Last-Modified')
+        assert last_modified is not None
+
+        got = time.mktime(rfc822.parsedate(last_modified))
+        expected = time.mktime(internal_file.upload_date.timetuple())
+        assert got == expected
 
 class TestGetResource(AirportlockerTest):
 

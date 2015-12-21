@@ -402,6 +402,7 @@ class ReadResource(Resource, GridFSStorage):
             cherrypy.response.headers.update({
                 'Content-Type': ct or 'text/plain',
                 'Content-Length': size,
+                'Last-Modified': self._format_datetime(resource.upload_date),
             })
             return
         raise cherrypy.NotFound()
