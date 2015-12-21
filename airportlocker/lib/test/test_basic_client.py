@@ -14,6 +14,7 @@ from airportlocker.lib.client import AirportLockerClient
 
 here = os.path.abspath(os.path.dirname(__file__))
 
+
 def embed_server():
     config_stream = pkg_resources.resource_stream(
         'airportlocker.lib', 'test/config.yaml')
@@ -21,6 +22,7 @@ def embed_server():
         yg.launch.config.ConfigDict.from_yaml_stream(config_stream))
     importlib.import_module('airportlocker.etc.startup')
     airportlocker.control.root.start()
+
 
 def wait_for_http(url):
     for t in range(50):
@@ -31,6 +33,7 @@ def wait_for_http(url):
             pass
         time.sleep(.5)
     raise RuntimeError("Unable to connect: %s" % url)
+
 
 class TestBasicClient(object):
 
