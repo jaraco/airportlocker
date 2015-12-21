@@ -9,6 +9,7 @@ import cherrypy._cpserver
 from fab.testing import FabBrowser
 import yg.launch.config
 
+import airportlocker
 import airportlocker.control.root
 from airportlocker.lib.client import AirportLockerClient
 
@@ -36,6 +37,7 @@ class TestBasicClient(object):
 
     def setup_class(self):
         embed_server()
+        airportlocker.database.client.drop_database(airportlocker.database)
         # cherrypy started
         cherrypy._cpserver.wait_for_occupied_port('localhost', 8090)
 
