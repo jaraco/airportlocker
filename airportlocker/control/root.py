@@ -18,7 +18,6 @@ app_conf = {
     '/': {
         'request.dispatch': None,
         'request.error_response': handle_500,
-        'request.process_request_body': False,
     },
     '/_test': {
         'tools.staticdir.on': True,

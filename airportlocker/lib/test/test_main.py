@@ -27,7 +27,7 @@ class TestReadResource(AirportlockerTest):
     def test_no_args_returns_404(self):
         res = main.ReadResource()
         with pytest.raises(cherrypy.NotFound):
-            res.GET(None)
+            res.GET('')
 
     def test_not_found_returns_404(self):
         """
@@ -38,7 +38,7 @@ class TestReadResource(AirportlockerTest):
         never_found = mock.Mock(side_effect=storage.NotFoundError)
         res.get_resource = never_found
         with pytest.raises(cherrypy.NotFound):
-            res.GET(None, 'foo', 'bar')
+            res.GET('foo/bar')
 
     @property
     def static_url(self):

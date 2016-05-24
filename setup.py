@@ -31,6 +31,7 @@ setup_params = dict(
         #  the requirements.txt (because pip doesn't support extras)
         server=[
             "CherryPy>=3.5,<6dev",
+            "routes",
             "fab>=2.4,<4.0dev",
             "yg.mongodb>=4.0,<5dev",
             "boto>=2.7,<3dev",

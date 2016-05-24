@@ -9,8 +9,8 @@ from urlparse import urljoin, urlparse
 
 from backports.functools_lru_cache import lru_cache
 
+import pkg_resources
 import cherrypy
-import fab
 import zencoder
 from boto.cloudfront import CloudFrontConnection
 from boto.cloudfront.origin import CustomOrigin, S3Origin
@@ -19,7 +19,7 @@ from boto.s3.key import Key
 
 import airportlocker
 from airportlocker import json
-from airportlocker.control.base import Resource, HtmlResource, post
+from airportlocker.control.base import Resource
 from airportlocker.lib.storage import NotFoundError
 from airportlocker.lib.gridfs import GridFSStorage
 
@@ -43,14 +43,6 @@ def success(value):
 
 def failure(message):
     return json.dumps({'status': 'failure', 'reason': message})
-
-
-def items(field_storage):
-    """
-    Like dict.items, but for cgi.FieldStorage
-    """
-    for key in field_storage.keys():
-        yield key, field_storage.getvalue(key)
 
 
 def add_extra_metadata(row):
@@ -201,23 +193,19 @@ def validate_fields(fields, required=None):
 
 
 def extract_fields(fields):
-    # cast fields to a dict here because CGIFieldStorage doesn't have
-    # a pop attribute. Also we can't pass FieldStorage to posixpath
-    # later so use it's value if it is there.
-    prefix = fields['_prefix'].value if '_prefix' in fields else ''
+    prefix = fields.get('_prefix', '')
 
     stream = fields['_lockerfile'].file
-    content_type = fields['_lockerfile'].type
+    content_type = str(fields['_lockerfile'].type)
 
     # use override name field if supplied, else use source filename
-    name = (fields['name'].value
-            if 'name' in fields else fields['_lockerfile'].filename)
+    name = fields.get('name', fields['_lockerfile'].filename)
     return prefix, stream, content_type, name
 
 
 def prepare_meta(fields):
     meta = dict(
-        (k, v) for k, v in items(fields)
+        (k, v) for k, v in fields.items()
             if not k.startswith('_')
     )
 
@@ -294,17 +282,14 @@ def upload_to_s3(filename, content, content_type):
     return k.key
 
 
-class BasicUpload(HtmlResource):
-    template = fab.template('base.tmpl')
-    body = fab.template('basicform.tmpl')
-
-    def GET(self, page, *args, **kw):
+class BasicUpload(Resource):
+    def GET(self):
         cherrypy.response.headers['Content-Type'] = 'application/xhtml+xml'
-        page.args = kw
+        return pkg_resources.resource_stream('airportlocker.control', 'view/base.html')
 
 
-class ListResources(Resource, GridFSStorage):
-    def GET(self, page, **kw):
+class RootResources(Resource, GridFSStorage):
+    def GET(self, **kw):
         cherrypy.response.headers['Cache-Control'] = 'no-cache'
         # traditionally, q must be __all to query all. Now that's the default
         #  behavior if no kw is passed... but support it for compatibility.
@@ -328,9 +313,29 @@ class ListResources(Resource, GridFSStorage):
             kw.pop('_prefix', '')
         return map(add_extra_metadata, self.find(kw))
 
+    def POST(self, **fields):
+        """
+        Save the file and make sure the filename is as close as possible to the
+        original while still being unique.
+        """
+        if not validate_fields(fields):
+            return failure('A "_new" and "_lockerfile" are required to '
+                           'create a new document.')
+
+        prefix, stream, content_type, name = extract_fields(fields)
+        # but always trust the original filename for the extension
+        name = self._ensure_extension(name, fields['_lockerfile'].filename)
+        file_path = posixpath.join(prefix, name)
+
+        meta = prepare_meta(fields)
+        meta.setdefault('class', get_default_resource_class(content_type))
+
+        oid = self.save(stream, file_path, content_type, meta)
+        return success(oid)
+
 
 class ListSignedResources(Resource, GridFSStorage):
-    def GET(self, page, **kw):
+    def GET(self, **kw):
         cherrypy.response.headers['Cache-Control'] = 'no-cache'
         kw.pop('q', None)
         if kw:
@@ -348,7 +353,7 @@ class ListSignedResources(Resource, GridFSStorage):
 
 
 class ViewResource(Resource, GridFSStorage):
-    def GET(self, page, id):
+    def GET(self, id):
         results = self.find_one(self.by_id(id))
         if not results:
             raise cherrypy.NotFound()
@@ -356,15 +361,11 @@ class ViewResource(Resource, GridFSStorage):
 
 
 class ReadResource(Resource, GridFSStorage):
-    def GET(self, page, *args, **kw):
-        if not args:
-            raise cherrypy.NotFound()
-        path = '/'.join(args)
+    def GET(self, path):
         cherrypy.response.headers['Connection'] = 'close'
         return self.return_file(path)
 
-    def HEAD(self, page, *args, **kw):
-        path = '/'.join(args)
+    def HEAD(self, path):
         cherrypy.response.headers['Connection'] = 'close'
         return self.head_file(path)
 
@@ -413,7 +414,7 @@ class ZencoderResource(Resource, GridFSStorage):
     output meta information.
     """
 
-    def POST(self, page):
+    def POST(self):
         """ Zencoder POSTs data here.
         """
         if not self.is_json():
@@ -466,7 +467,7 @@ class CachedResource(Resource, GridFSStorage):
     Filename can be /SurveyName/Filename
     """
 
-    def GET(self, page, *args, **kw):
+    def GET(self, *args, **kw):
         if not args:
             raise cherrypy.NotFound()
         if len(args) < 2:
@@ -492,9 +493,7 @@ class CreateOrReplaceResource(Resource, GridFSStorage):
     """ New endpoint, determine if the incoming file already exists, if it does
     then replace it, if it doesn't then create a new one.
     """
-
-    @post
-    def POST(self, page, fields):
+    def POST(self, **fields):
         if not validate_fields(fields, ["_lockerfile", ]):
             return failure('A "_lockerfile" is required.')
 
@@ -536,33 +535,8 @@ class CreateOrReplaceResource(Resource, GridFSStorage):
         return success({'created': json.dumps(new_doc)})
 
 
-class CreateResource(Resource, GridFSStorage):
-    """
-    Save the file and make sure the filename is as close as possible to the
-    original while still being unique.
-    """
-
-    @post
-    def POST(self, page, fields):
-        if not validate_fields(fields):
-            return failure('A "_new" and "_lockerfile" are required to '
-                           'create a new document.')
-
-        prefix, stream, content_type, name = extract_fields(fields)
-        # but always trust the original filename for the extension
-        name = self._ensure_extension(name, fields['_lockerfile'].filename)
-        file_path = posixpath.join(prefix, name)
-
-        meta = prepare_meta(fields)
-        meta.setdefault('class', get_default_resource_class(content_type))
-
-        oid = self.save(stream, file_path, content_type, meta)
-        return success(oid)
-
-
-class UpdateResource(Resource, GridFSStorage):
-    @post
-    def PUT(self, page, fields, id):
+class EditResource(Resource, GridFSStorage):
+    def PUT(self, id, **fields):
         file_ob = fields.getvalue('_lockerfile', None)
         params = dict(
             stream=file_ob.file,
@@ -578,14 +552,12 @@ class UpdateResource(Resource, GridFSStorage):
 
         return success({'updated': json.dumps(new_doc)})
 
-
-class DeleteResource(Resource, GridFSStorage):
-    def DELETE(self, page, id):
+    def DELETE(self, id):
         return success({'deleted': self.delete(id)})
 
 
 class GetResource(Resource, GridFSStorage):
-    def GET(self, page, md5, file):
+    def GET(self, md5, file):
         id = os.path.splitext(file)[0]
         try:
             resource, ct = self.get_resource(id)
