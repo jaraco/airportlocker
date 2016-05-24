@@ -1,5 +1,5 @@
 import importlib
-import rfc822
+import email.utils
 import time
 from unittest import mock
 from urlparse import urljoin
@@ -50,7 +50,7 @@ class TestReadResource(AirportlockerTest):
         last_modified = resp.headers.get('Last-Modified')
         assert last_modified is not None
 
-        got = time.mktime(rfc822.parsedate(last_modified))
+        got = time.mktime(email.utils.parsedate(last_modified))
         expected = time.mktime(internal_file.upload_date.timetuple())
         assert got == expected
 
@@ -60,7 +60,7 @@ class TestReadResource(AirportlockerTest):
         last_modified = resp.headers.get('Last-Modified')
         assert last_modified is not None
 
-        got = time.mktime(rfc822.parsedate(last_modified))
+        got = time.mktime(email.utils.parsedate(last_modified))
         expected = time.mktime(internal_file.upload_date.timetuple())
         assert got == expected
 
@@ -76,6 +76,6 @@ class TestGetResource(AirportlockerTest):
         last_modified = resp.headers.get('Last-Modified')
         assert last_modified is not None
 
-        got = time.mktime(rfc822.parsedate(last_modified))
+        got = time.mktime(email.utils.parsedate(last_modified))
         expected = time.mktime(internal_file.upload_date.timetuple())
         assert got == expected
