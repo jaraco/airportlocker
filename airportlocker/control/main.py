@@ -245,21 +245,27 @@ def get_output_url(bucket, output, s3filename):
 
 
 def get_outputs(bucket, notifications, s3filename):
-    outputs = []
-    for output in deepcopy(airportlocker.config.get('zencoder_outputs')):
-        output.update({'url': get_output_url(bucket, output, s3filename),
-                       "public": True, 'notifications': notifications})
-        # We don't want to pass this params to zencoder since they are internal
-        # only.
+    """
+    Transform the zencoder_outputs config into output
+    definitions suitable for passing to zencoder.
+    """
+    outputs = deepcopy(airportlocker.config.get('zencoder_outputs'))
+    for output in outputs:
+        output.update(
+            url=get_output_url(bucket, output, s3filename),
+            public=True,
+            notifications=notifications,
+        )
+        # Omit internal params
         del output['extension']
         del output['suffix']
-        outputs.append(output)
     return outputs
 
 
 def send_to_zencoder(s3filename):
-    """ Prepare the job input and send it out to zencoder for the
-    transcoding magic.
+    """
+    Prepare the job input and send it out to zencoder for
+    transcoding.
     """
     zen = zencoder.Zencoder(airportlocker.config.get('zencoder_api_key'))
     bucket = airportlocker.config.get('aws_s3_bucket')
