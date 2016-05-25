@@ -1,6 +1,11 @@
 Changes
 =======
 
+8.0.1
+-----
+
+Restore support for ``/signed`` without the trailing slash.
+
 8.0
 ---
 
