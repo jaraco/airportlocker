@@ -272,8 +272,7 @@ def send_to_zencoder(s3filename):
     notifications = [{'format': 'json', 'url': get_notification_url()}]
     outputs = get_outputs(bucket, notifications, s3filename)
 
-    url = 's3://%s/%s' % (
-            airportlocker.config.get('aws_s3_bucket'), s3filename)
+    url = 's3://{bucket}/{s3filename}'.format(**locals())
     job = zen.job.create(input=url, outputs=outputs)
 
     if job.code == 201:
