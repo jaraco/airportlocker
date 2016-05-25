@@ -244,11 +244,11 @@ def get_output_url(bucket, output, s3filename):
     return tmpl.format(**locals())
 
 
-def get_outputs(bucket, notification, s3filename):
+def get_outputs(bucket, notifications, s3filename):
     outputs = []
     for output in deepcopy(airportlocker.config.get('zencoder_outputs')):
         output.update({'url': get_output_url(bucket, output, s3filename),
-                       "public": True, 'notifications': notification})
+                       "public": True, 'notifications': notifications})
         # We don't want to pass this params to zencoder since they are internal
         # only.
         del output['extension']
@@ -263,8 +263,8 @@ def send_to_zencoder(s3filename):
     """
     zen = zencoder.Zencoder(airportlocker.config.get('zencoder_api_key'))
     bucket = airportlocker.config.get('aws_s3_bucket')
-    notification = [{'format': 'json', 'url': get_notification_url()}]
-    outputs = get_outputs(bucket, notification, s3filename)
+    notifications = [{'format': 'json', 'url': get_notification_url()}]
+    outputs = get_outputs(bucket, notifications, s3filename)
 
     url = 's3://%s/%s' % (
             airportlocker.config.get('aws_s3_bucket'), s3filename)
