@@ -240,9 +240,8 @@ def get_output_url(bucket, output, s3filename):
     extension = output['extension']
     suffix = str(output['suffix'])
     filename, source_ext = os.path.splitext(s3filename)
-    output_url = 's3://' + bucket + '/' + filename + '_' + suffix + '.' + \
-                 extension
-    return output_url
+    tmpl = 's3://{bucket}/{filename}_{suffix}.{extension}'
+    return tmpl.format(**locals())
 
 
 def get_outputs(bucket, notification, s3filename):
