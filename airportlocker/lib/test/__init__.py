@@ -48,7 +48,7 @@ class AirportlockerTest(object):
             'contentType': 'text/plain',
 
         }
-        _id = fs.put(open(self.test_file).read(), **kwargs)
+        _id = fs.put(open(self.test_file, 'rb').read(), **kwargs)
         return fs.get(_id)
 
     def setup_class(self):
