@@ -31,7 +31,6 @@ setup_params = dict(
         server=[
             "CherryPy>=3.5,<6dev",
             "routes",
-            "fab>=2.4,<4.0dev",
             "yg.mongodb>=4.0,<5dev",
             "boto>=2.7,<3dev",
             "zencoder==0.6.5",

@@ -8,7 +8,6 @@ import pkg_resources
 import pytest
 import requests
 import yg.launch.config
-from fab.testing import FabBrowser
 
 import airportlocker
 import airportlocker.control.root
@@ -61,7 +60,6 @@ class AirportlockerTest(object):
         wait_for_http('http://localhost:8090/_dev/')
 
         self.base_url = 'http://localhost:8090/'
-        self.browser = FabBrowser()
 
     def teardown_class(self):
         cherrypy.engine.exit()
