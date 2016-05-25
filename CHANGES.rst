@@ -1,6 +1,17 @@
 Changes
 =======
 
+8.0
+---
+
+Major refactor to eliminate dependency on fab:
+
+ - Rely on CherryPy for handling post parameters.
+ - Rely on Routes for routing.
+ - Don't bother with templated HTML when not passing
+   anything into the templates.
+ - Removed support for e-mailing errors.
+
 7.5.1
 -----
 
