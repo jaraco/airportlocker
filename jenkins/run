@@ -2,4 +2,6 @@
 rm -rf env
 virtualenv env
 env/bin/easy_install -U setuptools
-env/bin/python2.7 setup.py test --extras --addopts='--junitxml="test results.xml"'
+env/bin/python2.7 setup.py test
+
+python3 setup.py test --addopts='--junitxml="test results.xml"'
