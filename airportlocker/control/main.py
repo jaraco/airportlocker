@@ -1,6 +1,5 @@
 from __future__ import with_statement
 
-from copy import deepcopy
 import gc
 import os
 import posixpath
@@ -12,17 +11,16 @@ from backports.functools_lru_cache import lru_cache
 
 import pkg_resources
 import cherrypy
-import zencoder
 from boto.cloudfront import CloudFrontConnection
 from boto.cloudfront.origin import CustomOrigin, S3Origin
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
 
 import airportlocker
 from airportlocker import json
 from airportlocker.control.base import Resource
 from airportlocker.lib.storage import NotFoundError
-from airportlocker.lib.gridfs import GridFSStorage
+from airportlocker.lib.gridfs import GridFSStorage, get_resource_uri
+from airportlocker.lib import transcode
+
 
 CSS_MIME_TYPES = ['text/css']
 CSV_MIME_TYPES = [
@@ -64,16 +62,6 @@ def add_extra_metadata(row):
 
     row['_id'] = str(row['_id'])
     return row
-
-
-def get_resource_uri(row):
-    """
-    Return the URI for the given GridFS resource.
-
-    Resource URIs have the form: '<file md5>/<oid>.<file extension>'
-    """
-    extension = os.path.splitext(row['filename'])[1]
-    return '{}/{}{}'.format(row['md5'], row['_id'], extension)
 
 
 @lru_cache()
@@ -215,85 +203,6 @@ def prepare_meta(fields):
         meta['shortname'] = fields['_lockerfile'].filename
 
     return meta
-
-
-def get_notification_url():
-    """
-    Get the notification URL to be submitted to Zencoder
-    when submitting jobs.
-    """
-    # Supply a special URL that Zencoder will use
-    # to simulate a successful notification. A fetcher
-    # must be used to poll for the notification.
-    # https://github.com/zencoder/zencoder-fetcher
-    fetcher_url = 'http://zencoderfetcher'
-    notification_url = airportlocker.config.get(
-        'zencoder_notification_url',
-        fetcher_url,
-    )
-    if 'localhost' in notification_url:
-        notification_url = fetcher_url
-    return notification_url
-
-
-def get_output_url(bucket, output, s3filename):
-    extension = output['extension']
-    suffix = str(output['suffix'])
-    filename, source_ext = os.path.splitext(s3filename)
-    tmpl = 's3://{bucket}/{filename}_{suffix}.{extension}'
-    return tmpl.format(**locals())
-
-
-def get_outputs(bucket, notifications, s3filename):
-    """
-    Transform the zencoder_outputs config into output
-    definitions suitable for passing to zencoder.
-    """
-    outputs = deepcopy(airportlocker.config.get('zencoder_outputs'))
-    for output in outputs:
-        output.update(
-            url=get_output_url(bucket, output, s3filename),
-            public=True,
-            notifications=notifications,
-        )
-        # Omit internal params
-        del output['extension']
-        del output['suffix']
-    return outputs
-
-
-def send_to_zencoder(s3filename):
-    """
-    Prepare the job input and send it out to zencoder for
-    transcoding.
-    """
-    zen = zencoder.Zencoder(airportlocker.config.get('zencoder_api_key'))
-    bucket = airportlocker.config.get('aws_s3_bucket')
-    notifications = [{'format': 'json', 'url': get_notification_url()}]
-    outputs = get_outputs(bucket, notifications, s3filename)
-
-    url = 's3://{bucket}/{s3filename}'.format(**locals())
-    job = zen.job.create(input=url, outputs=outputs)
-
-    if job.code == 201:
-        # Save the info about the outputs
-        return job.body
-
-    return None
-
-
-def upload_to_s3(filename, content, content_type):
-    """ Upload to s3. Beware of the leading / in the filename.
-    """
-    conn = S3Connection(airportlocker.config.get('aws_accesskey'),
-                        airportlocker.config.get('aws_secretkey'))
-    bucket = conn.get_bucket(airportlocker.config.get('aws_s3_bucket'))
-    k = Key(bucket)
-    k.key = filename.lstrip('/')
-    k.set_metadata("Content-Type", content_type)
-    k.set_contents_from_file(content)
-    k.set_acl('public-read')
-    return k.key
 
 
 class BasicUpload(Resource):
@@ -534,11 +443,7 @@ class CreateOrReplaceResource(Resource, GridFSStorage):
 
         if 'video' in content_type:
             resource, ct = self.get_resource(file_path)
-            filename = get_resource_uri(resource._file)
-            s3_file = upload_to_s3(filename, resource, ct)
-            job = send_to_zencoder(s3_file)
-            meta['zencoder_job_id'] = job['id']
-            meta['zencoder_outputs'] = job['outputs']
+            meta.update(transcode.submit(resource, ct))
             new_doc = self.update(object_id, meta)
 
         if updated:

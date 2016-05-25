@@ -1,8 +1,20 @@
 from __future__ import absolute_import, unicode_literals
 
+import os
+
 import gridfs
 
 from . import storage
+
+
+def get_resource_uri(row):
+    """
+    Return the URI for the given GridFS resource.
+
+    Resource URIs have the form: '<file md5>/<oid>.<file extension>'
+    """
+    extension = os.path.splitext(row['filename'])[1]
+    return '{}/{}{}'.format(row['md5'], row['_id'], extension)
 
 
 class GridFSStorage(storage.Storage):
