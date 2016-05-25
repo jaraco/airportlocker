@@ -4,8 +4,7 @@ airportlocker
 =============
 
 Media resource storage for YouGov apps. Uses MongoDB for storage of metadata
-and provides two backends for configurable storage of the file payload (either
-in MongoDB or on the filesystem).
+and file storage.
 
 Stores all media with versions where the resource URI is unchanging for
 a given resource.
@@ -18,10 +17,10 @@ Running airportlocker
 
 Clone the repo, and install/update the requirements:
 
-pip install -U . -i http://cheese.yougov.net
+pip install -U . -i https://devpi.yougov.net/root/yg
 
 To run a dev airporlocker instance you can do it with using the
-velociraptor runer and the config at the root of your repo checkout like this:
+velociraptor runner and the config at the root of your repo checkout like this:
 
 PORT=5600 python -m airportlocker.control.vr_launch --config=configs/dev_vr.yaml
 
@@ -53,5 +52,5 @@ To run it you should use::
     zencoder_fetcher --url $AIRPORTLOCKER_URL/_zencoder/ --loop --since 1 $API_KEY
 
 
-The $API_KEY must be the same as the key used by airportlocker to submit
+The $API_KEY must be the same as the key configured in airportlocker to submit
 the jobs.

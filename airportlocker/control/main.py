@@ -221,8 +221,9 @@ def get_notification_url():
     notification_url = deepcopy(
         airportlocker.config.get('zencoder_notification_url', None))
     if 'localhost' in notification_url or not notification_url:
-        # This is the test url that zencoder uses see, if not there will be no
-        # notifications for zencoder-fetcher. See readme.
+        # Supply a special loopback URL that Zencoder will use
+        # to simulate a successful notification. See
+        # https://github.com/zencoder/zencoder-fetcher
         notification_url = 'http://zencoderfetcher/'
     return notification_url
 
