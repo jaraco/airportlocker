@@ -5,7 +5,8 @@ import gc
 import os
 import posixpath
 import time
-from urlparse import urljoin, urlparse
+
+from six.moves.urllib.parse import urljoin, urlparse
 
 from backports.functools_lru_cache import lru_cache
 

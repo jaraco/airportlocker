@@ -1,7 +1,8 @@
 import os
-import urlparse
 import argparse
 from pprint import pprint
+
+from six.moves import urllib
 
 import httplib2
 
@@ -32,7 +33,7 @@ class AirportLockerClient(object):
         self.base = base
 
     def api(self, tail=None):
-        return urlparse.urljoin(self.base, tail)
+        return urllib.parse.urljoin(self.base, tail)
 
     def create(self, fn, fields=None):
         fields = fields or {}

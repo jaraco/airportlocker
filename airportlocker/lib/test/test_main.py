@@ -1,7 +1,8 @@
 import email.utils
 import time
 from unittest import mock
-from urlparse import urljoin
+
+from six.moves.urllib.parse import urljoin
 
 import cherrypy
 import pytest

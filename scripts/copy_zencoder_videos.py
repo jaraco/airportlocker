@@ -1,5 +1,6 @@
 import os.path
-from urlparse import urlparse
+
+from six.moves.url.parse import urlparse
 
 import pymongo
 import path

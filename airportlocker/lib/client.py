@@ -1,7 +1,7 @@
 import posixpath
-import urllib
-import urlparse
 import functools
+
+from six.moves import urllib
 
 from bson import json_util
 import requests
@@ -46,7 +46,7 @@ class AirportLockerClient(object):
         base = self.base
         if not use_host:
             base = ''
-        result = urlparse.urljoin(base, pjoin(self._api[action], prefix, tail))
+        result = urllib.parse.urljoin(base, pjoin(self._api[action], prefix, tail))
         return result
 
     def new_api(self, filename, survey_name):
@@ -56,8 +56,8 @@ class AirportLockerClient(object):
         if not filename.startswith('/'):
             filename = '/' + filename
 
-        qs = urllib.urlencode({'filename': filename})
-        url = urlparse.urljoin(self.base, self.api('signed')) + '?' + qs
+        qs = urllib.parse.urlencode({'filename': filename})
+        url = urllib.parse.urljoin(self.base, self.api('signed')) + '?' + qs
         with metrics.Timing('airportlocker.client.request'):
             filejson = self.session.get(url).json(**self._json_params)
         if not len(filejson) and not filename.startswith('/' + survey_name):
