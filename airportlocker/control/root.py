@@ -3,9 +3,9 @@ import importlib
 import os
 import pkg_resources
 import cherrypy
-import fab
 
 import airportlocker
+from . import urls
 
 
 base = os.getcwd()
@@ -15,7 +15,7 @@ app_conf = {
         'script_name': '/',
     },
     '/': {
-        'request.dispatch': None,
+        'request.dispatch': urls.api,
     },
     '/_test': {
         'tools.staticdir.on': True,
@@ -30,10 +30,6 @@ def CORS():
         'x-requested-with, content-type')
 
 def setupapp():
-    fab.config['base'] = pkg_resources.resource_filename('airportlocker', '')
-    # import urls after base is set (because templates fail to load otherwise)
-    urls = importlib.import_module('airportlocker.control.urls')
-    app_conf['/']['request.dispatch'] = urls.api
     if airportlocker.config.production:
         cherrypy.config.update({'environment': 'production'})
     else:

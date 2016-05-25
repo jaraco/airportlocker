@@ -58,7 +58,6 @@ class AirportlockerTest(object):
         # cherrypy started
         cherrypy._cpserver.wait_for_occupied_port('localhost', 8090)
 
-        # fab templates loaded and other stuff ready
         wait_for_http('http://localhost:8090/_dev/')
 
         self.base_url = 'http://localhost:8090/'

@@ -1,25 +1,15 @@
-import importlib
 import email.utils
 import time
 from unittest import mock
 from urlparse import urljoin
 
-import fab
 import cherrypy
 import pytest
-import pkg_resources
 import requests
 
 from airportlocker.lib import storage
 from airportlocker.lib.test import AirportlockerTest
-
-main = None
-
-
-def setup_module(mod):
-    # we can't import main until the fab base is set :(
-    fab.config['base'] = pkg_resources.resource_filename('airportlocker', '')
-    mod.main = importlib.import_module('airportlocker.control.main')
+from airportlocker.control import main
 
 
 class TestReadResource(AirportlockerTest):
