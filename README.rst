@@ -33,25 +33,25 @@ http://localhost:5600
 Uploading videos
 ----------------
 
-When you upload videos and transcoding is activated we use zencoder to run
-the transcoding jobs. When running in production zencoder will do a POST to a
-public URL that will give airportlocker additional data about the output files.
-When running locally for testing we don't have a public facing url so we must
-use a fetcher that will periodically ask for our jobs status and when one
-finishes it will post to the localhost or dev-vm URL. Zencoder mantains a good
+When uploading videos and if transcoding is activated, APL uses Zencoder to run
+the transcoding jobs. When running in production, Zencoder
+will do a POST to a supplied webhook
+URL no signal airportlocker about the job status and output.
+When running locally for testing, most developers don't have
+a routable IP address, so we rely on
+a `fetcher <https://github.com/zencoder/zencoder-fetcher>`_ that
+will periodically query job status, and when one
+finishes, it will post to the indicated APL URL. Zencoder
+mantains a good
 fetcher (in ruby). To install and use:
 
 gem install zencoder-fetcher
 
 
-To run it you should use:
+To run it you should use::
 
-zencoder_fetcher -u http://localhost:5600/_zencoder/ -l -m 1 06f15509882cc8afb0565af79a9206e1
+    zencoder_fetcher --url $AIRPORTLOCKER_URL/_zencoder/ --loop --since 1 $API_KEY
 
 
-The -u points to the url where the fetcher will post the information. Note that
-needs to change when running on a different machine like a dev-vm.
-The -l option tells the fetcher to run in a loop.
-The -m 1 tells the fetcher to ignore notifications older than 1 minute ago.
-The last parameter is the zencoder API key, it must be the same as your
-airportlocker deployment is using.
+The $API_KEY must be the same as the key used by airportlocker to submit
+the jobs.
