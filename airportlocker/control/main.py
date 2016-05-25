@@ -501,8 +501,9 @@ class CachedResource(Resource, GridFSStorage):
 
 
 class CreateOrReplaceResource(Resource, GridFSStorage):
-    """ New endpoint, determine if the incoming file already exists, if it does
-    then replace it, if it doesn't then create a new one.
+    """
+    Determine if the incoming file already exists. If it does
+    then replace it. If it doesn't, then create a new one.
     """
     def POST(self, **fields):
         if not validate_fields(fields, ["_lockerfile", ]):
