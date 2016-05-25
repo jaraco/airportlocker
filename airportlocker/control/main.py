@@ -113,10 +113,9 @@ def sign_url(unsigned_url, distribution, keypair_id, private_key, ttl):
 
 
 def is_public(url):
-    for elem in ['localhost', '127.0.0.1']:
-        if elem in url:
-            return False
-    return not url.endswith('.local')
+    local_names = 'localhost', '127.0.0.1', '::1',
+    local_name_present = any(name in url for name in local_names)
+    return not local_name_present and not url.endswith('.local')
 
 
 def get_default_resource_class(content_type):
