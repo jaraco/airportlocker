@@ -19,7 +19,6 @@ class MethodHandler(object):
         method = self.get_method()
         handler = self.get_handler(method)
         if self.check_handler(method=method, handler=handler):
-            print("Handler is", handler, args, params)
             return handler(*args, **params)
 
     def get_handler(self, method):
@@ -53,7 +52,6 @@ class Resource(MethodHandler):
         return cherrypy.response.headers['Content-Type'] in json_types
 
     def __call__(self, *args, **kw):
-        print("in resource", args, kw)
         cherrypy.response.headers['Content-Type'] = 'text/plain' # 'application/json'
 
         # these are top level actions so we remove them from the kw args
