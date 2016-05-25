@@ -64,6 +64,7 @@ class TestReadResource(AirportlockerTest):
         expected = time.mktime(internal_file.upload_date.timetuple())
         assert got == expected
 
+
 class TestGetResource(AirportlockerTest):
 
     def build_resource_url(self, file):
@@ -79,3 +80,22 @@ class TestGetResource(AirportlockerTest):
         got = time.mktime(email.utils.parsedate(last_modified))
         expected = time.mktime(internal_file.upload_date.timetuple())
         assert got == expected
+
+
+class TestSignedResources(AirportlockerTest):
+
+    def test_list(self):
+        path = '/signed/'
+        url = urljoin(self.base_url, path)
+        resp = requests.get(url)
+        resp.raise_for_status()
+        res = resp.json()
+        assert isinstance(res, list)
+
+    def test_query(self):
+        path = '/signed/?filename=%2FFDRC0017%2FScreenshot_1.jpg'
+        url = urljoin(self.base_url, path)
+        resp = requests.get(url)
+        resp.raise_for_status()
+        res = resp.json()
+        assert isinstance(res, list)
