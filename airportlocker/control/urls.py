@@ -16,7 +16,7 @@ from airportlocker.control.main import ZencoderResource
 api = cherrypy.dispatch.RoutesDispatcher()
 
 api.connect('signed', '/signed', ListSignedResources())
-api.connect('cached', '/cached', CachedResource())
+api.connect('cached', '/cached/:md5/{path:.*}', CachedResource())
 api.connect('zencoder', '/_zencoder', ZencoderResource())
 
 api.connect('read', '/static/{path:.*}', ReadResource())

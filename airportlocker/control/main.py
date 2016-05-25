@@ -467,20 +467,17 @@ class CachedResource(Resource, GridFSStorage):
     Filename can be /SurveyName/Filename
     """
 
-    def GET(self, *args, **kw):
-        if not args:
-            raise cherrypy.NotFound()
-        if len(args) < 2:
+    def GET(self, md5, path):
+        if not path:
             raise cherrypy.NotFound()
         found_file = None
-        path = '/'.join(args[1:])
         if self.fs.exists(filename=path):
             found_file = self.fs.get_last_version(path)
         elif not path.startswith('/') and self.fs.exists(filename='/' + path):
             path = '/' + path
             found_file = self.fs.get_last_version(path)
         if found_file is not None:
-            if found_file._file['md5'] == args[0]:
+            if found_file._file['md5'] == md5:
                 resource, ct = self.get_resource(path)
                 cherrypy.response.headers.update({
                     'Content-Type': ct or 'text/plain',
