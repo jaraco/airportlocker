@@ -6,6 +6,8 @@ Changes
 
 Rely on requests to prepare multipart/form-data in the client.
 
+Restore support for ``/post/`` with the trailing slash.
+
 8.0.1
 -----
 

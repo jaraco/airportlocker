@@ -28,6 +28,7 @@ api.connect('public', '/public/:md5/:file', GetPublicResource())
 api.connect('view-options', '/view/:id', ViewResource())
 api.connect('edit', '/edit/:id', EditResource())
 api.connect('index', '/', RootResources())
+api.connect('post', '/post/', CreateOrReplaceResource())
 api.connect('post', '/post', CreateOrReplaceResource())
 
 dev = cherrypy.dispatch.RoutesDispatcher()
