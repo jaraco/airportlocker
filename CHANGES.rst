@@ -1,6 +1,11 @@
 Changes
 =======
 
+8.1
+---
+
+Rely on requests to prepare multipart/form-data in the client.
+
 8.0.1
 -----
 

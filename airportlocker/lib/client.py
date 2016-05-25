@@ -1,5 +1,6 @@
 import posixpath
 import functools
+import os
 
 from six.moves import urllib
 
@@ -7,9 +8,16 @@ from bson import json_util
 import requests
 from yg.performance import metrics
 
-from airportlocker.lib.utils import MultiPart
 from airportlocker import json
 pjoin = posixpath.join
+
+
+def RequestsFile(pathname):
+    """
+    Construct a tuple suitable for a 'file' value per
+    http://docs.python-requests.org/en/latest/user/quickstart/#post-a-multipart-encoded-file
+    """
+    return os.path.basename(pathname), open(pathname, 'rb')
 
 
 class AirportLockerClient(object):
@@ -73,18 +81,24 @@ class AirportLockerClient(object):
     def create(self, fn, fields=None):
         fields = fields or {}
         fields.update({'_new': 'True'})
-        data = MultiPart(fn, fields)
-        return self.session.post(self.api('create'),
-                                data=data.body,
-                                headers=data.headers)
+        return self.session.post(
+            self.api('create'),
+            data=fields,
+            files=dict(
+                _lockerfile=RequestsFile(fn),
+            ),
+        )
 
     @json_result
     def update(self, id, fn, fields=None):
         fields = fields or {}
-        data = MultiPart(fn, fields)
-        return self.session.put(self.api('update', id),
-                                data=data.body,
-                                headers=data.headers)
+        return self.session.put(
+            self.api('update', id),
+            data=fields,
+            files=dict(
+                _lockerfile=RequestsFile(fn),
+            ),
+        )
 
     @json_result
     def view(self, id):
