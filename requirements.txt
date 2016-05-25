@@ -9,3 +9,7 @@ boto
 rsa
 backports.functools_lru_cache
 yg.newrelic>=1.2.4
+
+# for uptests
+portend
+requests
