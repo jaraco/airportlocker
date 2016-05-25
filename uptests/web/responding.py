@@ -11,5 +11,6 @@ args = parser.parse_args()
 portend.occupied(args.host, args.port, timeout=10)
 
 root = 'http://{host}:{port}/?surveyName=uptest'.format(**vars(args))
-status = requests.get(root).json()
-assert status, "Empty status received"
+resp = requests.get(root)
+resp.raise_for_status()
+assert isinstance(resp.json(), list)
