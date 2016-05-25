@@ -218,13 +218,21 @@ def prepare_meta(fields):
 
 
 def get_notification_url():
-    notification_url = deepcopy(
-        airportlocker.config.get('zencoder_notification_url', None))
-    if 'localhost' in notification_url or not notification_url:
-        # Supply a special loopback URL that Zencoder will use
-        # to simulate a successful notification. See
-        # https://github.com/zencoder/zencoder-fetcher
-        notification_url = 'http://zencoderfetcher/'
+    """
+    Get the notification URL to be submitted to Zencoder
+    when submitting jobs.
+    """
+    # Supply a special URL that Zencoder will use
+    # to simulate a successful notification. A fetcher
+    # must be used to poll for the notification.
+    # https://github.com/zencoder/zencoder-fetcher
+    fetcher_url = 'http://zencoderfetcher'
+    notification_url = airportlocker.config.get(
+        'zencoder_notification_url',
+        fetcher_url,
+    )
+    if 'localhost' in notification_url:
+        notification_url = fetcher_url
     return notification_url
 
 
