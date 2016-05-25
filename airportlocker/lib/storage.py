@@ -1,6 +1,8 @@
 import itertools
 import mimetypes
 
+import six
+
 import os
 import bson
 
@@ -106,4 +108,4 @@ def unique_name(candidates, exists):
     >>> unique_name(candidates, exist_fn)
     'file (1).txt'
     """
-    return next(itertools.ifilterfalse(exists, candidates))
+    return next(six.moves.filterfalse(exists, candidates))
