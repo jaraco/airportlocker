@@ -20,7 +20,6 @@ setup_params = dict(
         ],
     },
     install_requires=[
-        "yg.process>=1.0.2,<2.0dev",
         'yg.launch>=2.1,<3.0dev',
         'yg.performance>=1.2.2,<3dev',
         'path.py',

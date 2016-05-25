@@ -6,7 +6,6 @@ import cherrypy
 import fab
 
 import airportlocker
-from airportlocker.lib.errors import handle_500
 
 
 base = os.getcwd()
@@ -17,7 +16,6 @@ app_conf = {
     },
     '/': {
         'request.dispatch': None,
-        'request.error_response': handle_500,
     },
     '/_test': {
         'tools.staticdir.on': True,
