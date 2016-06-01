@@ -1,6 +1,11 @@
 Changes
 =======
 
+8.1.1
+-----
+
+Restore support for ``/zencoder/`` with the trailing slash.
+
 8.1
 ---
 

@@ -18,6 +18,7 @@ api = cherrypy.dispatch.RoutesDispatcher()
 api.connect('signed', '/signed/', ListSignedResources())
 api.connect('signed', '/signed', ListSignedResources())
 api.connect('cached', '/cached/:md5/{path:.*}', CachedResource())
+api.connect('zencoder', '/_zencoder/', ZencoderResource())
 api.connect('zencoder', '/_zencoder', ZencoderResource())
 
 api.connect('read', '/static/{path:.*}', ReadResource())
