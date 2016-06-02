@@ -1,6 +1,11 @@
 Changes
 =======
 
+8.2
+---
+
+Suppress duplicate log messages in the server.
+
 8.1.1
 -----
 

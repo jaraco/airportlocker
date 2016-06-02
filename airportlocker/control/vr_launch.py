@@ -4,6 +4,7 @@ import os
 
 import yg.launch.cmdline
 import yg.newrelic
+import cherrypy
 
 import airportlocker
 from airportlocker.control import root
@@ -11,6 +12,10 @@ from airportlocker.control import root
 
 def setup_logging():
     logging.basicConfig(level=logging.INFO)
+
+    # prevent CherryPy messages from being logged twice
+    cherrypy.log.error_log.propagate = False
+    cherrypy.log.access_log.propagate = False
 
 
 def initialize_newrelic():
