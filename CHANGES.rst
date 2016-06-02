@@ -6,6 +6,8 @@ Changes
 
 Suppress duplicate log messages in the server.
 
+#43992: Correct parameter usage in EditResource.
+
 8.1.1
 -----
 
